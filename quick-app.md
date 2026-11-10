@@ -21,3 +21,9 @@ Rules:
     3 - criar uma pasta com o nome dio projeto informado na pop-up anterior
     4 - extrair o projeto
     5 - ajustar o wp-config.php com as credencias corretas do banco
+
+
+
+black=  # create a black folder
+php=index.php  # add a blank index.php
+wordpress=https://wordpress.org/wordpress-7.1.4.tar.gz  # download and extract the wordpress template
