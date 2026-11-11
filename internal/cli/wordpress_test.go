@@ -5,15 +5,25 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"encoding/json"
 	"errors"
+	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
+
+	"flock/internal/api"
+	"flock/internal/catalog"
+	"flock/internal/config"
+	"flock/internal/paths"
 )
 
 type wordpressTransport func(*http.Request) (*http.Response, error)
@@ -175,6 +185,151 @@ func TestConfigureWordPressRejectsIncompleteSample(t *testing.T) {
 			}
 			if _, err := os.Stat(filepath.Join(dir, "wp-config.php")); !os.IsNotExist(err) {
 				t.Fatalf("invalid config was written: %v", err)
+			}
+		})
+	}
+}
+
+func TestWordPressCLI(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("uses a shell script as the MySQL client")
+	}
+	for _, kind := range []string{"success", "mysql-missing", "mysql-uninstalled", "mysql-stopped", "mariadb-only", "download-error", "database-error"} {
+		t.Run(kind, func(t *testing.T) {
+			root, err := os.MkdirTemp("", "flock-wp-")
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Cleanup(func() { os.RemoveAll(root) })
+			dir := t.TempDir()
+			t.Setenv("FLOCK_HOME", root)
+			t.Chdir(dir)
+			path, err := filepath.Abs("My Blog")
+			if err != nil {
+				t.Fatal(err)
+			}
+			cfg := config.Default()
+			if err := cfg.Save(root); err != nil {
+				t.Fatal(err)
+			}
+			before, err := os.ReadFile(filepath.Join(root, "config.json"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			service := api.Service{ID: "mysql", Name: "MySQL", Installed: true, Running: true, Version: "8.4.11", Port: 3307}
+			services := []api.Service{service}
+			switch kind {
+			case "mysql-missing":
+				services = nil
+			case "mysql-uninstalled":
+				services[0].Installed = false
+			case "mysql-stopped":
+				services[0].Running = false
+			case "mariadb-only":
+				services[0].ID = "mariadb"
+			}
+			var reloads atomic.Int32
+			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch r.Method + " " + r.URL.Path {
+				case "GET /v1/services":
+					json.NewEncoder(w).Encode(services)
+				case "POST /v1/reload":
+					reloads.Add(1)
+					json.NewEncoder(w).Encode(api.Status{})
+				default:
+					t.Errorf("unexpected daemon request: %s %s", r.Method, r.URL.Path)
+					http.NotFound(w, r)
+				}
+			})
+			server := httptest.NewUnstartedServer(handler)
+			server.Listener.Close()
+			listener, err := net.Listen("unix", paths.Socket(root))
+			if err != nil {
+				t.Fatal(err)
+			}
+			server.Listener = listener
+			server.Start()
+			t.Cleanup(server.Close)
+
+			argsFile := filepath.Join(root, "mysql.args")
+			t.Setenv("FLOCK_TEST_MYSQL_ARGS", argsFile)
+			client := filepath.Join(catalog.Dir(root, "mysql", service.Version), "bin", "mysql")
+			if err := os.MkdirAll(filepath.Dir(client), 0o755); err != nil {
+				t.Fatal(err)
+			}
+			script := "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$FLOCK_TEST_MYSQL_ARGS\"\n"
+			if kind == "database-error" {
+				script += "echo 'database denied' >&2\nexit 1\n"
+			}
+			if err := os.WriteFile(client, []byte(script), 0o755); err != nil {
+				t.Fatal(err)
+			}
+			data := wordpressArchive(t, map[string]string{
+				"index.php":       "<?php /* WordPress entrypoint */",
+				"wp-settings.php": "<?php", "wp-config-sample.php": wordpressConfigSample(),
+			})
+			var downloads atomic.Int32
+			oldClient := http.DefaultClient
+			http.DefaultClient = &http.Client{Transport: wordpressTransport(func(r *http.Request) (*http.Response, error) {
+				downloads.Add(1)
+				if r.URL.String() != wordpressURL {
+					t.Errorf("unexpected download: %s", r.URL)
+				}
+				status := http.StatusOK
+				if kind == "download-error" {
+					status = http.StatusServiceUnavailable
+				}
+				return &http.Response{StatusCode: status, Status: http.StatusText(status), Body: io.NopCloser(bytes.NewReader(data)), Header: make(http.Header)}, nil
+			})}
+			t.Cleanup(func() { http.DefaultClient = oldClient })
+
+			out, err := runAppCommand("My Blog", "--type", "wordpress")
+			if kind == "success" {
+				if err != nil {
+					t.Fatal(err)
+				}
+				saved, err := config.Load(root)
+				if err != nil {
+					t.Fatal(err)
+				}
+				site, ok := saved.FindSite("my-blog")
+				if !ok || site.Path != path || reloads.Load() != 1 {
+					t.Fatalf("site not linked and applied: %+v, reloads %d", site, reloads.Load())
+				}
+				content, err := os.ReadFile(filepath.Join(site.Path, "wp-config.php"))
+				if err != nil || !strings.Contains(string(content), "'127.0.0.1:3307'") || !strings.Contains(string(content), "'my-blog'") {
+					t.Fatalf("unexpected WordPress config: %s, %v", content, err)
+				}
+				if !strings.Contains(out, "http://my-blog.test") {
+					t.Fatalf("site URL not reported: %s", out)
+				}
+			} else {
+				if err == nil || reloads.Load() != 0 {
+					t.Fatalf("setup should fail without reloading: %v, reloads %d", err, reloads.Load())
+				}
+				after, readErr := os.ReadFile(filepath.Join(root, "config.json"))
+				if readErr != nil || !bytes.Equal(before, after) {
+					t.Fatalf("failed setup changed site settings: %v", readErr)
+				}
+			}
+			switch kind {
+			case "mysql-missing", "mysql-uninstalled", "mysql-stopped", "mariadb-only":
+				if _, err := os.Stat("My Blog"); !os.IsNotExist(err) || downloads.Load() != 0 {
+					t.Fatalf("created files or downloaded before MySQL was ready: %v", err)
+				}
+			case "success", "database-error":
+				args, err := os.ReadFile(argsFile)
+				if err != nil || string(args) != "--no-defaults\n-uroot\n-h127.0.0.1\n-P3307\n-e\nCREATE DATABASE IF NOT EXISTS `my-blog`\n" {
+					t.Fatalf("unexpected MySQL invocation: %s, %v", args, err)
+				}
+			}
+			if kind == "database-error" && !strings.Contains(err.Error(), "database denied") {
+				t.Fatalf("database error was not surfaced: %v", err)
+			}
+			if kind == "download-error" {
+				if _, err := os.Stat(argsFile); !os.IsNotExist(err) {
+					t.Fatalf("database command ran after failed download: %v", err)
+				}
 			}
 		})
 	}
