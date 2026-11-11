@@ -17,7 +17,7 @@ import (
 	"flock/internal/download"
 )
 
-const wordpressURL = "https://wordpress.org/wordpress-7.1.4.tar.gz"
+const wordpressURL = "https://wordpress.org/latest.tar.gz"
 const wordpressDownloadTimeout = 120 * time.Second
 
 func createWordPress(ctx context.Context, s *state, dir, database string, service api.Service) error {

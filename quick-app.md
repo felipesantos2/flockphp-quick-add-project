@@ -10,7 +10,7 @@ Tasks:
 O que preciso para o WordPress funcionar?
     - Banco de dados (MySQL)
     - PHP
-    - Projeto Wordpress ('https://wordpress.org/wordpress-7.1.4.tar.gz')
+    - Projeto Wordpress ('https://wordpress.org/latest.tar.gz')
 
 ----------------------------------------------------------------------
 ----------------------------------------------------------------------
@@ -26,4 +26,4 @@ Rules:
 
 black=  # create a black folder
 php=index.php  # add a blank index.php
-wordpress=https://wordpress.org/wordpress-7.1.4.tar.gz  # download and extract the wordpress template
+wordpress=https://wordpress.org/latest.tar.gz  # download and extract the wordpress template

@@ -73,7 +73,7 @@ project files are created. Install MySQL with `flock services install mysql` if
 needed, or start it in the Flock app if it is stopped. MariaDB is not used by this
 command.
 
-Flock downloads [WordPress 7.1.4](https://wordpress.org/wordpress-7.1.4.tar.gz) with a
+Flock downloads the [latest WordPress release](https://wordpress.org/latest.tar.gz) with a
 120-second download timeout and extracts it directly into the new project folder.
 It creates a database named after the normalized project name (`my-blog`), or
 reuses it if it already exists, without deleting existing data. The generated

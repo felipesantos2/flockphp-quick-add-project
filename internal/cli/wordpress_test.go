@@ -272,7 +272,7 @@ func TestWordPressCLI(t *testing.T) {
 			oldClient := http.DefaultClient
 			http.DefaultClient = &http.Client{Transport: wordpressTransport(func(r *http.Request) (*http.Response, error) {
 				downloads.Add(1)
-				if r.URL.String() != wordpressURL {
+				if r.URL.String() != "https://wordpress.org/latest.tar.gz" {
 					t.Errorf("unexpected download: %s", r.URL)
 				}
 				status := http.StatusOK
