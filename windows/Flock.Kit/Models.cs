@@ -738,3 +738,16 @@ public sealed class LogEntry
     public string Message { get; init; } = "";
     public string Details { get; init; } = "";
 }
+
+/// <summary>One template entry from GET /v1/apps/templates (apps.conf).</summary>
+public sealed class AppTemplate
+{
+    public string Name { get; init; } = "";
+    public bool RequiresDb { get; init; }
+}
+
+/// <summary>GET /v1/apps/templates</summary>
+public sealed class AppTemplatesResponse
+{
+    public List<AppTemplate> Templates { get; init; } = [];
+}

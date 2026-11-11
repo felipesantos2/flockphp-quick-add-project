@@ -280,16 +280,32 @@ Laravel app to it (env).`,
 			if err != nil {
 				return err
 			}
-			id, err := normalizeDatabaseService(args[0])
+			id := strings.ToLower(args[0])
+			if isPostgres(id) {
+				id = "postgres"
+			}
+			if !slices.Contains([]string{"postgres", "mysql", "mariadb"}, id) {
+				return fmt.Errorf("%s has no databases to create: use postgres, mysql or mariadb", args[0])
+			}
+			services, err := s.client().Services(cmd.Context())
 			if err != nil {
 				return err
 			}
-			svc, err := runningDatabaseService(cmd.Context(), s, id)
-			if err != nil {
-				return err
+			i := slices.IndexFunc(services, func(x api.Service) bool { return x.ID == id })
+			switch {
+			case i < 0 || !services[i].Installed:
+				return fmt.Errorf("%s isn't installed: install it with `flock services install %s`", id, id)
+			case !services[i].Running:
+				return fmt.Errorf("%s isn't running: start it in the Flock app", services[i].Name)
 			}
+			svc := services[i]
 			for _, name := range args[1:] {
-				if err := createDatabase(cmd.Context(), s, svc, name); err != nil {
+				if id == "postgres" {
+					err = postgres.CreateDatabase(cmd.Context(), svc.Port, name)
+				} else {
+					err = catalog.CreateDatabase(cmd.Context(), s.root, id, svc.Version, svc.Port, name)
+				}
+				if err != nil {
 					return fmt.Errorf("create %s: %w", name, err)
 				}
 				cmd.Printf("database %s ready in %s\n", name, svc.Name)
@@ -300,51 +316,6 @@ Laravel app to it (env).`,
 
 	cmd.AddCommand(install, update, uninstall, use, list, createDB, extensions)
 	return cmd
-}
-
-func normalizeDatabaseService(name string) (string, error) {
-	id := strings.ToLower(strings.TrimSpace(name))
-	if isPostgres(id) {
-		id = "postgres"
-	}
-	if !slices.Contains([]string{"postgres", "mysql", "mariadb"}, id) {
-		return "", fmt.Errorf("%s has no databases to create: use postgres, mysql or mariadb", name)
-	}
-	return id, nil
-}
-
-func createDatabase(ctx context.Context, s *state, svc api.Service, name string) error {
-	if svc.ID == "postgres" {
-		return postgres.CreateDatabase(ctx, svc.Port, name)
-	}
-	return catalog.CreateDatabase(ctx, s.root, svc.ID, svc.Version, svc.Port, name)
-}
-
-var appDatabaseServices = []string{"mysql", "mariadb"}
-
-func runningDatabaseService(ctx context.Context, s *state, id string) (api.Service, error) {
-	services, err := s.client().Services(ctx)
-	if err != nil {
-		return api.Service{}, err
-	}
-	i := slices.IndexFunc(services, func(x api.Service) bool { return x.ID == id })
-	switch {
-	case i < 0 || !services[i].Installed:
-		return api.Service{}, fmt.Errorf("%s isn't installed: install it with `flock services install %s`", id, id)
-	case !services[i].Running:
-		return api.Service{}, fmt.Errorf("%s isn't running: start it in the Flock app", services[i].Name)
-	}
-	return services[i], nil
-}
-
-func firstRunningDatabaseService(services []api.Service) (api.Service, bool) {
-	for _, id := range appDatabaseServices {
-		i := slices.IndexFunc(services, func(x api.Service) bool { return x.ID == id })
-		if i >= 0 && services[i].Installed && services[i].Running {
-			return services[i], true
-		}
-	}
-	return api.Service{}, false
 }
 
 // printLines prints the versions of a catalog service like printPostgresVersions does
