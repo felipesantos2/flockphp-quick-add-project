@@ -10,7 +10,7 @@
     <Grid>
         <Grid ColumnSpacing="16" Visibility="{Binding HasSites, Converter={StaticResource BooleanVisibilityConverter}}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="312" /><ColumnDefinition Width="*" MinWidth="340" />
+                <ColumnDefinition Width="328" /><ColumnDefinition Width="*" MinWidth="320" />
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0" RowSpacing="8">
                 <Grid.RowDefinitions>
@@ -106,8 +106,8 @@
             <TextBlock Text="Add a single site here, or add a project folder in General." Style="{StaticResource CaptionTextBlockStyle}"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextAlignment="Center" HorizontalAlignment="Center" />
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" Margin="0,8,0,0">
-                <Button x:Name="EmptyNewAppButton" Content="New App…" Click="NewAppClicked" Style="{StaticResource AccentButtonStyle}" />
-                <Button Content="Add Site…" Click="AddSiteClicked" />
+                <Button Content="Add Site…" Click="AddSiteClicked" Style="{StaticResource AccentButtonStyle}" />
+                <Button x:Name="EmptyNewAppButton" Content="New App…" Click="NewAppClicked" />
                 <Button Content="Add Proxy…" Click="AddProxyClicked" />
                 <ProgressRing x:Name="EmptyNewAppProgress" Width="16" Height="16" Visibility="Collapsed" VerticalAlignment="Center" />
             </StackPanel>
