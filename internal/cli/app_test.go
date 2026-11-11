@@ -71,7 +71,7 @@ func TestAppCreateRejectsInvalidInput(t *testing.T) {
 	for _, args := range [][]string{
 		{}, {"one", "two"}, {""}, {"."}, {".."}, {"../escape"}, {"nested/app"},
 		{`nested\app`}, {"C:app"}, {" app"}, {"app."}, {"---"}, {strings.Repeat("a", 64)},
-		{"demo", "--type", "wordpress"},
+		{"demo", "--type", "laravel"},
 	} {
 		t.Run(strings.Join(args, "_"), func(t *testing.T) {
 			root, dir := t.TempDir(), t.TempDir()
@@ -179,5 +179,21 @@ func TestAppCreateReportsSaveFailureAndKeepsProject(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(dir, "demo", "index.php")); err != nil {
 		t.Fatalf("generated project was not kept: %v", err)
+	}
+}
+
+func TestAppCreateWordPressNeedsDaemon(t *testing.T) {
+	root, dir := t.TempDir(), t.TempDir()
+	t.Setenv("FLOCK_HOME", root)
+	t.Chdir(dir)
+	if _, err := runAppCommand("demo", "--type", "wordpress"); err == nil ||
+		!strings.Contains(err.Error(), "WordPress requires running MySQL") {
+		t.Fatalf("expected MySQL prerequisite error, got %v", err)
+	}
+	for _, path := range []string{root, dir} {
+		entries, err := os.ReadDir(path)
+		if err != nil || len(entries) != 0 {
+			t.Fatalf("prerequisite failure modified %s: %v, %v", path, entries, err)
+		}
 	}
 }

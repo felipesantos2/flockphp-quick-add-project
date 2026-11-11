@@ -11,12 +11,29 @@ import (
 	"strings"
 	"time"
 
+	"flock/internal/api"
 	"flock/internal/archive"
+	"flock/internal/catalog"
 	"flock/internal/download"
 )
 
 const wordpressURL = "https://wordpress.org/wordpress-7.1.4.tar.gz"
 const wordpressDownloadTimeout = 120 * time.Second
+
+func createWordPress(ctx context.Context, s *state, dir, database string, service api.Service) error {
+	if err := downloadWordPress(ctx, nil, wordpressURL, dir); err != nil {
+		return err
+	}
+	if err := configureWordPress(dir, database, service.Port); err != nil {
+		return fmt.Errorf("configure WordPress: %w", err)
+	}
+	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
+	defer cancel()
+	if err := catalog.CreateDatabase(ctx, s.root, service.ID, service.Version, service.Port, database); err != nil {
+		return fmt.Errorf("create database %s: %w", database, err)
+	}
+	return nil
+}
 
 func downloadWordPress(ctx context.Context, client *http.Client, url, dir string) error {
 	ctx, cancel := context.WithTimeout(ctx, wordpressDownloadTimeout)

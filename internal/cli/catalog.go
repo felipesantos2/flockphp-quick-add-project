@@ -287,18 +287,10 @@ Laravel app to it (env).`,
 			if !slices.Contains([]string{"postgres", "mysql", "mariadb"}, id) {
 				return fmt.Errorf("%s has no databases to create: use postgres, mysql or mariadb", args[0])
 			}
-			services, err := s.client().Services(cmd.Context())
+			svc, err := runningDatabaseService(cmd.Context(), s, id)
 			if err != nil {
 				return err
 			}
-			i := slices.IndexFunc(services, func(x api.Service) bool { return x.ID == id })
-			switch {
-			case i < 0 || !services[i].Installed:
-				return fmt.Errorf("%s isn't installed: install it with `flock services install %s`", id, id)
-			case !services[i].Running:
-				return fmt.Errorf("%s isn't running: start it in the Flock app", services[i].Name)
-			}
-			svc := services[i]
 			for _, name := range args[1:] {
 				if id == "postgres" {
 					err = postgres.CreateDatabase(cmd.Context(), svc.Port, name)
@@ -316,6 +308,21 @@ Laravel app to it (env).`,
 
 	cmd.AddCommand(install, update, uninstall, use, list, createDB, extensions)
 	return cmd
+}
+
+func runningDatabaseService(ctx context.Context, s *state, id string) (api.Service, error) {
+	services, err := s.client().Services(ctx)
+	if err != nil {
+		return api.Service{}, err
+	}
+	i := slices.IndexFunc(services, func(x api.Service) bool { return x.ID == id })
+	switch {
+	case i < 0 || !services[i].Installed:
+		return api.Service{}, fmt.Errorf("%s isn't installed: install it with `flock services install %s`", id, id)
+	case !services[i].Running:
+		return api.Service{}, fmt.Errorf("%s isn't running: start it in the Flock app", services[i].Name)
+	}
+	return services[i], nil
 }
 
 // printLines prints the versions of a catalog service like printPostgresVersions does
