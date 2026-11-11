@@ -280,24 +280,16 @@ Laravel app to it (env).`,
 			if err != nil {
 				return err
 			}
-			id := strings.ToLower(args[0])
-			if isPostgres(id) {
-				id = "postgres"
-			}
-			if !slices.Contains([]string{"postgres", "mysql", "mariadb"}, id) {
-				return fmt.Errorf("%s has no databases to create: use postgres, mysql or mariadb", args[0])
+			id, err := normalizeDatabaseService(args[0])
+			if err != nil {
+				return err
 			}
 			svc, err := runningDatabaseService(cmd.Context(), s, id)
 			if err != nil {
 				return err
 			}
 			for _, name := range args[1:] {
-				if id == "postgres" {
-					err = postgres.CreateDatabase(cmd.Context(), svc.Port, name)
-				} else {
-					err = catalog.CreateDatabase(cmd.Context(), s.root, id, svc.Version, svc.Port, name)
-				}
-				if err != nil {
+				if err := createDatabase(cmd.Context(), s, svc, name); err != nil {
 					return fmt.Errorf("create %s: %w", name, err)
 				}
 				cmd.Printf("database %s ready in %s\n", name, svc.Name)
@@ -308,6 +300,24 @@ Laravel app to it (env).`,
 
 	cmd.AddCommand(install, update, uninstall, use, list, createDB, extensions)
 	return cmd
+}
+
+func normalizeDatabaseService(name string) (string, error) {
+	id := strings.ToLower(strings.TrimSpace(name))
+	if isPostgres(id) {
+		id = "postgres"
+	}
+	if !slices.Contains([]string{"postgres", "mysql", "mariadb"}, id) {
+		return "", fmt.Errorf("%s has no databases to create: use postgres, mysql or mariadb", name)
+	}
+	return id, nil
+}
+
+func createDatabase(ctx context.Context, s *state, svc api.Service, name string) error {
+	if svc.ID == "postgres" {
+		return postgres.CreateDatabase(ctx, svc.Port, name)
+	}
+	return catalog.CreateDatabase(ctx, s.root, svc.ID, svc.Version, svc.Port, name)
 }
 
 func runningDatabaseService(ctx context.Context, s *state, id string) (api.Service, error) {
