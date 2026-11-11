@@ -24,7 +24,7 @@ This page lists the `flock` commands. The other pages show where to find each ac
 
 | Command | Description |
 | --- | --- |
-| `flock app create <name> [--type php]` | Create a PHP project in a new subdirectory and link it as `<name>.test` |
+| `flock app create <name> [--type <php\|wordpress>]` | Create a PHP or WordPress project in a new subdirectory and link it as `<name>.test` |
 | `flock park [dir]` | Serve every subdirectory of `dir` as `<subdir>.test` |
 | `flock unpark [dir]` | Stop serving a parked directory (alias: `forget`) |
 | `flock link [name] [--php 8.4] [--secure]` | Serve the current directory as `<name>.test` |
@@ -58,11 +58,32 @@ registers the project at `http://my-app.test` (or your configured TLD), using th
 default PHP version. Folder names are normalized for the hostname, just like
 `flock link`. Existing folders, sites and proxies with the same name are not replaced.
 
-Only PHP is supported (`--type php`, the default); WordPress is not available yet.
-No database service is required. Flock must be installed with PHP available to serve
-the project. If the daemon is stopped, the site settings are saved and apply when it
-starts. If saving or applying the settings fails, the command reports the error and
-keeps the generated project.
+PHP is the default (`--type php`) and requires no database service. Flock must be
+installed with PHP available to serve the project. For PHP projects, if the daemon
+is stopped, the site settings are saved and apply when it starts.
+
+To create WordPress instead:
+
+```sh
+flock app create my-blog --type wordpress
+```
+
+WordPress requires the Flock daemon and its MySQL service to be running before any
+project files are created. Install MySQL with `flock services install mysql` if
+needed, or start it in the Flock app if it is stopped. MariaDB is not used by this
+command.
+
+Flock downloads [WordPress 7.1.4](https://wordpress.org/wordpress-7.1.4.tar.gz) with a
+120-second download timeout and extracts it directly into the new project folder.
+It creates a database named after the normalized project name (`my-blog`), or
+reuses it if it already exists, without deleting existing data. The generated
+`wp-config.php` uses Flock's local MySQL credentials (`root`, no password),
+`127.0.0.1` and the service's actual port, with fresh authentication keys and salts.
+Open `http://my-blog.test` (or your configured TLD) to finish the WordPress installation.
+
+If setup, saving or applying settings fails, the command reports the error and
+keeps generated files and any created database. Before retrying, resolve the error
+and move or remove the generated folder: existing destinations are never overwritten.
 
 ## PHP & Node.js
 
