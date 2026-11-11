@@ -26,6 +26,7 @@ func TestPassThrough(t *testing.T) {
 		{[]string{"flock", "--version"}, true},
 		{[]string{"flock"}, false},
 		{[]string{"flock", "link"}, false},
+		{[]string{"flock", "app", "create", "demo"}, false},
 		{[]string{"flock", "status", "--json"}, false},
 		{[]string{"flock", "--help"}, false},
 		{[]string{"flock", "__complete", "li"}, false},
