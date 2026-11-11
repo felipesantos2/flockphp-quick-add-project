@@ -320,6 +320,8 @@ func createDatabase(ctx context.Context, s *state, svc api.Service, name string)
 	return catalog.CreateDatabase(ctx, s.root, svc.ID, svc.Version, svc.Port, name)
 }
 
+var appDatabaseServices = []string{"mysql", "mariadb"}
+
 func runningDatabaseService(ctx context.Context, s *state, id string) (api.Service, error) {
 	services, err := s.client().Services(ctx)
 	if err != nil {
@@ -333,6 +335,16 @@ func runningDatabaseService(ctx context.Context, s *state, id string) (api.Servi
 		return api.Service{}, fmt.Errorf("%s isn't running: start it in the Flock app", services[i].Name)
 	}
 	return services[i], nil
+}
+
+func firstRunningDatabaseService(services []api.Service) (api.Service, bool) {
+	for _, id := range appDatabaseServices {
+		i := slices.IndexFunc(services, func(x api.Service) bool { return x.ID == id })
+		if i >= 0 && services[i].Installed && services[i].Running {
+			return services[i], true
+		}
+	}
+	return api.Service{}, false
 }
 
 // printLines prints the versions of a catalog service like printPostgresVersions does

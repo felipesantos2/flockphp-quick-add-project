@@ -2,7 +2,9 @@ package cli
 
 import (
 	"context"
+	"crypto/rand"
 	_ "embed"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/http"
@@ -39,7 +41,7 @@ func newAppCommand() *cobra.Command {
 
 func newAppCreateCommand() *cobra.Command {
 	var appType, dbService, phpVersion string
-	var secure bool
+	var withDB, secure bool
 
 	cmd := &cobra.Command{
 		Use:   "create <name>",
@@ -68,7 +70,7 @@ func newAppCreateCommand() *cobra.Command {
 				return err
 			}
 			key := strings.ToLower(strings.TrimSpace(appType))
-			spec, ok := templates[key]
+			tmpl, ok := templates[key]
 			if !ok {
 				return fmt.Errorf("unsupported app type %q: available types are %s", appType, strings.Join(sortedTemplateNames(templates), ", "))
 			}
@@ -88,26 +90,31 @@ func newAppCreateCommand() *cobra.Command {
 			ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt)
 			defer stop()
 
-			var dbSvc api.Service
-			if dbService != "" {
-				dbID, err := normalizeDatabaseService(dbService)
-				if err != nil {
-					return err
-				}
-				dbSvc, err = runningDatabaseService(ctx, s, dbID)
-				if err != nil {
-					return err
-				}
-			}
-
-			if err := createProjectDir(ctx, nil, path, spec); err != nil {
+			dbSvc, hasDB, dbRequired, err := resolveAppDatabase(ctx, s, withDB || tmpl.requiresDB, dbService)
+			if err != nil {
 				return err
 			}
-			if dbService != "" {
+
+			if err := createProjectDir(ctx, nil, path, tmpl.target); err != nil {
+				return err
+			}
+			if hasDB {
 				if err := createDatabase(ctx, s, dbSvc, name); err != nil {
-					return fmt.Errorf("project created at %s, but creating database %s failed: %w", path, name, err)
+					if dbRequired {
+						return fmt.Errorf("project created at %s, but creating database %s failed: %w", path, name, err)
+					}
+					cmd.PrintErrf("warning: could not create database %s in %s: %v\n", name, dbSvc.Name, err)
+				} else {
+					cmd.Printf("database %s ready in %s\n", name, dbSvc.Name)
+					if configured, err := configureWPConfig(path, name, dbSvc.Port); err != nil {
+						if dbRequired {
+							return fmt.Errorf("project created at %s, but configuring wp-config.php failed: %w", path, err)
+						}
+						cmd.PrintErrf("warning: could not configure wp-config.php: %v\n", err)
+					} else if configured {
+						cmd.Println("configured wp-config.php")
+					}
 				}
-				cmd.Printf("database %s ready in %s\n", name, dbSvc.Name)
 			}
 			if err := s.commit(ctx, cmd.ErrOrStderr()); err != nil {
 				return fmt.Errorf("project created at %s, but applying site settings failed: %w", path, err)
@@ -126,14 +133,51 @@ func newAppCreateCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&appType, "type", "php", "application template (e.g. blank, php, wordpress, or a key from apps.conf)")
-	cmd.Flags().StringVar(&dbService, "db", "", "create a database in a running service (mysql, mariadb, or postgres)")
+	cmd.Flags().BoolVar(&withDB, "db", false, "require a running MySQL or MariaDB service and create a database for the app")
+	cmd.Flags().StringVar(&dbService, "db-service", "", "database service to use (mysql or mariadb; implies --db)")
 	cmd.Flags().StringVar(&phpVersion, "php", "", "PHP version for this site (default: the global default)")
 	cmd.Flags().BoolVar(&secure, "secure", false, "serve over HTTPS")
 	return cmd
 }
 
-func loadAppTemplates(root string) (map[string]string, error) {
-	templates := make(map[string]string)
+func resolveAppDatabase(ctx context.Context, s *state, withDB bool, dbService string) (svc api.Service, hasDB, required bool, err error) {
+	if dbService != "" {
+		dbID := strings.ToLower(strings.TrimSpace(dbService))
+		if !slices.Contains(appDatabaseServices, dbID) {
+			return api.Service{}, false, true, fmt.Errorf("unsupported database service %q: use mysql or mariadb", dbService)
+		}
+		svc, err = runningDatabaseService(ctx, s, dbID)
+		if err != nil {
+			return api.Service{}, false, true, err
+		}
+		return svc, true, true, nil
+	}
+
+	services, err := s.client().Services(ctx)
+	if err != nil {
+		if !withDB {
+			return api.Service{}, false, false, nil
+		}
+		return api.Service{}, false, true, err
+	}
+
+	svc, ok := firstRunningDatabaseService(services)
+	if ok {
+		return svc, true, withDB, nil
+	}
+	if withDB {
+		return api.Service{}, false, true, errors.New("no running database service found: install or start mysql or mariadb")
+	}
+	return api.Service{}, false, false, nil
+}
+
+type appTemplate struct {
+	target     string
+	requiresDB bool
+}
+
+func loadAppTemplates(root string) (map[string]appTemplate, error) {
+	templates := make(map[string]appTemplate)
 	if err := parseAppTemplates(defaultAppsConf, templates); err != nil {
 		return nil, fmt.Errorf("built-in apps.conf: %w", err)
 	}
@@ -154,7 +198,7 @@ func loadAppTemplates(root string) (map[string]string, error) {
 	return templates, nil
 }
 
-func parseAppTemplates(src string, dst map[string]string) error {
+func parseAppTemplates(src string, dst map[string]appTemplate) error {
 	for i, raw := range strings.Split(src, "\n") {
 		line := strings.TrimSpace(raw)
 		if line == "" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, ";") || strings.HasPrefix(line, "---") {
@@ -168,7 +212,19 @@ func parseAppTemplates(src string, dst map[string]string) error {
 		if !validTemplateKey(key) {
 			return fmt.Errorf("line %d: invalid template key %q", i+1, strings.TrimSpace(k))
 		}
-		dst[key] = strings.TrimSpace(v)
+		target, opts, hasOpts := strings.Cut(strings.TrimSpace(v), "|")
+		tmpl := appTemplate{target: strings.TrimSpace(target)}
+		if hasOpts {
+			for _, opt := range strings.FieldsFunc(opts, func(r rune) bool { return r == ',' || r == ' ' || r == '\t' }) {
+				switch strings.ToLower(opt) {
+				case "db":
+					tmpl.requiresDB = true
+				default:
+					return fmt.Errorf("line %d: unknown template option %q", i+1, opt)
+				}
+			}
+		}
+		dst[key] = tmpl
 	}
 	return nil
 }
@@ -186,7 +242,7 @@ func validTemplateKey(key string) bool {
 	return true
 }
 
-func sortedTemplateNames(templates map[string]string) []string {
+func sortedTemplateNames(templates map[string]appTemplate) []string {
 	names := make([]string, 0, len(templates))
 	for k := range templates {
 		names = append(names, k)
@@ -283,4 +339,51 @@ func archiveSuffix(name string) string {
 		}
 	}
 	return ""
+}
+
+// configureWPConfig writes wp-config.php from wp-config-sample.php when present, filling the local
+// MySQL/MariaDB database, credentials and random keys so the web installer only asks for site details.
+func configureWPConfig(dir, database string, port int) (bool, error) {
+	dest := filepath.Join(dir, "wp-config.php")
+	if _, err := os.Stat(dest); err == nil {
+		return false, nil
+	} else if !errors.Is(err, os.ErrNotExist) {
+		return false, err
+	}
+
+	data, err := os.ReadFile(filepath.Join(dir, "wp-config-sample.php"))
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+
+	content := string(data)
+	replacements := [][2]string{
+		{"'database_name_here'", "'" + database + "'"},
+		{"'username_here'", "'root'"},
+		{"'password_here'", "''"},
+		{"'localhost'", fmt.Sprintf("'127.0.0.1:%d'", port)},
+	}
+	for _, r := range replacements {
+		if strings.Count(content, r[0]) != 1 {
+			return false, nil
+		}
+		content = strings.Replace(content, r[0], r[1], 1)
+	}
+
+	const saltPlaceholder = "put your unique phrase here"
+	for strings.Contains(content, saltPlaceholder) {
+		var key [32]byte
+		if _, err := rand.Read(key[:]); err != nil {
+			return false, err
+		}
+		content = strings.Replace(content, saltPlaceholder, hex.EncodeToString(key[:]), 1)
+	}
+
+	if err := os.WriteFile(dest, []byte(content), 0o600); err != nil {
+		return false, err
+	}
+	return true, nil
 }

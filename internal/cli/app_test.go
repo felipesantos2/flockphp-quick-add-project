@@ -209,17 +209,33 @@ func TestAppCreateFromAppsConfURLAndLocalArchive(t *testing.T) {
 }
 
 func TestParseAppTemplates(t *testing.T) {
-	dst := map[string]string{}
-	err := parseAppTemplates("\n# comment\n; semi\n---\nBlank=\nPHP = index.php \n", dst)
+	dst := map[string]appTemplate{}
+	err := parseAppTemplates("\n# comment\n; semi\n---\nBlank=\nPHP = index.php \nWordPress = https://wordpress.org/latest.tar.gz | db \n", dst)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if dst["blank"] != "" || dst["php"] != "index.php" {
+	if dst["blank"] != (appTemplate{}) || dst["php"] != (appTemplate{target: "index.php"}) ||
+		dst["wordpress"] != (appTemplate{target: "https://wordpress.org/latest.tar.gz", requiresDB: true}) {
 		t.Fatalf("unexpected parsed templates: %+v", dst)
 	}
-	for _, bad := range []string{"no-equals", "=value", "bad key=value"} {
-		if err := parseAppTemplates(bad, map[string]string{}); err == nil {
+	for _, bad := range []string{"no-equals", "=value", "bad key=value", "wp=https://example.com/a.zip | unknown"} {
+		if err := parseAppTemplates(bad, map[string]appTemplate{}); err == nil {
 			t.Fatalf("expected error for %q", bad)
+		}
+	}
+}
+
+func TestAppCreateTemplateRequiresDB(t *testing.T) {
+	root, dir := t.TempDir(), t.TempDir()
+	t.Setenv("FLOCK_HOME", root)
+	t.Chdir(dir)
+	if _, err := runAppCommand("My Blog", "--type", "wordpress"); err == nil {
+		t.Fatal("expected built-in wordpress template to require a running database")
+	}
+	for _, path := range []string{root, dir} {
+		entries, err := os.ReadDir(path)
+		if err != nil || len(entries) != 0 {
+			t.Fatalf("prerequisite failure modified %s: %v, %v", path, entries, err)
 		}
 	}
 }
@@ -228,7 +244,7 @@ func TestAppCreateRejectsInvalidInput(t *testing.T) {
 	for _, args := range [][]string{
 		{}, {"one", "two"}, {""}, {"."}, {".."}, {"../escape"}, {"nested/app"},
 		{`nested\app`}, {"C:app"}, {" app"}, {"app."}, {"---"}, {strings.Repeat("a", 64)},
-		{"demo", "--type", "laravel"}, {"demo", "--db", "redis"},
+		{"demo", "--type", "laravel"}, {"demo", "--db-service", "redis"}, {"demo", "--db-service", "postgres"},
 	} {
 		t.Run(strings.Join(args, "_"), func(t *testing.T) {
 			root, dir := t.TempDir(), t.TempDir()
@@ -343,8 +359,75 @@ func TestAppCreateWithDatabase(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("uses a shell script as the MySQL client")
 	}
-	for _, kind := range []string{"success", "stopped", "db-error"} {
-		t.Run(kind, func(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		args     []string
+		noDaemon bool
+		services []api.Service
+		dbFail   bool
+	}{
+		{
+			name:     "auto-when-running",
+			args:     []string{"My Blog"},
+			services: []api.Service{{ID: "mysql", Name: "MySQL", Installed: true, Running: true, Version: "8.4.11", Port: 3307}},
+		},
+		{
+			name: "auto-falls-back-to-mariadb",
+			args: []string{"My Blog"},
+			services: []api.Service{
+				{ID: "mysql", Name: "MySQL", Installed: true, Running: false, Version: "8.4.11", Port: 3306},
+				{ID: "mariadb", Name: "MariaDB", Installed: true, Running: true, Version: "11.4.2", Port: 3308},
+			},
+		},
+		{
+			name:     "auto-no-db-running",
+			args:     []string{"My Blog"},
+			services: []api.Service{{ID: "mysql", Name: "MySQL", Installed: true, Running: false, Version: "8.4.11", Port: 3306}},
+		},
+		{
+			name:     "auto-db-error-warns",
+			args:     []string{"My Blog"},
+			services: []api.Service{{ID: "mysql", Name: "MySQL", Installed: true, Running: true, Version: "8.4.11", Port: 3307}},
+			dbFail:   true,
+		},
+		{
+			name:     "explicit-db-flag",
+			args:     []string{"My Blog", "--db"},
+			services: []api.Service{{ID: "mysql", Name: "MySQL", Installed: true, Running: true, Version: "8.4.11", Port: 3307}},
+		},
+		{
+			name:     "explicit-db-none-running",
+			args:     []string{"My Blog", "--db"},
+			services: []api.Service{{ID: "mysql", Name: "MySQL", Installed: true, Running: false, Version: "8.4.11", Port: 3306}},
+		},
+		{
+			name:     "template-requires-db-none-running",
+			args:     []string{"My Blog", "--type", "wordpress"},
+			services: []api.Service{{ID: "mysql", Name: "MySQL", Installed: true, Running: false, Version: "8.4.11", Port: 3306}},
+		},
+		{
+			name:     "explicit-db-ignores-postgres",
+			args:     []string{"My Blog", "--db"},
+			services: []api.Service{{ID: "postgres", Name: "PostgreSQL", Installed: true, Running: true, Version: "17", Port: 5432}},
+		},
+		{
+			name:     "explicit-db-no-daemon",
+			args:     []string{"My Blog", "--db"},
+			noDaemon: true,
+		},
+		{
+			name:     "explicit-db-service-stopped",
+			args:     []string{"My Blog", "--db-service", "mysql"},
+			services: []api.Service{{ID: "mysql", Name: "MySQL", Installed: true, Running: false, Version: "8.4.11", Port: 3306}},
+		},
+		{
+			name:     "explicit-db-error",
+			args:     []string{"My Blog", "--db"},
+			services: []api.Service{{ID: "mysql", Name: "MySQL", Installed: true, Running: true, Version: "8.4.11", Port: 3307}},
+			dbFail:   true,
+		},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
 			root, err := os.MkdirTemp("", "flock-app-")
 			if err != nil {
 				t.Fatal(err)
@@ -358,60 +441,90 @@ func TestAppCreateWithDatabase(t *testing.T) {
 			if err := cfg.Save(root); err != nil {
 				t.Fatal(err)
 			}
-			service := api.Service{ID: "mysql", Name: "MySQL", Installed: true, Running: kind != "stopped", Version: "8.4.11", Port: 3307}
+
 			var reloads atomic.Int32
-			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				switch r.Method + " " + r.URL.Path {
-				case "GET /v1/services":
-					_ = json.NewEncoder(w).Encode([]api.Service{service})
-				case "POST /v1/reload":
-					reloads.Add(1)
-					_ = json.NewEncoder(w).Encode(api.Status{})
-				default:
-					http.NotFound(w, r)
+			if !tc.noDaemon {
+				handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					switch r.Method + " " + r.URL.Path {
+					case "GET /v1/services":
+						_ = json.NewEncoder(w).Encode(tc.services)
+					case "POST /v1/reload":
+						reloads.Add(1)
+						_ = json.NewEncoder(w).Encode(api.Status{})
+					default:
+						http.NotFound(w, r)
+					}
+				})
+				server := httptest.NewUnstartedServer(handler)
+				server.Listener.Close()
+				listener, err := net.Listen("unix", paths.Socket(root))
+				if err != nil {
+					t.Fatal(err)
 				}
-			})
-			server := httptest.NewUnstartedServer(handler)
-			server.Listener.Close()
-			listener, err := net.Listen("unix", paths.Socket(root))
-			if err != nil {
-				t.Fatal(err)
-			}
-			server.Listener = listener
-			server.Start()
-			t.Cleanup(server.Close)
-
-			argsFile := filepath.Join(root, "mysql.args")
-			t.Setenv("FLOCK_TEST_MYSQL_ARGS", argsFile)
-			client := filepath.Join(catalog.Dir(root, "mysql", service.Version), "bin", "mysql")
-			if err := os.MkdirAll(filepath.Dir(client), 0o755); err != nil {
-				t.Fatal(err)
-			}
-			script := "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$FLOCK_TEST_MYSQL_ARGS\"\n"
-			if kind == "db-error" {
-				script += "echo 'database denied' >&2\nexit 1\n"
-			}
-			if err := os.WriteFile(client, []byte(script), 0o755); err != nil {
-				t.Fatal(err)
+				server.Listener = listener
+				server.Start()
+				t.Cleanup(server.Close)
 			}
 
-			out, err := runAppCommand("My Blog", "--db", "mysql")
-			switch kind {
-			case "stopped":
-				if err == nil || !strings.Contains(err.Error(), "isn't running") {
-					t.Fatalf("expected stopped service error, got %v", err)
+			argsFile := filepath.Join(root, "db.args")
+			t.Setenv("FLOCK_TEST_DB_ARGS", argsFile)
+			for _, svc := range tc.services {
+				binName := svc.ID
+				client := filepath.Join(catalog.Dir(root, svc.ID, svc.Version), "bin", binName)
+				if err := os.MkdirAll(filepath.Dir(client), 0o755); err != nil {
+					t.Fatal(err)
+				}
+				script := "#!/bin/sh\nprintf '%s\\n' \"$@\" > \"$FLOCK_TEST_DB_ARGS\"\n"
+				if tc.dbFail {
+					script += "echo 'database denied' >&2\nexit 1\n"
+				}
+				if err := os.WriteFile(client, []byte(script), 0o755); err != nil {
+					t.Fatal(err)
+				}
+			}
+
+			out, err := runAppCommand(tc.args...)
+			switch tc.name {
+			case "explicit-db-none-running", "explicit-db-no-daemon", "explicit-db-service-stopped", "template-requires-db-none-running", "explicit-db-ignores-postgres":
+				if err == nil {
+					t.Fatalf("expected error, got nil")
 				}
 				if _, statErr := os.Stat(filepath.Join(dir, "My Blog")); !os.IsNotExist(statErr) {
-					t.Fatalf("stopped DB should not create project directory: %v", statErr)
+					t.Fatalf("prerequisite failure should not create project directory: %v", statErr)
 				}
-			case "db-error":
+			case "explicit-db-error":
 				if err == nil || !strings.Contains(err.Error(), "database denied") {
 					t.Fatalf("expected DB creation error, got %v", err)
 				}
 				if reloads.Load() != 0 {
 					t.Fatalf("expected no daemon reload on DB error, got %d", reloads.Load())
 				}
-			case "success":
+			case "auto-db-error-warns":
+				if err != nil {
+					t.Fatalf("expected warning instead of error, got %v", err)
+				}
+				if reloads.Load() != 1 || !strings.Contains(out, "warning: could not create database my-blog") {
+					t.Fatalf("unexpected output/reloads (%d): %s", reloads.Load(), out)
+				}
+			case "auto-no-db-running":
+				if err != nil {
+					t.Fatal(err)
+				}
+				if reloads.Load() != 1 || strings.Contains(out, "database my-blog ready") {
+					t.Fatalf("unexpected output/reloads (%d): %s", reloads.Load(), out)
+				}
+			case "auto-falls-back-to-mariadb":
+				if err != nil {
+					t.Fatal(err)
+				}
+				argsData, err := os.ReadFile(argsFile)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if !strings.Contains(string(argsData), "-P3308") || !strings.Contains(out, "database my-blog ready in MariaDB") {
+					t.Fatalf("unexpected mariadb output/args (%s): %s", argsData, out)
+				}
+			default:
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -428,4 +541,87 @@ func TestAppCreateWithDatabase(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestConfigureWPConfig(t *testing.T) {
+	sample := strings.Join([]string{
+		"<?php",
+		"define( 'DB_NAME', 'database_name_here' );",
+		"define( 'DB_USER', 'username_here' );",
+		"define( 'DB_PASSWORD', 'password_here' );",
+		"define( 'DB_HOST', 'localhost' );",
+		"define( 'AUTH_KEY', 'put your unique phrase here' );",
+		"define( 'SECURE_AUTH_KEY', 'put your unique phrase here' );",
+		"define( 'LOGGED_IN_KEY', 'put your unique phrase here' );",
+		"define( 'NONCE_KEY', 'put your unique phrase here' );",
+		"define( 'AUTH_SALT', 'put your unique phrase here' );",
+		"define( 'SECURE_AUTH_SALT', 'put your unique phrase here' );",
+		"define( 'LOGGED_IN_SALT', 'put your unique phrase here' );",
+		"define( 'NONCE_SALT', 'put your unique phrase here' );",
+	}, "\n")
+
+	t.Run("writes-wp-config", func(t *testing.T) {
+		dir := t.TempDir()
+		if err := os.WriteFile(filepath.Join(dir, "wp-config-sample.php"), []byte(sample), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		ok, err := configureWPConfig(dir, "my-blog", 3307)
+		if err != nil || !ok {
+			t.Fatalf("expected wp-config.php to be configured, got ok=%v err=%v", ok, err)
+		}
+		data, err := os.ReadFile(filepath.Join(dir, "wp-config.php"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		got := string(data)
+		for _, want := range []string{
+			"define( 'DB_NAME', 'my-blog' );",
+			"define( 'DB_USER', 'root' );",
+			"define( 'DB_PASSWORD', '' );",
+			"define( 'DB_HOST', '127.0.0.1:3307' );",
+		} {
+			if !strings.Contains(got, want) {
+				t.Fatalf("missing %q in wp-config.php:\n%s", want, got)
+			}
+		}
+		if strings.Contains(got, "put your unique phrase here") {
+			t.Fatalf("unreplaced salt placeholder in wp-config.php")
+		}
+	})
+
+	t.Run("no-sample-skips", func(t *testing.T) {
+		ok, err := configureWPConfig(t.TempDir(), "my-blog", 3306)
+		if err != nil || ok {
+			t.Fatalf("expected (false, nil), got (%v, %v)", ok, err)
+		}
+	})
+
+	t.Run("preserves-existing-wp-config", func(t *testing.T) {
+		dir := t.TempDir()
+		if err := os.WriteFile(filepath.Join(dir, "wp-config-sample.php"), []byte(sample), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(dir, "wp-config.php"), []byte("keep"), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		ok, err := configureWPConfig(dir, "my-blog", 3306)
+		if err != nil || ok {
+			t.Fatalf("expected (false, nil), got (%v, %v)", ok, err)
+		}
+		data, _ := os.ReadFile(filepath.Join(dir, "wp-config.php"))
+		if string(data) != "keep" {
+			t.Fatalf("existing wp-config.php was overwritten: %q", data)
+		}
+	})
+
+	t.Run("custom-sample-skips-gracefully", func(t *testing.T) {
+		dir := t.TempDir()
+		if err := os.WriteFile(filepath.Join(dir, "wp-config-sample.php"), []byte("<?php // custom"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		ok, err := configureWPConfig(dir, "my-blog", 3306)
+		if err != nil || ok {
+			t.Fatalf("expected (false, nil), got (%v, %v)", ok, err)
+		}
+	})
 }
