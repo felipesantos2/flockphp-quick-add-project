@@ -54,7 +54,7 @@ flock app create my-app
 flock app create my-blog --type wordpress
 ```
 
-Creates a project in `<name>` from a template (`blank`, `php`, or `wordpress`; default `php`) and links it as `<name>.test`. Add or override templates in `apps.conf` inside Flock's data directory (`%AppData%\Flock` on Windows, `~/.local/share/flock` on Linux, `~/Library/Application Support/Flock` on macOS). When MySQL or MariaDB is running, Flock creates a matching database automatically (and fills `wp-config.php` from `wp-config-sample.php`); templates marked with `| db` (such as `wordpress`) and `--db` require MySQL or MariaDB to be running, and `--db-service` selects a specific one. Existing folders, sites, and proxies are never overwritten.
+Creates a project in `<name>` from a template (`blank`, `php`, or `wordpress`; default `php`) and links it as `<name>.test`. Add or override templates in `apps.conf` inside Flock's data directory (`%AppData%\Flock` on Windows, `~/.local/share/flock` on Linux, `~/Library/Application Support/Flock` on macOS). Templates marked with `| db` (such as `wordpress`) and `--db` require running MySQL or MariaDB, create a matching database (and fill `wp-config.php` from `wp-config-sample.php`), and `--db-service` selects a specific one. Existing folders, sites, and proxies are never overwritten.
 
 ## PHP & Node.js
 

@@ -90,7 +90,7 @@ func newAppCreateCommand() *cobra.Command {
 			ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt)
 			defer stop()
 
-			dbSvc, hasDB, dbRequired, err := resolveAppDatabase(ctx, s, withDB || tmpl.requiresDB, dbService)
+			dbSvc, err := resolveAppDatabase(ctx, s, withDB || tmpl.requiresDB, dbService)
 			if err != nil {
 				return err
 			}
@@ -98,23 +98,8 @@ func newAppCreateCommand() *cobra.Command {
 			if err := createProjectDir(ctx, nil, path, tmpl.target); err != nil {
 				return err
 			}
-			if hasDB {
-				if err := createDatabase(ctx, s, dbSvc, name); err != nil {
-					if dbRequired {
-						return fmt.Errorf("project created at %s, but creating database %s failed: %w", path, name, err)
-					}
-					cmd.PrintErrf("warning: could not create database %s in %s: %v\n", name, dbSvc.Name, err)
-				} else {
-					cmd.Printf("database %s ready in %s\n", name, dbSvc.Name)
-					if configured, err := configureWPConfig(path, name, dbSvc.Port); err != nil {
-						if dbRequired {
-							return fmt.Errorf("project created at %s, but configuring wp-config.php failed: %w", path, err)
-						}
-						cmd.PrintErrf("warning: could not configure wp-config.php: %v\n", err)
-					} else if configured {
-						cmd.Println("configured wp-config.php")
-					}
-				}
+			if err := setupAppDatabase(ctx, cmd, s, dbSvc, path, name); err != nil {
+				return err
 			}
 			if err := s.commit(ctx, cmd.ErrOrStderr()); err != nil {
 				return fmt.Errorf("project created at %s, but applying site settings failed: %w", path, err)
@@ -140,35 +125,45 @@ func newAppCreateCommand() *cobra.Command {
 	return cmd
 }
 
-func resolveAppDatabase(ctx context.Context, s *state, withDB bool, dbService string) (svc api.Service, hasDB, required bool, err error) {
+func resolveAppDatabase(ctx context.Context, s *state, wantsDB bool, dbService string) (api.Service, error) {
 	if dbService != "" {
 		dbID := strings.ToLower(strings.TrimSpace(dbService))
 		if !slices.Contains(appDatabaseServices, dbID) {
-			return api.Service{}, false, true, fmt.Errorf("unsupported database service %q: use mysql or mariadb", dbService)
+			return api.Service{}, fmt.Errorf("unsupported database service %q: use mysql or mariadb", dbService)
 		}
-		svc, err = runningDatabaseService(ctx, s, dbID)
-		if err != nil {
-			return api.Service{}, false, true, err
-		}
-		return svc, true, true, nil
+		return runningDatabaseService(ctx, s, dbID)
+	}
+	if !wantsDB {
+		return api.Service{}, nil
 	}
 
 	services, err := s.client().Services(ctx)
 	if err != nil {
-		if !withDB {
-			return api.Service{}, false, false, nil
-		}
-		return api.Service{}, false, true, err
+		return api.Service{}, err
 	}
-
 	svc, ok := firstRunningDatabaseService(services)
-	if ok {
-		return svc, true, withDB, nil
+	if !ok {
+		return api.Service{}, errors.New("no running database service found: install or start mysql or mariadb")
 	}
-	if withDB {
-		return api.Service{}, false, true, errors.New("no running database service found: install or start mysql or mariadb")
+	return svc, nil
+}
+
+func setupAppDatabase(ctx context.Context, cmd *cobra.Command, s *state, dbSvc api.Service, path, name string) error {
+	if dbSvc.ID == "" {
+		return nil
 	}
-	return api.Service{}, false, false, nil
+	if err := createDatabase(ctx, s, dbSvc, name); err != nil {
+		return fmt.Errorf("project created at %s, but creating database %s failed: %w", path, name, err)
+	}
+	cmd.Printf("database %s ready in %s\n", name, dbSvc.Name)
+	configured, err := configureWPConfig(path, name, dbSvc.Port)
+	if err != nil {
+		return fmt.Errorf("project created at %s, but configuring wp-config.php failed: %w", path, err)
+	}
+	if configured {
+		cmd.Println("configured wp-config.php")
+	}
+	return nil
 }
 
 type appTemplate struct {

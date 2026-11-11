@@ -363,32 +363,34 @@ func TestAppCreateWithDatabase(t *testing.T) {
 		name     string
 		args     []string
 		noDaemon bool
+		appsConf string
 		services []api.Service
 		dbFail   bool
 	}{
 		{
-			name:     "auto-when-running",
+			name:     "php-skips-db-even-when-running",
 			args:     []string{"My Blog"},
 			services: []api.Service{{ID: "mysql", Name: "MySQL", Installed: true, Running: true, Version: "8.4.11", Port: 3307}},
 		},
 		{
-			name: "auto-falls-back-to-mariadb",
-			args: []string{"My Blog"},
+			name:     "blank-skips-db-even-when-running",
+			args:     []string{"My Blog", "--type", "blank"},
+			services: []api.Service{{ID: "mysql", Name: "MySQL", Installed: true, Running: true, Version: "8.4.11", Port: 3307}},
+		},
+		{
+			name:     "template-requires-db-creates-mysql",
+			args:     []string{"My Blog", "--type", "blog"},
+			appsConf: "blog=index.php | db\n",
+			services: []api.Service{{ID: "mysql", Name: "MySQL", Installed: true, Running: true, Version: "8.4.11", Port: 3307}},
+		},
+		{
+			name:     "template-requires-db-falls-back-to-mariadb",
+			args:     []string{"My Blog", "--type", "blog"},
+			appsConf: "blog=index.php | db\n",
 			services: []api.Service{
 				{ID: "mysql", Name: "MySQL", Installed: true, Running: false, Version: "8.4.11", Port: 3306},
 				{ID: "mariadb", Name: "MariaDB", Installed: true, Running: true, Version: "11.4.2", Port: 3308},
 			},
-		},
-		{
-			name:     "auto-no-db-running",
-			args:     []string{"My Blog"},
-			services: []api.Service{{ID: "mysql", Name: "MySQL", Installed: true, Running: false, Version: "8.4.11", Port: 3306}},
-		},
-		{
-			name:     "auto-db-error-warns",
-			args:     []string{"My Blog"},
-			services: []api.Service{{ID: "mysql", Name: "MySQL", Installed: true, Running: true, Version: "8.4.11", Port: 3307}},
-			dbFail:   true,
 		},
 		{
 			name:     "explicit-db-flag",
@@ -440,6 +442,11 @@ func TestAppCreateWithDatabase(t *testing.T) {
 			cfg := config.Default()
 			if err := cfg.Save(root); err != nil {
 				t.Fatal(err)
+			}
+			if tc.appsConf != "" {
+				if err := os.WriteFile(filepath.Join(root, "apps.conf"), []byte(tc.appsConf), 0o644); err != nil {
+					t.Fatal(err)
+				}
 			}
 
 			var reloads atomic.Int32
@@ -499,21 +506,17 @@ func TestAppCreateWithDatabase(t *testing.T) {
 				if reloads.Load() != 0 {
 					t.Fatalf("expected no daemon reload on DB error, got %d", reloads.Load())
 				}
-			case "auto-db-error-warns":
-				if err != nil {
-					t.Fatalf("expected warning instead of error, got %v", err)
-				}
-				if reloads.Load() != 1 || !strings.Contains(out, "warning: could not create database my-blog") {
-					t.Fatalf("unexpected output/reloads (%d): %s", reloads.Load(), out)
-				}
-			case "auto-no-db-running":
+			case "php-skips-db-even-when-running", "blank-skips-db-even-when-running":
 				if err != nil {
 					t.Fatal(err)
 				}
 				if reloads.Load() != 1 || strings.Contains(out, "database my-blog ready") {
-					t.Fatalf("unexpected output/reloads (%d): %s", reloads.Load(), out)
+					t.Fatalf("expected no database creation for php/blank (%d): %s", reloads.Load(), out)
 				}
-			case "auto-falls-back-to-mariadb":
+				if _, statErr := os.Stat(argsFile); !os.IsNotExist(statErr) {
+					t.Fatalf("database client should not have run: %v", statErr)
+				}
+			case "template-requires-db-falls-back-to-mariadb":
 				if err != nil {
 					t.Fatal(err)
 				}
