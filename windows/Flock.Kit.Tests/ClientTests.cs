@@ -588,4 +588,32 @@ public class ClientTests : IDisposable
         Assert.Equal(TimeSpan.FromSeconds(30), handler.Timeouts[1]);
         Assert.Equal(TimeSpan.FromMinutes(2), handler.Timeouts[^1]);
     }
+
+    [Fact]
+    public async Task ListsAppTemplatesAndCreatesApps()
+    {
+        var handler = new Handler(r => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(r.Method == HttpMethod.Get
+                ? """{"templates":[{"name":"blank","requires_db":false},{"name":"wordpress","requires_db":true}]}"""
+                : """{"version":"dev","pid":1,"started_at":"2026-10-13T14:10:01Z","sites":[]}"""),
+        });
+        using var client = new FlockClient(new HttpClient(handler) { Timeout = Timeout.InfiniteTimeSpan }, WriteApiJson("http://127.0.0.1:1", "t"), clock);
+
+        var templates = await client.AppTemplatesAsync();
+        Assert.Equal(2, templates.Count);
+        Assert.True(templates[1].RequiresDb);
+
+        await client.CreateAppAsync("my-blog", @"C:\Sites", "wordpress", db: true, dbService: "mysql", secured: true);
+
+        Assert.Equal(["GET /v1/apps/templates", "POST /v1/apps"], handler.Requests.Select(r => $"{r.Method} {r.RequestUri!.PathAndQuery}"));
+        Assert.Equal(TimeSpan.FromMinutes(3), handler.Timeouts[1]);
+        using var payload = JsonDocument.Parse(handler.Bodies[1]);
+        Assert.Equal("my-blog", payload.RootElement.GetProperty("name").GetString());
+        Assert.Equal(@"C:\Sites", payload.RootElement.GetProperty("parent_dir").GetString());
+        Assert.Equal("wordpress", payload.RootElement.GetProperty("type").GetString());
+        Assert.True(payload.RootElement.GetProperty("db").GetBoolean());
+        Assert.Equal("mysql", payload.RootElement.GetProperty("db_service").GetString());
+        Assert.True(payload.RootElement.GetProperty("secured").GetBoolean());
+    }
 }

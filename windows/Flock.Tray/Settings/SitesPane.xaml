@@ -10,16 +10,18 @@
     <Grid>
         <Grid ColumnSpacing="16" Visibility="{Binding HasSites, Converter={StaticResource BooleanVisibilityConverter}}">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="280" /><ColumnDefinition Width="*" MinWidth="340" />
+                <ColumnDefinition Width="328" /><ColumnDefinition Width="*" MinWidth="320" />
             </Grid.ColumnDefinitions>
             <Grid Grid.Column="0" RowSpacing="8">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" /><RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <StackPanel Orientation="Horizontal" Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <Button x:Name="NewAppButton" Content="New App…" Click="NewAppClicked" />
                     <Button Content="Add Site…" Click="AddSiteClicked" />
                     <Button Content="Add Proxy…" Click="AddProxyClicked"
                             ToolTipService.ToolTip="Serve a server of its own, e.g. a Node.js dev server on a port, at a .test domain" />
+                    <ProgressRing x:Name="NewAppProgress" Width="16" Height="16" Visibility="Collapsed" VerticalAlignment="Center" />
                 </StackPanel>
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,14,8">
                     <StackPanel>
@@ -105,7 +107,9 @@
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextAlignment="Center" HorizontalAlignment="Center" />
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" Margin="0,8,0,0">
                 <Button Content="Add Site…" Click="AddSiteClicked" Style="{StaticResource AccentButtonStyle}" />
+                <Button x:Name="EmptyNewAppButton" Content="New App…" Click="NewAppClicked" />
                 <Button Content="Add Proxy…" Click="AddProxyClicked" />
+                <ProgressRing x:Name="EmptyNewAppProgress" Width="16" Height="16" Visibility="Collapsed" VerticalAlignment="Center" />
             </StackPanel>
         </StackPanel>
     </Grid>

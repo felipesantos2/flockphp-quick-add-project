@@ -38,6 +38,8 @@ public sealed class FlockClient : IDisposable
     private static readonly TimeSpan McpChangeTimeout = TimeSpan.FromSeconds(30);
     // Adding Flock's Boost guideline runs `php artisan boost:update`, which boots the app.
     private static readonly TimeSpan BoostTimeout = TimeSpan.FromMinutes(2);
+    // Creating an app may download and extract an archive like WordPress (CLI allows 2 min).
+    private static readonly TimeSpan AppCreateTimeout = TimeSpan.FromMinutes(3);
 
     private readonly HttpClient http;
     private readonly TimeProvider timeProvider;
@@ -77,6 +79,14 @@ public sealed class FlockClient : IDisposable
     /// <summary>Links a directory as a site (the name defaults to the directory name on the daemon side).</summary>
     public Task<Status> LinkSiteAsync(string path, string? name = null, string? php = null, bool secured = false, CancellationToken cancellationToken = default) =>
         Send<Status>(HttpMethod.Post, "/v1/sites", new { path, name, php, secured }, cancellationToken: cancellationToken);
+
+    /// <summary>Lists available templates from apps.conf.</summary>
+    public async Task<List<AppTemplate>> AppTemplatesAsync(CancellationToken cancellationToken = default) =>
+        (await Get<AppTemplatesResponse>("/v1/apps/templates", cancellationToken: cancellationToken)).Templates;
+
+    /// <summary>Creates a new project directory from an apps.conf template and links it as a site.</summary>
+    public Task<Status> CreateAppAsync(string name, string parentDir, string type = "php", bool db = false, string? dbService = null, string? php = null, bool secured = false, CancellationToken cancellationToken = default) =>
+        Send<Status>(HttpMethod.Post, "/v1/apps", new { name, parent_dir = parentDir, type, db, db_service = dbService, php, secured }, timeout: AppCreateTimeout, cancellationToken: cancellationToken);
 
     /// <summary>Switching the server or worker mode reloads the web server and may start FrankenPHP, so it gets longer.</summary>
     public Task<Status> UpdateSiteAsync(string name, SiteChange change, CancellationToken cancellationToken = default) =>

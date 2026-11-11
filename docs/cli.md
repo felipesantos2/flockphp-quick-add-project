@@ -24,6 +24,7 @@ This page lists the `flock` commands. The other pages show where to find each ac
 
 | Command | Description |
 | --- | --- |
+| `flock app create <name> [--type <template>] [--db] [--db-service <service>] [--php 8.4] [--secure]` | Create a project from a template in a new subdirectory and link it as `<name>.test` |
 | `flock park [dir]` | Serve every subdirectory of `dir` as `<subdir>.test` |
 | `flock unpark [dir]` | Stop serving a parked directory (alias: `forget`) |
 | `flock link [name] [--php 8.4] [--secure]` | Serve the current directory as `<name>.test` |
@@ -45,6 +46,15 @@ This page lists the `flock` commands. The other pages show where to find each ac
 | `flock worktree remove [name] [--force]` | Run a worktree's `before_delete` hook, remove it with git and drop its own database (alias: `rm`) |
 | `flock share [name] [--allow <email>] [--debug]` | Share a site at a temporary public URL until you press <kbd>Ctrl</kbd>+<kbd>C</kbd> |
 | `flock share [name] --stop` | Stop sharing a site (e.g. one shared from the app) |
+
+### Creating an application
+
+```sh
+flock app create my-app
+flock app create my-blog --type wordpress
+```
+
+Creates a project in `<name>` from a template (`blank`, `php`, or `wordpress`; default `php`) and links it as `<name>.test`. Add or override templates in `apps.conf` inside Flock's data directory (`%AppData%\Flock` on Windows, `~/.local/share/flock` on Linux, `~/Library/Application Support/Flock` on macOS). Templates marked with `| db` (such as `wordpress`) and `--db` require running MySQL or MariaDB, create a matching database (and fill `wp-config.php` from `wp-config-sample.php`), and `--db-service` selects a specific one. Existing folders, sites, and proxies are never overwritten.
 
 ## PHP & Node.js
 

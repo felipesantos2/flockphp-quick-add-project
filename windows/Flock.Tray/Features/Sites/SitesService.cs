@@ -38,6 +38,30 @@ public sealed class SitesService : IAsyncDisposable
     public Task<OperationOutcome> LinkAsync(string path, CancellationToken token = default) =>
         MutateAsync("link:" + path, path, (_, cancellationToken) => client.LinkSiteAsync(path, cancellationToken: cancellationToken), token);
 
+    public async Task<List<AppTemplate>> AppTemplatesAsync(CancellationToken token = default)
+    {
+        try
+        {
+            var templates = await client.AppTemplatesAsync(token);
+            if (templates.Count > 0)
+            {
+                return templates;
+            }
+        }
+        catch (FlockServerException error) when (error.StatusCode == 404)
+        {
+        }
+        return
+        [
+            new AppTemplate { Name = "blank", RequiresDb = false },
+            new AppTemplate { Name = "php", RequiresDb = false },
+            new AppTemplate { Name = "wordpress", RequiresDb = true },
+        ];
+    }
+
+    public Task<OperationOutcome> CreateAppAsync(string name, string parentDir, string type, bool db, string? dbService = null, bool secured = false, CancellationToken token = default) =>
+        MutateAsync("create-app", name, (_, cancellationToken) => client.CreateAppAsync(name, parentDir, type, db, dbService, secured: secured, cancellationToken: cancellationToken), token);
+
     public Task<OperationOutcome> UnlinkAsync(string site, CancellationToken token = default) =>
         MutateAsync(Key(site), site, (_, cancellationToken) => client.UnlinkSiteAsync(site, cancellationToken), token);
 
