@@ -23,8 +23,7 @@ the other: reference it as `flock-php/binaries#123` or with a link to it.
 
 ## Development guide
 
-Flock has a shared Go CLI and daemon, plus a native app for each platform. There is
-no single PHP front controller for Flock itself.
+Flock has a shared Go CLI and daemon, plus a native app for each platform.
 
 ### Where to start
 
