@@ -24,6 +24,7 @@ This page lists the `flock` commands. The other pages show where to find each ac
 
 | Command | Description |
 | --- | --- |
+| `flock app create <name> [--type php]` | Create a PHP project in a new subdirectory and link it as `<name>.test` |
 | `flock park [dir]` | Serve every subdirectory of `dir` as `<subdir>.test` |
 | `flock unpark [dir]` | Stop serving a parked directory (alias: `forget`) |
 | `flock link [name] [--php 8.4] [--secure]` | Serve the current directory as `<name>.test` |
@@ -45,6 +46,23 @@ This page lists the `flock` commands. The other pages show where to find each ac
 | `flock worktree remove [name] [--force]` | Run a worktree's `before_delete` hook, remove it with git and drop its own database (alias: `rm`) |
 | `flock share [name] [--allow <email>] [--debug]` | Share a site at a temporary public URL until you press <kbd>Ctrl</kbd>+<kbd>C</kbd> |
 | `flock share [name] --stop` | Stop sharing a site (e.g. one shared from the app) |
+
+### Creating an application
+
+```sh
+flock app create my-app
+```
+
+Creates `my-app/index.php` in the current directory with a simple PHP greeting and
+registers the project at `http://my-app.test` (or your configured TLD), using the
+default PHP version. Folder names are normalized for the hostname, just like
+`flock link`. Existing folders, sites and proxies with the same name are not replaced.
+
+Only PHP is supported (`--type php`, the default); WordPress is not available yet.
+No database service is required. Flock must be installed with PHP available to serve
+the project. If the daemon is stopped, the site settings are saved and apply when it
+starts. If saving or applying the settings fails, the command reports the error and
+keeps the generated project.
 
 ## PHP & Node.js
 
