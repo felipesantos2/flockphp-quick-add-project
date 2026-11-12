@@ -499,18 +499,20 @@ impl Inner {
             switch.connect_active_notify(move |_| s());
         }
         {
-            let (stack, folder_entry) = (self.stack.clone(), folder.clone());
+            let (stack, folder_weak) = (self.stack.clone(), folder.downgrade());
             browse.connect_clicked(move |_| {
                 let window = stack.root().and_downcast::<gtk::Window>();
                 let mut builder = gtk::FileDialog::builder().title("Select Parent Folder").accept_label("Select");
-                let current = folder_entry.text();
-                let current = current.trim();
-                if !current.is_empty() && std::path::Path::new(current).is_dir() {
-                    builder = builder.initial_folder(&gio::File::for_path(current));
+                if let Some(current) = folder_weak.upgrade() {
+                    let current = current.text();
+                    let current = current.trim();
+                    if !current.is_empty() && std::path::Path::new(current).is_dir() {
+                        builder = builder.initial_folder(&gio::File::for_path(current));
+                    }
                 }
-                let folder_entry = folder_entry.clone();
+                let folder_weak = folder_weak.clone();
                 builder.build().select_folder(window.as_ref(), gio::Cancellable::NONE, move |result| {
-                    if let Some(path) = result.ok().and_then(|f| f.path()) {
+                    if let (Some(folder_entry), Some(path)) = (folder_weak.upgrade(), result.ok().and_then(|f| f.path())) {
                         folder_entry.set_text(&path.to_string_lossy());
                     }
                 });
