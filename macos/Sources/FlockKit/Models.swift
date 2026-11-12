@@ -757,3 +757,69 @@ public struct LogEntry: Decodable, Sendable, Equatable, Identifiable {
         details = try c.decodeIfPresent(String.self, forKey: .details) ?? ""
     }
 }
+
+/// One template entry from GET /v1/apps/templates (apps.conf).
+public struct AppTemplate: Decodable, Sendable, Equatable, Identifiable {
+    public var name: String
+    public var requiresDb: Bool
+
+    public var id: String { name }
+
+    public static let builtInDefaults: [AppTemplate] = [
+        AppTemplate(name: "blank"),
+        AppTemplate(name: "php"),
+        AppTemplate(name: "wordpress", requiresDb: true),
+    ]
+
+    public init(name: String, requiresDb: Bool = false) {
+        self.name = name
+        self.requiresDb = requiresDb
+    }
+
+    enum CodingKeys: String, CodingKey { case name, requiresDb }
+
+    public init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
+        requiresDb = try c.decodeIfPresent(Bool.self, forKey: .requiresDb) ?? false
+    }
+}
+
+/// POST /v1/apps.
+public struct CreateAppRequest: Encodable, Sendable, Equatable {
+    public var name: String
+    public var parentDir: String
+    public var type: String
+    public var db: Bool
+    public var dbService: String?
+    public var php: String?
+    public var secured: Bool
+
+    public init(
+        name: String,
+        parentDir: String,
+        type: String = "php",
+        db: Bool = false,
+        dbService: String? = nil,
+        php: String? = nil,
+        secured: Bool = false
+    ) {
+        self.name = name
+        self.parentDir = parentDir
+        self.type = type
+        self.db = db
+        self.dbService = dbService
+        self.php = php
+        self.secured = secured
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case name
+        case parentDir = "parent_dir"
+        case type
+        case db
+        case dbService = "db_service"
+        case php
+        case secured
+    }
+}
