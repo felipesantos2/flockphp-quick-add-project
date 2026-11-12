@@ -566,7 +566,7 @@ impl Inner {
                         .model
                         .status()
                         .and_then(|s| s.sites.into_iter().find(|site| site.path == target_path).map(|site| site.name))
-                        .unwrap_or(fallback_name);
+                        .unwrap_or_else(|| fallback_name.clone());
                     this.open(&created_name);
                 } else {
                     this.render();
