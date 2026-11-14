@@ -156,19 +156,29 @@ type Source struct {
 	Bases []string // tried in order (see Bases)
 	Key   ed25519.PublicKey
 	HTTP  *http.Client
+	// UserAgent is sent with every manifest request (see UserAgent); Go's default when empty.
+	UserAgent string
 	// Cache keeps the last manifest accepted per channel and its serial, so an older one is
 	// refused and the packages are known before (or without) the first fetch.
 	Cache string
 }
 
-// DefaultSource reads the published manifests, caching them under root.
-func DefaultSource(root string) Source {
+// DefaultSource reads the published manifests, caching them under root. version is Flock's own,
+// sent in the user agent.
+func DefaultSource(root, version string) Source {
 	return Source{
-		Bases: Bases,
-		Key:   PublicKey(),
-		HTTP:  &http.Client{Timeout: 30 * time.Second},
-		Cache: filepath.Join(root, "cache", "binaries"),
+		Bases:     Bases,
+		Key:       PublicKey(),
+		HTTP:      &http.Client{Timeout: 30 * time.Second},
+		UserAgent: UserAgent(version),
+		Cache:     filepath.Join(root, "cache", "binaries"),
 	}
+}
+
+// UserAgent names this Flock to the manifests' host, "Flock/1.2.0 (darwin; arm64)": Flock's
+// website counts the installs that check for updates by version and platform.
+func UserAgent(version string) string {
+	return "Flock/" + version + " (" + runtime.GOOS + "; " + runtime.GOARCH + ")"
 }
 
 // Fetch downloads the channel's manifest and its signature, from the first base that serves a
@@ -294,6 +304,9 @@ func (s Source) get(ctx context.Context, url string) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
+	}
+	if s.UserAgent != "" {
+		req.Header.Set("User-Agent", s.UserAgent)
 	}
 	resp, err := client.Do(req)
 	if err != nil {

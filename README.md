@@ -14,7 +14,8 @@
   <a href="https://flockphp.com">Website</a> ·
   <a href="https://flockphp.com/docs/quick-start">Documentation</a> ·
   <a href="https://flockphp.com/download">Download</a> ·
-  <a href="https://flockphp.com/compare">Compare</a>
+  <a href="https://flockphp.com/compare">Compare</a> ·
+  <a href="https://discord.flockphp.com">Discord</a>
 </p>
 
 <p align="center">
@@ -144,7 +145,11 @@ The Windows app is described in [windows/README.md](windows/README.md). On Linux
 
 ## Contributing
 
-Bug reports and ideas are welcome in [Issues](https://github.com/flock-php/flock/issues), questions in [Discussions](https://github.com/flock-php/flock/discussions). Pull requests start with an approved issue and go to the `main` branch; see [CONTRIBUTING.md](CONTRIBUTING.md) for how it works.
+Bug reports and ideas are welcome in [Issues](https://github.com/flock-php/flock/issues). For questions or a chat, join us on [Discord](https://discord.flockphp.com) or use [Discussions](https://github.com/flock-php/flock/discussions). Pull requests start with an approved issue and go to the `main` branch; see [CONTRIBUTING.md](CONTRIBUTING.md) for how it works.
+
+## Support Flock
+
+Flock is free and open source, forever. If it saves you time, [sponsoring Flock](https://github.com/sponsors/flock-php) helps keep it maintained, and a ⭐ on GitHub helps others find it.
 
 ## Developed by Guava
 

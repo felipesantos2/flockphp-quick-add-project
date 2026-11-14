@@ -32,7 +32,7 @@ func TestIntegrationInstallRunCreate(t *testing.T) {
 	defer os.RemoveAll(root)
 
 	inst := NewInstaller(root)
-	catalog := binaries.NewCatalog(binaries.DefaultSource(root), func() binaries.Channel { return binaries.Stable })
+	catalog := binaries.NewCatalog(binaries.DefaultSource(root, "dev"), func() binaries.Channel { return binaries.Stable })
 	manifest, err := catalog.Check(ctx)
 	if err != nil {
 		t.Fatal(err)

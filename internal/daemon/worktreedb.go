@@ -38,10 +38,39 @@ func (d *daemon) dbServers(cfg *config.Config) func(engine string, port int) wor
 	}
 }
 
+// dbServices finds the database server of a Flock service ("postgres", "mysql", "mariadb"):
+// whether it's installed, and the server, on its port, while it runs.
+func (d *daemon) dbServices(cfg *config.Config) func(id string) (worktree.Server, bool) {
+	return func(id string) (worktree.Server, bool) {
+		switch id {
+		case "postgres":
+			if cfg.Services.Postgres == "" {
+				return nil, false
+			}
+			if !cfg.Services.Running(id) {
+				return nil, true
+			}
+			return pgServer{bin: postgres.BinDir(d.root, cfg.Services.Postgres), port: cfg.Ports.Postgres}, true
+		case "mysql", "mariadb":
+			x, ok := cfg.Services.Extra(id)
+			if !ok {
+				return nil, false
+			}
+			if !cfg.Services.Running(id) {
+				return nil, true
+			}
+			return mysqlServer{root: d.root, id: id, version: x.Version, port: x.Port}, true
+		}
+		return nil, false
+	}
+}
+
 type pgServer struct {
 	bin  string // the client tools
 	port int
 }
+
+func (pgServer) Service() string { return "postgres" }
 
 func (s pgServer) Create(ctx context.Context, name string) error {
 	return pgError(postgres.NewDatabase(ctx, s.port, name, ""))
@@ -85,6 +114,8 @@ type mysqlServer struct {
 	root, id, version string
 	port              int
 }
+
+func (s mysqlServer) Service() string { return s.id }
 
 func (s mysqlServer) Create(ctx context.Context, name string) error {
 	err := catalog.ExecSQL(ctx, s.root, s.id, s.version, s.port, "CREATE DATABASE `"+name+"`")

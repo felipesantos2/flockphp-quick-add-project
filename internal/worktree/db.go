@@ -22,15 +22,18 @@ const (
 	Fresh  = "fresh"
 )
 
-// Database is a worktree's own database: one in Engine ("pgsql", "mysql", "mariadb"), or for
-// "sqlite" the file. The zero value is none: the worktree uses the site's.
+// Database is a worktree's own database: one in Engine ("pgsql", "mysql", "mariadb") on the
+// server of Service, or for "sqlite" the file. The zero value is none: the worktree uses the site's.
 type Database struct {
-	Engine string `json:"engine,omitempty"`
-	Name   string `json:"name,omitempty"`
+	Engine  string `json:"engine,omitempty"`
+	Name    string `json:"name,omitempty"`
+	Service string `json:"service,omitempty"`
 }
 
 // Server is a database server Flock runs, where a worktree can get a database of its own.
 type Server interface {
+	// Service is the Flock service that runs it: "postgres", "mysql" or "mariadb".
+	Service() string
 	// Create makes an empty database; ErrExists when there is one by that name.
 	Create(ctx context.Context, name string) error
 	// Copy makes database to as a copy of from; ErrExists when to exists.
@@ -242,7 +245,7 @@ func (j Job) serverDatabase(ctx context.Context, d *dbEnv, mode string, log io.W
 		return Database{}, nil
 	}
 	set(d.env, log, "DB_DATABASE", name)
-	return Database{Engine: d.connection, Name: name}, nil
+	return Database{Engine: d.connection, Name: name, Service: server.Service()}, nil
 }
 
 // SwitchDatabase changes the worktree's database to j.DBMode: its own database is dropped, .env
@@ -277,20 +280,27 @@ func (j Job) DropDatabase(ctx context.Context, log io.Writer) error {
 		}
 		return nil
 	}
-	// The site's .env says where the server is: the worktree may be gone.
-	d := &dbEnv{connection: db.Engine}
-	if site, err := ReadDotenv(filepath.Join(j.Site, ".env")); err == nil {
-		d.host = site.Get("DB_HOST")
-		d.port, _ = strconv.Atoi(site.Get("DB_PORT"))
+	// The server it was made on; recorded before Flock kept that, the one Flock runs for the engine.
+	services := []string{db.Service}
+	if db.Service == "" {
+		services = map[string][]string{"pgsql": {"postgres"}, "mysql": {"mysql", "mariadb"}, "mariadb": {"mysql", "mariadb"}}[db.Engine]
 	}
-	if d.port == 0 {
-		d.port = map[string]int{"pgsql": 5432, "mysql": 3306, "mariadb": 3306}[db.Engine]
+	for _, id := range services {
+		if j.Services == nil {
+			break
+		}
+		server, installed := j.Services(id)
+		if !installed {
+			continue
+		}
+		if server == nil {
+			return fmt.Errorf("%s is stopped: start it to drop %s", id, db.Name)
+		}
+		return server.Drop(ctx, db.Name)
 	}
-	server := j.server(d, db.Engine)
-	if server == nil {
-		return fmt.Errorf("Flock doesn't run the %s server of %s any more: drop it yourself", db.Engine, db.Name)
-	}
-	return server.Drop(ctx, db.Name)
+	// Uninstalled: there is nothing to drop it from.
+	fmt.Fprintf(log, "database: Flock doesn't run the server of %s any more, so it isn't dropped\n", db.Name)
+	return nil
 }
 
 func set(env *Dotenv, log io.Writer, key, value string) {

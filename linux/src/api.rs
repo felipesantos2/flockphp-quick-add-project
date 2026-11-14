@@ -43,6 +43,8 @@ const CHECK_TIMEOUT: Duration = Duration::from_secs(60);
 const CHANGE_TIMEOUT: Duration = Duration::from_secs(120);
 /// Registering with Claude Code runs its CLI.
 const MCP_TIMEOUT: Duration = Duration::from_secs(30);
+/// Creating an app may download and extract an archive like WordPress (the Go CLI allows 2 minutes).
+const APP_CREATE_TIMEOUT: Duration = Duration::from_secs(180);
 /// Downloads that answer when they are done (Node.js, PostgreSQL): 10 minutes.
 const INSTALL_TIMEOUT: Duration = Duration::from_secs(600);
 
@@ -247,6 +249,17 @@ impl Client {
     /// Serves a folder as a site (`flock link`); the daemon names it after the folder.
     pub fn link_site(&self, path: &str) -> Result<Status, Error> {
         self.request("POST", "/v1/sites", Some(&serde_json::json!({ "path": path, "secured": false })), DEFAULT_TIMEOUT)
+    }
+
+    /// Lists available templates from apps.conf.
+    pub fn app_templates(&self) -> Result<Vec<AppTemplate>, Error> {
+        self.request::<_, AppTemplatesResponse>("GET", "/v1/apps/templates", None::<&()>, DEFAULT_TIMEOUT)
+            .map(|r| r.templates.unwrap_or_default())
+    }
+
+    /// Creates a new project directory from an apps.conf template and links it as a site.
+    pub fn create_app(&self, req: &CreateAppRequest) -> Result<Status, Error> {
+        self.request("POST", "/v1/apps", Some(req), APP_CREATE_TIMEOUT)
     }
 
     pub fn update_site(&self, name: &str, change: &SiteChange) -> Result<Status, Error> {
@@ -1387,6 +1400,35 @@ pub struct PhpExtension {
     pub available: bool,
 }
 
+/// One template entry from GET /v1/apps/templates (apps.conf).
+#[derive(Deserialize, Debug, Clone, PartialEq, Default)]
+#[serde(default)]
+pub struct AppTemplate {
+    pub name: String,
+    pub requires_db: bool,
+}
+
+#[derive(Deserialize, Debug, Clone, PartialEq, Default)]
+#[serde(default)]
+struct AppTemplatesResponse {
+    templates: Option<Vec<AppTemplate>>,
+}
+
+/// POST /v1/apps.
+#[derive(Serialize, Debug, Clone, PartialEq, Default)]
+pub struct CreateAppRequest {
+    pub name: String,
+    pub parent_dir: String,
+    #[serde(rename = "type")]
+    pub app_type: String,
+    pub db: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub db_service: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub php: Option<String>,
+    pub secured: bool,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1538,5 +1580,39 @@ mod tests {
         let custom = state.custom.unwrap();
         assert!(custom[0].linked && custom[0].version == "1.2" && custom[0].problem.is_empty());
         assert!(!custom[1].linked && custom[1].problem.contains("lib/"));
+    }
+
+    #[test]
+    fn decodes_app_templates_and_shapes_create_request() {
+        let json = r#"{"templates":[{"name":"blank","requires_db":false},{"name":"wordpress","requires_db":true}]}"#;
+        let decoded: AppTemplatesResponse = serde_json::from_str(json).unwrap();
+        let templates = decoded.templates.unwrap();
+        assert_eq!(templates.len(), 2);
+        assert_eq!(templates[0].name, "blank");
+        assert!(!templates[0].requires_db);
+        assert_eq!(templates[1].name, "wordpress");
+        assert!(templates[1].requires_db);
+
+        let req = CreateAppRequest {
+            name: "my-blog".to_owned(),
+            parent_dir: "/home/demo/Sites".to_owned(),
+            app_type: "wordpress".to_owned(),
+            db: true,
+            db_service: Some("mysql".to_owned()),
+            php: None,
+            secured: true,
+        };
+        let value = serde_json::to_value(&req).unwrap();
+        assert_eq!(
+            value,
+            serde_json::json!({
+                "name": "my-blog",
+                "parent_dir": "/home/demo/Sites",
+                "type": "wordpress",
+                "db": true,
+                "db_service": "mysql",
+                "secured": true
+            })
+        );
     }
 }

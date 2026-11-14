@@ -106,7 +106,8 @@ func (d *daemon) forgetting(path string) bool {
 }
 
 // forgetGone drops the database Flock made for a worktree that is gone and forgets it. When the
-// database can't be dropped (its server is stopped), the next reload tries again.
+// database can't be dropped (its server is stopped), the next reload tries again. It needs nothing
+// but the record: the site may be gone too (unlinked).
 func (d *daemon) forgetGone(cfg *config.Config, e config.WorktreeEntry) {
 	defer func() {
 		d.pendingMu.Lock()
@@ -114,11 +115,8 @@ func (d *daemon) forgetGone(cfg *config.Config, e config.WorktreeEntry) {
 		d.pendingMu.Unlock()
 	}()
 	if e.Database != "" {
-		job, err := d.worktreeJob(cfg, e.Site, e.Path, config.Site{})
-		if err == nil {
-			err = job.DropDatabase(context.Background(), io.Discard)
-		}
-		if err != nil {
+		job := worktree.Job{Path: e.Path, Database: worktree.Database{Engine: e.Engine, Name: e.Database, Service: e.Service}, Services: d.dbServices(cfg)}
+		if err := job.DropDatabase(context.Background(), io.Discard); err != nil {
 			d.setWarnings(append(d.currentWarnings(), fmt.Sprintf("worktree %s: %v", e.Path, err)))
 			return
 		}
@@ -156,12 +154,13 @@ func (d *daemon) worktreeJob(cfg *config.Config, parentName, path string, site c
 		BinDirs:  []string{filepath.Join(d.root, "bin"), node.GlobalBin(node.CurrentGlobalDir(d.root))},
 		AsRoot:   runningAsRoot(),
 		DBMode:   mode,
-		Database: worktree.Database{Engine: entry.Engine, Name: entry.Database},
+		Database: worktree.Database{Engine: entry.Engine, Name: entry.Database, Service: entry.Service},
 		Servers:  d.dbServers(cfg),
+		Services: d.dbServices(cfg),
 		OnDatabase: func(db worktree.Database) {
 			_ = d.Mutate(func(c *config.Config) error {
 				if e, ok := c.WorktreeEntry(path); ok {
-					e.Engine, e.Database = db.Engine, db.Name
+					e.Engine, e.Database, e.Service = db.Engine, db.Name, db.Service
 					c.SetWorktreeEntry(e)
 				}
 				return nil

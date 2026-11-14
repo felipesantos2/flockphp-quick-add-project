@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -130,6 +131,30 @@ func TestFetchFallsBackAndCaches(t *testing.T) {
 	s.Bases = []string{forged.URL + "/m/"}
 	if _, err := s.Fetch(context.Background(), Stable); err == nil || !strings.Contains(err.Error(), "signature") {
 		t.Errorf("only a forged host: %v", err)
+	}
+}
+
+func TestFetchSendsTheUserAgent(t *testing.T) {
+	pub, priv, _ := ed25519.GenerateKey(rand.Reader)
+	var serial atomic.Int64
+	serial.Store(1)
+	site := server(t, priv, "stable", &serial, nil)
+	var agents []string
+	recorder := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		agents = append(agents, r.UserAgent())
+		http.Redirect(w, r, site.URL+r.URL.Path, http.StatusFound)
+	}))
+	t.Cleanup(recorder.Close)
+
+	s := DefaultSource(t.TempDir(), "1.2.0")
+	s.Bases, s.Key = []string{recorder.URL + "/m/"}, pub
+	if _, err := s.Fetch(context.Background(), Stable); err != nil {
+		t.Fatal(err)
+	}
+
+	want := "Flock/1.2.0 (" + runtime.GOOS + "; " + runtime.GOARCH + ")"
+	if len(agents) != 2 || agents[0] != want || agents[1] != want {
+		t.Errorf("user agents: %q, want %q for the manifest and its signature", agents, want)
 	}
 }
 

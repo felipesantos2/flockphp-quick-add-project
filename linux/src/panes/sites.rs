@@ -22,11 +22,12 @@ use super::versions::{MenuItem, badge, button, more_menu};
 use super::worktree_job;
 use super::{Data, Pane};
 use crate::api::{
-    Branches, Client, Config, Error, ExtensionReport, PhpExtension, ProxyStatus, ShareStatus, SiteChange, SiteStatus, Status,
-    WorktreeStatus,
+    AppTemplate, Branches, Client, Config, CreateAppRequest, Error, ExtensionReport, PhpExtension, ProxyStatus, ShareStatus, SiteChange,
+    SiteStatus, Status, WorktreeStatus,
 };
 use crate::links::{self, Link};
 use crate::model::AppModel;
+use crate::paths;
 use crate::prefs;
 use crate::ui;
 
@@ -49,6 +50,8 @@ struct Inner {
     expanded: RefCell<Vec<String>>,
     /// The folder of the worktree being removed.
     removing: RefCell<Option<String>>,
+    /// Creating an application from a template.
+    creating_app: Cell<bool>,
 }
 
 /// A worktree to remove: its folder, name, what it is listed as and its site.
@@ -84,6 +87,7 @@ impl SitesPane {
             shown: RefCell::default(),
             expanded: RefCell::new(prefs::load().expanded_sites),
             removing: RefCell::default(),
+            creating_app: Cell::default(),
         }))
     }
 }
@@ -127,12 +131,13 @@ impl Inner {
     fn render(self: &Rc<Self>) {
         self.ask_link();
         let key = format!(
-            "{:?}{:?}{:?}{:?}{:?}",
+            "{:?}{:?}{:?}{:?}{:?}{}",
             self.status.borrow(),
             self.config.borrow(),
             self.selected.borrow(),
             self.restarting.borrow(),
-            self.removing.borrow()
+            self.removing.borrow(),
+            self.creating_app.get()
         );
         if self.shown.borrow().as_deref() == Some(key.as_str()) {
             return;
@@ -219,9 +224,15 @@ impl Inner {
             add.add_css_class("suggested-action");
             add.add_css_class("pill");
             buttons.append(&add);
+            let new_app = self.new_app_button();
+            new_app.add_css_class("pill");
+            buttons.append(&new_app);
             let add_proxy = self.add_proxy_button();
             add_proxy.add_css_class("pill");
             buttons.append(&add_proxy);
+            if self.creating_app.get() {
+                buttons.append(&gtk::Spinner::builder().spinning(true).valign(gtk::Align::Center).build());
+            }
             empty.set_child(Some(&buttons));
             self.list.set_groups(&[empty.upcast()]);
             return;
@@ -246,9 +257,15 @@ impl Inner {
             }
             groups.push(group);
         }
-        // Add Proxy… and Add Site… on the first group.
+        // New App…, Add Proxy… and Add Site… on the first group.
         if let Some(first) = groups.first() {
             let buttons = gtk::Box::builder().spacing(6).valign(gtk::Align::Center).build();
+            if self.creating_app.get() {
+                buttons.append(&gtk::Spinner::builder().spinning(true).valign(gtk::Align::Center).build());
+            }
+            let new_app = self.new_app_button();
+            new_app.add_css_class("flat");
+            buttons.append(&new_app);
             let add_proxy = self.add_proxy_button();
             add_proxy.add_css_class("flat");
             buttons.append(&add_proxy);
@@ -348,6 +365,215 @@ impl Inner {
             );
         });
         add
+    }
+
+    /// New App…: asks for a name, template, folder and database/HTTPS options, then creates the app.
+    fn new_app_button(self: &Rc<Self>) -> gtk::Button {
+        let button = gtk::Button::builder().label("New App…").build();
+        button.set_sensitive(!self.creating_app.get());
+        let this = self.clone();
+        button.connect_clicked(move |_| this.new_app());
+        button
+    }
+
+    fn new_app(self: &Rc<Self>) {
+        if self.creating_app.get() {
+            return;
+        }
+        let this = self.clone();
+        glib::spawn_future_local(async move {
+            let templates = match gio::spawn_blocking(|| Client.app_templates()).await.expect("templates request") {
+                Ok(list) if !list.is_empty() => list,
+                Err(Error::Server { status: 404, .. }) | Ok(_) => default_app_templates(),
+                Err(e) => {
+                    report(&this.banner, Some(e.to_string()));
+                    return;
+                }
+            };
+            this.show_new_app_dialog(templates);
+        });
+    }
+
+    fn show_new_app_dialog(self: &Rc<Self>, templates: Vec<AppTemplate>) {
+        let status = self.status.borrow().clone();
+        let tld = status.as_ref().map(|s| s.dns.tld.clone()).filter(|t| !t.is_empty()).unwrap_or_else(|| "test".into());
+        let has_running_db = status.as_ref().is_some_and(|s| s.extras.iter().any(|e| (e.id == "mysql" || e.id == "mariadb") && e.up));
+        let default_folder = self
+            .config
+            .borrow()
+            .as_ref()
+            .and_then(|c| c.parked.as_deref())
+            .and_then(|p| p.first())
+            .cloned()
+            .unwrap_or_else(|| paths::home().to_string_lossy().into_owned());
+
+        let templates = Rc::new(templates);
+        let labels: Vec<&str> = templates.iter().map(|t| t.name.as_str()).collect();
+        let default_idx = templates.iter().position(|t| t.name.eq_ignore_ascii_case("php")).unwrap_or(0) as u32;
+
+        let name = adw::EntryRow::builder().title("Name, e.g. my-app").activates_default(true).build();
+        let template_row = adw::ComboRow::builder().title("Template").model(&gtk::StringList::new(&labels)).selected(default_idx).build();
+        let folder = adw::EntryRow::builder().title("Folder").activates_default(true).build();
+        folder.set_text(&default_folder);
+        let browse = gtk::Button::builder()
+            .icon_name("folder-open-symbolic")
+            .tooltip_text("Browse…")
+            .valign(gtk::Align::Center)
+            .css_classes(["flat"])
+            .build();
+        folder.add_suffix(&browse);
+
+        let db_row = adw::SwitchRow::builder().title("Create MySQL or MariaDB database").build();
+        let db_service_row = adw::ComboRow::builder()
+            .title("Database service")
+            .model(&gtk::StringList::new(&["Auto (MySQL or MariaDB)", "MySQL", "MariaDB"]))
+            .visible(false)
+            .build();
+        let secured_row = adw::SwitchRow::builder().title("Serve over HTTPS").build();
+
+        let list = gtk::ListBox::builder().css_classes(["boxed-list"]).selection_mode(gtk::SelectionMode::None).build();
+        list.append(&name);
+        list.append(&template_row);
+        list.append(&folder);
+        list.append(&db_row);
+        list.append(&db_service_row);
+        list.append(&secured_row);
+
+        let dialog = adw::AlertDialog::new(Some("New application"), None);
+        dialog.set_extra_child(Some(&list));
+        dialog.add_responses(&[("cancel", "Cancel"), ("create", "Create")]);
+        dialog.set_response_appearance("create", adw::ResponseAppearance::Suggested);
+        dialog.set_default_response(Some("create"));
+        dialog.set_response_enabled("create", false);
+
+        let sync: Rc<dyn Fn()> = Rc::new({
+            let (weak, templates) = (dialog.downgrade(), templates.clone());
+            let (name, folder, template_row) = (name.clone(), folder.clone(), template_row.clone());
+            let (db_row, db_service_row, secured_row) = (db_row.clone(), db_service_row.clone(), secured_row.clone());
+            let tld = tld.clone();
+            move || {
+                let Some(dialog) = weak.upgrade() else { return };
+                let tmpl = selected_app_template(&templates, template_row.selected());
+                if tmpl.requires_db && !db_row.is_active() {
+                    db_row.set_active(true);
+                }
+                db_row.set_sensitive(!tmpl.requires_db);
+
+                let wants_db = db_row.is_active();
+                db_service_row.set_visible(wants_db);
+                db_row.set_subtitle(if !wants_db || has_running_db {
+                    ""
+                } else if tmpl.requires_db {
+                    "This template requires MySQL or MariaDB to be running (start one in Services)."
+                } else {
+                    "No running MySQL or MariaDB service detected (start one in Services)."
+                });
+
+                let raw_name = name.text();
+                let raw_name = raw_name.trim();
+                let raw_folder = folder.text();
+                let raw_folder = raw_folder.trim();
+                let valid = !raw_name.is_empty() && !raw_folder.is_empty();
+                dialog.set_response_enabled("create", valid);
+
+                let scheme = if secured_row.is_active() { "https" } else { "http" };
+                let preview = if valid {
+                    format!("{} → {scheme}://{}.{tld}", std::path::Path::new(raw_folder).join(raw_name).display(), app_slug(raw_name))
+                } else {
+                    format!("Choose a name and folder to serve at {scheme}://<name>.{tld}.")
+                };
+                dialog.set_body(&preview);
+            }
+        });
+
+        for entry in [&name, &folder] {
+            let s = sync.clone();
+            entry.connect_changed(move |_| s());
+        }
+        {
+            let s = sync.clone();
+            template_row.connect_selected_notify(move |_| s());
+        }
+        for switch in [&db_row, &secured_row] {
+            let s = sync.clone();
+            switch.connect_active_notify(move |_| s());
+        }
+        {
+            let (stack, folder_weak) = (self.stack.clone(), folder.downgrade());
+            browse.connect_clicked(move |_| {
+                let window = stack.root().and_downcast::<gtk::Window>();
+                let mut builder = gtk::FileDialog::builder().title("Select Parent Folder").accept_label("Select");
+                if let Some(current) = folder_weak.upgrade() {
+                    let current = current.text();
+                    let current = current.trim();
+                    if !current.is_empty() && std::path::Path::new(current).is_dir() {
+                        builder = builder.initial_folder(&gio::File::for_path(current));
+                    }
+                }
+                let folder_weak = folder_weak.clone();
+                builder.build().select_folder(window.as_ref(), gio::Cancellable::NONE, move |result| {
+                    if let (Some(folder_entry), Some(path)) = (folder_weak.upgrade(), result.ok().and_then(|f| f.path())) {
+                        folder_entry.set_text(&path.to_string_lossy());
+                    }
+                });
+            });
+        }
+
+        sync();
+
+        let this = self.clone();
+        dialog.choose(Some(&self.stack), gio::Cancellable::NONE, move |response| {
+            let app_name = name.text().trim().to_owned();
+            let parent_dir = folder.text().trim().to_owned();
+            if response != "create" || app_name.is_empty() || parent_dir.is_empty() {
+                return;
+            }
+            let tmpl = selected_app_template(&templates, template_row.selected());
+            let create_db = db_row.is_active();
+            let db_service = if create_db {
+                match db_service_row.selected() {
+                    1 => Some("mysql".to_owned()),
+                    2 => Some("mariadb".to_owned()),
+                    _ => None,
+                }
+            } else {
+                None
+            };
+            this.create_app(CreateAppRequest {
+                name: app_name,
+                parent_dir,
+                app_type: tmpl.name,
+                db: create_db,
+                db_service,
+                php: None,
+                secured: secured_row.is_active(),
+            });
+        });
+    }
+
+    fn create_app(self: &Rc<Self>, req: CreateAppRequest) {
+        self.creating_app.set(true);
+        self.render();
+        let target_path = std::path::Path::new(&req.parent_dir).join(&req.name).to_string_lossy().into_owned();
+        let fallback_name = app_slug(&req.name);
+        let (this, banner) = (self.clone(), self.banner.clone());
+        self.model.perform(
+            move |c| c.create_app(&req),
+            move |err| {
+                this.creating_app.set(false);
+                if err.is_none() {
+                    let created_name = this
+                        .model
+                        .status()
+                        .and_then(|s| s.sites.into_iter().find(|site| site.path == target_path).map(|site| site.name))
+                        .unwrap_or_else(|| fallback_name.clone());
+                    this.open(&created_name);
+                } else {
+                    this.render();
+                }
+                report(&banner, err);
+            },
+        );
     }
 
     /// A site's row, or a worktree's (by its branch), which opens its detail.
@@ -1791,6 +2017,25 @@ fn slug(branch: &str) -> String {
     out.trim_matches('-').to_owned()
 }
 
+/// Built-in app templates shown while loading or against an older daemon without /v1/apps/templates.
+fn default_app_templates() -> Vec<AppTemplate> {
+    vec![
+        AppTemplate { name: "blank".to_owned(), requires_db: false },
+        AppTemplate { name: "php".to_owned(), requires_db: false },
+        AppTemplate { name: "wordpress".to_owned(), requires_db: true },
+    ]
+}
+
+fn selected_app_template(templates: &[AppTemplate], selected: u32) -> AppTemplate {
+    templates.get(selected as usize).cloned().unwrap_or_else(|| AppTemplate { name: "php".to_owned(), requires_db: false })
+}
+
+/// Hostname label matching config.SiteName on the daemon.
+fn app_slug(name: &str) -> String {
+    let slug: String = name.to_lowercase().chars().map(|c| if c.is_ascii_alphanumeric() || c == '-' { c } else { '-' }).collect();
+    slug.trim_matches('-').to_owned()
+}
+
 /// What a site's list row warns about: the site, its document root, a domain, or its FrankenPHP.
 fn problem(site: &SiteStatus) -> Option<String> {
     if let Some(p) = site.problem.clone().or_else(|| site.notice.clone()) {
@@ -1915,5 +2160,22 @@ mod tests {
         assert_eq!(slug("Feature/Auth_2.x"), "feature-auth-2-x");
         assert_eq!(slug("fix//ümlaut-"), "fix-mlaut");
         assert_eq!(slug("brave-otter"), "brave-otter");
+    }
+
+    #[test]
+    fn makes_the_app_slug_like_flock() {
+        assert_eq!(app_slug("My Blog"), "my-blog");
+        assert_eq!(app_slug("my-app_2"), "my-app-2");
+        assert_eq!(app_slug("--acme--"), "acme");
+    }
+
+    #[test]
+    fn default_templates_include_builtin_types() {
+        let templates = default_app_templates();
+        let names: Vec<&str> = templates.iter().map(|t| t.name.as_str()).collect();
+        assert_eq!(names, ["blank", "php", "wordpress"]);
+        assert!(!templates[0].requires_db);
+        assert!(!templates[1].requires_db);
+        assert!(templates[2].requires_db);
     }
 }

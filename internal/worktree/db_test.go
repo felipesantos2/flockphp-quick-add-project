@@ -14,8 +14,16 @@ import (
 
 // fakeServer is a database server that keeps its databases' names.
 type fakeServer struct {
-	dbs  []string
-	fail error // what Create and Copy return
+	dbs     []string
+	fail    error  // what Create and Copy return
+	service string // "postgres" when empty
+}
+
+func (s *fakeServer) Service() string {
+	if s.service == "" {
+		return "postgres"
+	}
+	return s.service
 }
 
 func (s *fakeServer) Create(_ context.Context, name string) error {
@@ -63,6 +71,11 @@ func dbJob(t *testing.T, env string, server *fakeServer) *Job {
 				return server
 			}
 			return nil
+		}, Services: func(id string) (Server, bool) {
+			if id == server.Service() {
+				return server, true
+			}
+			return nil, false
 		}}
 }
 
@@ -77,7 +90,7 @@ func TestServerDatabases(t *testing.T) {
 	if err := j.setUpDatabase(ctx, log, func(string) {}); err != nil {
 		t.Fatal(err)
 	}
-	want := Database{Engine: "pgsql", Name: "acme_feature_auth"}
+	want := Database{Engine: "pgsql", Name: "acme_feature_auth", Service: "postgres"}
 	if recorded != want || !slices.Equal(server.dbs, []string{"acme", "acme_feature_auth"}) {
 		t.Fatalf("copy: recorded %+v, server %v", recorded, server.dbs)
 	}
@@ -161,5 +174,54 @@ func TestSQLiteDatabases(t *testing.T) {
 	}
 	if _, err := os.Stat(file); !os.IsNotExist(err) {
 		t.Errorf("dropped, the file is still there: %v", err)
+	}
+}
+
+// The database is dropped on the server of the service it was made on, with no site needed (it may
+// be unlinked): one recorded before Flock kept the service on the one Flock runs for the engine.
+func TestDropDatabase(t *testing.T) {
+	const name = "acme_feature_auth"
+	for _, tc := range []struct {
+		desc            string
+		db              Database
+		running         []string // of mysql, mariadb: both installed
+		dropped, failed string   // the service it's dropped on; the one that fails, stopped
+	}{
+		{"recorded", Database{Engine: "mariadb", Name: name, Service: "mariadb"}, []string{"mysql", "mariadb"}, "mariadb", ""},
+		{"recorded, on mysql", Database{Engine: "mysql", Name: name, Service: "mariadb"}, []string{"mysql", "mariadb"}, "mariadb", ""},
+		{"not recorded", Database{Engine: "mariadb", Name: name}, []string{"mariadb"}, "", "mysql"},
+		{"not recorded, mysql stopped", Database{Engine: "mysql", Name: name}, []string{"mariadb"}, "", "mysql"},
+		{"stopped", Database{Engine: "mysql", Name: name, Service: "mariadb"}, []string{"mysql"}, "", "mariadb"},
+		{"uninstalled", Database{Engine: "pgsql", Name: name, Service: "postgres"}, nil, "", ""},
+	} {
+		servers := map[string]*fakeServer{}
+		for _, id := range []string{"mysql", "mariadb"} {
+			servers[id] = &fakeServer{dbs: []string{name}, service: id}
+		}
+		log := &bytes.Buffer{}
+		j := Job{Path: filepath.Join(t.TempDir(), "gone"), Database: tc.db,
+			Services: func(id string) (Server, bool) {
+				s, installed := servers[id]
+				if !installed || !slices.Contains(tc.running, id) {
+					return nil, installed
+				}
+				return s, true
+			}}
+		err := j.DropDatabase(context.Background(), log)
+		switch {
+		case tc.failed != "":
+			if err == nil || !strings.Contains(err.Error(), tc.failed+" is stopped") {
+				t.Errorf("%s: %v, want %s stopped", tc.desc, err, tc.failed)
+			}
+		case err != nil:
+			t.Errorf("%s: %v", tc.desc, err)
+		case tc.dropped == "" && !strings.Contains(log.String(), "isn't dropped"):
+			t.Errorf("%s: log %q", tc.desc, log.String())
+		}
+		for id, s := range servers {
+			if gone := len(s.dbs) == 0; gone != (id == tc.dropped) {
+				t.Errorf("%s: dropped on %s: %v", tc.desc, id, gone)
+			}
+		}
 	}
 }

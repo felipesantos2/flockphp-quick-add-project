@@ -180,6 +180,7 @@ struct AboutPane: View {
             HStack {
                 Button("Data Folder") { reveal(FlockPaths.root.path) }
                 Button("Flock Docs") { NSWorkspace.shared.open(URL(string: "https://flockphp.com/docs")!) }
+                Button("Discord") { NSWorkspace.shared.open(URL(string: "https://discord.flockphp.com")!) }
                 Button("License") { NSWorkspace.shared.open(URL(string: "https://github.com/flock-php/flock/blob/main/LICENSE")!) }
             }
             VStack(spacing: 8) {

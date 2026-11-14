@@ -28,9 +28,11 @@ impl AboutPane {
             gtk::FileLauncher::new(Some(&gio::File::for_path(paths::root()))).launch(window.as_ref(), gio::Cancellable::NONE, |_| {});
         });
         links.append(&data);
-        for (label, url) in
-            [("Flock Docs", "https://flockphp.com/docs"), ("License", "https://github.com/flock-php/flock/blob/main/LICENSE")]
-        {
+        for (label, url) in [
+            ("Flock Docs", "https://flockphp.com/docs"),
+            ("Discord", "https://discord.flockphp.com"),
+            ("License", "https://github.com/flock-php/flock/blob/main/LICENSE"),
+        ] {
             links.append(&link_button(label, url));
         }
 

@@ -34,7 +34,7 @@ func load() (*state, error) {
 
 // binaries reads the package manifest of the configured channel (cached in the data directory).
 func (s *state) binaries() *binaries.Catalog {
-	return binaries.NewCatalog(binaries.DefaultSource(s.root), func() binaries.Channel {
+	return binaries.NewCatalog(binaries.DefaultSource(s.root, Version), func() binaries.Channel {
 		ch, err := binaries.ParseChannel(s.cfg.Channel)
 		if err != nil {
 			return binaries.Stable

@@ -36,10 +36,13 @@ type Job struct {
 
 	// DBMode is the database mode (Shared, Copy, Fresh); Database the worktree's own database
 	// from an earlier setup, which is kept. Servers finds the database server Flock runs for an
-	// engine on a port (nil: none). OnDatabase is told the database the worktree ends up with.
+	// engine on a port (nil: none); Services the one of a service ("postgres", "mysql",
+	// "mariadb"): whether it's installed, and the server while it runs. OnDatabase is told the
+	// database the worktree ends up with.
 	DBMode     string
 	Database   Database
 	Servers    func(engine string, port int) Server
+	Services   func(id string) (server Server, installed bool)
 	OnDatabase func(Database)
 }
 

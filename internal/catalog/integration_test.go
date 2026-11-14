@@ -43,7 +43,7 @@ func TestIntegrationInstallAndRun(t *testing.T) {
 			defer os.RemoveAll(tmp)
 			root := filepath.Join(tmp, "a b")
 
-			source := binaries.NewCatalog(binaries.DefaultSource(root), func() binaries.Channel { return binaries.Stable })
+			source := binaries.NewCatalog(binaries.DefaultSource(root, "dev"), func() binaries.Channel { return binaries.Stable })
 			m := NewManager(root, []*Kind{k}, source, configMutate(root))
 			ctx, cancel := context.WithTimeout(context.Background(), 25*time.Minute)
 			defer cancel()

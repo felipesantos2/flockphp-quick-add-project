@@ -284,7 +284,7 @@ func Run(ctx context.Context, cfg Config) error {
 	d := &daemon{root: cfg.Root, version: cfg.Version, startedAt: time.Now(), procs: supervisor.New(), leaves: certs.NewLeaves(), restarts: map[string]int{}}
 	defer d.shutdown()
 
-	d.binaries = binaries.NewCatalog(binaries.DefaultSource(cfg.Root), d.channel)
+	d.binaries = binaries.NewCatalog(binaries.DefaultSource(cfg.Root, cfg.Version), d.channel)
 	go d.binaries.Run(ctx)
 	d.pg = postgres.NewManager(cfg.Root, d.binaries, pgService{d})
 	d.php = php.NewManager(cfg.Root, d.binaries)

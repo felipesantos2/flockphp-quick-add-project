@@ -55,6 +55,8 @@ public actor FlockClient {
     static let mcpChangeTimeout: TimeInterval = 30
     /// Adding Flock's Boost guideline runs `php artisan boost:update`, which boots the app.
     static let boostTimeout: TimeInterval = 120
+    /// Creating an app may download and extract an archive like WordPress (the Go CLI allows 2 minutes).
+    static let appCreateTimeout: TimeInterval = 180
 
     public init(configPath: URL = FlockPaths.apiJSON) {
         self.init(configPath: configPath, configuration: .ephemeral)
@@ -109,6 +111,17 @@ public actor FlockClient {
     public func linkSite(path: String, name: String? = nil, php: String? = nil, secured: Bool = false) async throws -> Status {
         struct Body: Encodable { var path: String; var name: String?; var php: String?; var secured: Bool }
         return try await decode(Status.self, "POST", "/v1/sites", body: try JSONEncoder().encode(Body(path: path, name: name, php: php, secured: secured)))
+    }
+
+    /// Lists available templates from apps.conf.
+    public func appTemplates() async throws -> [AppTemplate] {
+        struct Response: Decodable { var templates: [AppTemplate]? }
+        return try await decode(Response.self, "GET", "/v1/apps/templates").templates ?? []
+    }
+
+    /// Creates a new project directory from an apps.conf template and links it as a site.
+    public func createApp(_ req: CreateAppRequest) async throws -> Status {
+        try await decode(Status.self, "POST", "/v1/apps", body: try JSONEncoder().encode(req), timeout: Self.appCreateTimeout)
     }
 
     public func updateSite(_ name: String, _ change: SiteChange) async throws -> Status {

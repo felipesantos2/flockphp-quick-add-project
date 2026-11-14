@@ -551,3 +551,86 @@ func containsText(list []string, needle string) bool {
 	}
 	return false
 }
+
+// An unlinked site's worktrees stop being served: their records go, and so do the databases Flock
+// made for them, as when the site was unlinked while the daemon was down and its worktree is gone.
+func TestUnlinkingASiteForgetsItsWorktrees(t *testing.T) {
+	if _, err := exec.LookPath("git"); err != nil {
+		t.Skip("git is not installed")
+	}
+	repo := filepath.Join(t.TempDir(), "acme")
+	git := func(args ...string) {
+		t.Helper()
+		cmd := exec.Command("git", append([]string{"-C", repo, "-c", "user.name=Flock", "-c", "user.email=flock@example.test"}, args...)...)
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("git %v: %v\n%s", args, err, out)
+		}
+	}
+	if err := os.Mkdir(repo, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	git("init", "-q")
+	git("commit", "-q", "--allow-empty", "-m", "init")
+	tmp, err := filepath.EvalSymlinks(t.TempDir()) // as git lists it (macOS: /private/var)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(tmp, "acme-auth")
+	git("worktree", "add", "-q", "-b", "auth", path)
+	db := filepath.Join(path, "database.sqlite")
+	writeFile(t, db, "worktree data")
+
+	gone := filepath.Join(t.TempDir(), "gone")
+	goneDB := filepath.Join(t.TempDir(), "gone.sqlite")
+	writeFile(t, goneDB, "worktree data")
+
+	root, _ := testRoot(t, func(cfg *config.Config) {
+		cfg.Sites = []config.Site{{Name: "acme", Path: repo}}
+		cfg.Worktrees = []config.WorktreeEntry{
+			{Path: path, Site: "acme", Slug: "auth", SetUp: true, Database: db, Engine: "sqlite"},
+			{Path: gone, Site: "unlinked", Slug: "x", SetUp: true, Database: goneDB, Engine: "sqlite"},
+		}
+	})
+	client := startDaemon(t, root)
+
+	recorded := func(path string) bool {
+		cfg, err := config.Load(root)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, ok := cfg.WorktreeEntry(path)
+		return ok
+	}
+	waitForgotten := func(path, db string) {
+		t.Helper()
+		for deadline := time.Now().Add(5 * time.Second); recorded(path); time.Sleep(20 * time.Millisecond) {
+			if time.Now().After(deadline) {
+				status, _ := client.Status(context.Background())
+				t.Fatalf("%s is still recorded: %v", path, status.Warnings)
+			}
+		}
+		if _, err := os.Stat(db); !os.IsNotExist(err) {
+			t.Errorf("the database %s is still there: %v", db, err)
+		}
+	}
+
+	// Its site was unlinked before: forgotten all the same, not warned about on every reload.
+	waitForgotten(gone, goneDB)
+	if !recorded(path) {
+		t.Fatal("the worktree of a linked site was forgotten")
+	}
+
+	// As `flock unlink acme` does it.
+	cfg, err := config.Load(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	cfg.Remove("acme")
+	if err := cfg.Save(root); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := client.Reload(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	waitForgotten(path, db)
+}
