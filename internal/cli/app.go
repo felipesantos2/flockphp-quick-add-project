@@ -18,7 +18,7 @@ import (
 func newAppCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "app",
-		Short: "Create applications",
+		Short: "Creates template-based applications (WordPress, PHP)",
 	}
 	cmd.AddCommand(newAppCreateCommand())
 	return cmd
