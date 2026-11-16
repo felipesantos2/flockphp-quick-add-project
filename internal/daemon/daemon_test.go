@@ -48,11 +48,11 @@ func shortTempDir(t *testing.T) string {
 }
 
 // freePort returns a port that's free for TCP and UDP: Caddy also listens for HTTP/3 over
-// UDP, and Windows can reserve a port for UDP that's free for TCP.
+// UDP, and Windows can reserve 100-port ranges (e.g. Hyper-V/WSL) for one protocol only.
 func freePort(t *testing.T) int {
 	t.Helper()
 
-	for range 20 {
+	for range 500 {
 		ln, err := net.Listen("tcp", "127.0.0.1:0")
 		if err != nil {
 			t.Fatal(err)
@@ -94,14 +94,17 @@ func startDaemon(t *testing.T, root string) *api.Client {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan error, 1)
-	go func() { done <- Run(ctx, Config{Root: root, Version: "dev"}) }()
+	go func() {
+		defer close(done)
+		done <- Run(ctx, Config{Root: root, Version: "dev"})
+	}()
 	t.Cleanup(func() {
 		cancel()
 		<-done
 	})
 
 	client := api.NewClient(paths.Socket(root))
-	deadline := time.Now().Add(5 * time.Second)
+	deadline := time.Now().Add(15 * time.Second)
 	for {
 		if _, err := client.Status(context.Background()); err == nil {
 			return client

@@ -19,10 +19,10 @@ import (
 )
 
 // freePort returns a port that's free for TCP and UDP: Caddy also listens for HTTP/3 over
-// UDP, and Windows can reserve a port for UDP that's free for TCP.
+// UDP, and Windows can reserve 100-port ranges (e.g. Hyper-V/WSL) for one protocol only.
 func freePort(t *testing.T) int {
 	t.Helper()
-	for range 20 {
+	for range 500 {
 		ln, err := net.Listen("tcp", "127.0.0.1:0")
 		if err != nil {
 			t.Fatal(err)

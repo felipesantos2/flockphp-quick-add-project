@@ -8,6 +8,7 @@ import (
 )
 
 func TestCloneTreeCopiesFilesModesAndSymlinks(t *testing.T) {
+	requireSymlinks(t)
 	src := filepath.Join(t.TempDir(), "vendor")
 	if err := os.MkdirAll(filepath.Join(src, "bin"), 0o755); err != nil {
 		t.Fatal(err)
