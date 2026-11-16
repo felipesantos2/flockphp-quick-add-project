@@ -476,11 +476,21 @@ impl Inner {
 
         let sync: Rc<dyn Fn()> = Rc::new({
             let (weak, templates) = (dialog.downgrade(), templates.clone());
-            let (name, folder, template_row) = (name.clone(), folder.clone(), template_row.clone());
-            let (db_row, db_service_row, secured_row) = (db_row.clone(), db_service_row.clone(), secured_row.clone());
+            let (name_weak, folder_weak, template_row_weak) = (name.downgrade(), folder.downgrade(), template_row.downgrade());
+            let (db_row_weak, db_service_row_weak, secured_row_weak) = (db_row.downgrade(), db_service_row.downgrade(), secured_row.downgrade());
             let tld = tld.clone();
             move || {
-                let Some(dialog) = weak.upgrade() else { return };
+                let (Some(dialog), Some(name), Some(folder), Some(template_row), Some(db_row), Some(db_service_row), Some(secured_row)) = (
+                    weak.upgrade(),
+                    name_weak.upgrade(),
+                    folder_weak.upgrade(),
+                    template_row_weak.upgrade(),
+                    db_row_weak.upgrade(),
+                    db_service_row_weak.upgrade(),
+                    secured_row_weak.upgrade(),
+                ) else {
+                    return;
+                };
                 let tmpl = selected_app_template(&templates, template_row.selected());
                 if tmpl.requires_db && !db_row.is_active() {
                     db_row.set_active(true);
