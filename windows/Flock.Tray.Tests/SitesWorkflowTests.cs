@@ -362,6 +362,17 @@ public sealed class SitesWorkflowTests : IDisposable
         Assert.Equal("write failed", service.ErrorFor("site"));
     }
 
+    [Theory]
+    [InlineData("My Blog", "my-blog")]
+    [InlineData("my_app_2", "my-app-2")]
+    [InlineData("--acme--", "acme")]
+    [InlineData("Café App", "caf--app")]
+    [InlineData("---", "")]
+    public void AppSlugMatchesDaemonSiteName(string input, string expected)
+    {
+        Assert.Equal(expected, Flock.Tray.Settings.SitesPane.AppSlug(input));
+    }
+
     private static Status.Site Site(string name, string php, string? problem = null, string? notice = null,
         List<Status.SiteDomain>? domains = null, string server = Status.SiteServer.FastCgi, Status.SiteFrankenPhp? frankenPhp = null) => new()
     {

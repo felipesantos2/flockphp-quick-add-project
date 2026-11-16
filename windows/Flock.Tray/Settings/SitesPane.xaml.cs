@@ -386,11 +386,12 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane
 
             var rawName = nameBox.Text.Trim();
             var rawFolder = folderBox.Text.Trim();
-            dialog.IsPrimaryButtonEnabled = rawName.Length > 0 && rawFolder.Length > 0;
+            var slug = AppSlug(rawName);
+            dialog.IsPrimaryButtonEnabled = slug.Length > 0 && rawFolder.Length > 0;
 
             var scheme = securedCheck.IsChecked == true ? "https" : "http";
             preview.Text = dialog.IsPrimaryButtonEnabled
-                ? $"{Path.Combine(rawFolder, rawName)} → {scheme}://{rawName.ToLowerInvariant().Replace(' ', '-')}.{tld}"
+                ? $"{Path.Combine(rawFolder, rawName)} → {scheme}://{slug}.{tld}"
                 : $"Choose a name and folder to serve at {scheme}://<name>.{tld}.";
         }
 
@@ -425,13 +426,25 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane
             {
                 var targetPath = Path.Combine(parentDir, appName);
                 var created = Model.Status?.Sites.FirstOrDefault(site => string.Equals(site.Path, targetPath, StringComparison.OrdinalIgnoreCase));
-                Select(created?.Name ?? appName);
+                Select(created?.Name ?? AppSlug(appName));
             }
         }
         finally
         {
             SetNewAppBusy(false);
         }
+    }
+
+    /// <summary>Hostname label matching <c>config.SiteName</c> on the daemon.</summary>
+    internal static string AppSlug(string name)
+    {
+        var builder = new System.Text.StringBuilder(name.Length);
+        foreach (var rune in name.ToLowerInvariant().EnumerateRunes())
+        {
+            var c = rune.Value is (>= 'a' and <= 'z') or (>= '0' and <= '9') or '-' ? (char)rune.Value : '-';
+            builder.Append(c);
+        }
+        return builder.ToString().Trim('-');
     }
 
     private void SetNewAppBusy(bool busy)

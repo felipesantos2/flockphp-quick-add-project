@@ -62,7 +62,7 @@ func newAppCreateCommand() *cobra.Command {
 					if err != nil {
 						return fmt.Errorf("project created at %s, but loading site settings failed: %w", site.Path, err)
 					}
-					if existing, ok := latest.FindSite(site.Name); ok && (!existing.Parked || filepath.Clean(existing.Path) != filepath.Clean(site.Path)) {
+					if existing, ok := latest.FindSite(site.Name); ok && (!existing.Parked || !apps.SamePath(existing.Path, site.Path)) {
 						return fmt.Errorf("project created at %s, but a site named %q already exists", site.Path, site.Name)
 					}
 					if err := latest.Upsert(site); err != nil {

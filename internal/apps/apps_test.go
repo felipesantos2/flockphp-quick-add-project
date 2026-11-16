@@ -129,3 +129,27 @@ func TestConfigureWPConfig(t *testing.T) {
 		}
 	})
 }
+
+func TestValidateNameRejectsWindowsInvalidCharacters(t *testing.T) {
+	for _, bad := range []string{"foo*", "foo?", "foo<bar", "foo>bar", `foo"bar`, "foo|bar", "foo:bar"} {
+		if _, err := ValidateName(bad); err == nil {
+			t.Fatalf("expected ValidateName(%q) to fail", bad)
+		}
+	}
+	if got, err := ValidateName("my_app_2"); err != nil || got != "my-app-2" {
+		t.Fatalf("ValidateName(my_app_2) = (%q, %v)", got, err)
+	}
+}
+
+func TestSamePathComparesIdentities(t *testing.T) {
+	dir := t.TempDir()
+	if !SamePath(dir, dir) {
+		t.Fatal("expected identical paths to match")
+	}
+	if !SamePath(filepath.Join(dir, "A"), filepath.Join(dir, "a")) {
+		// on Windows it should match
+		if os.PathSeparator == '\\' {
+			t.Fatal("expected case-insensitive match on Windows")
+		}
+	}
+}

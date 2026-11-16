@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"time"
@@ -157,11 +158,22 @@ func Create(ctx context.Context, req CreateRequest) (CreateResult, error) {
 func ValidateName(folder string) (string, error) {
 	name := config.SiteName(folder)
 	if folder == "" || folder == "." || folder == ".." ||
-		strings.ContainsAny(folder, `/\:`) || strings.TrimSpace(folder) != folder ||
+		strings.ContainsAny(folder, `/\:*?"<>|`) || strings.TrimSpace(folder) != folder ||
 		strings.HasSuffix(folder, ".") || name == "" || len(name) > 63 {
 		return "", fmt.Errorf("%q is not a valid project name: use a single folder name that produces a hostname of 1-63 characters", folder)
 	}
 	return name, nil
+}
+
+// SamePath reports whether paths a and b refer to the same directory path.
+func SamePath(a, b string) bool {
+	cleanA, cleanB := filepath.Clean(a), filepath.Clean(b)
+	if cleanA == cleanB || (runtime.GOOS == "windows" && strings.EqualFold(cleanA, cleanB)) {
+		return true
+	}
+	ia, errA := os.Stat(a)
+	ib, errB := os.Stat(b)
+	return errA == nil && errB == nil && os.SameFile(ia, ib)
 }
 
 // SelectDatabase chooses a running MySQL or MariaDB service (explicitly requested or first active).
