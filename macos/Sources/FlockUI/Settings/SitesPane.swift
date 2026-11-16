@@ -1313,10 +1313,10 @@ private extension SitesPane {
         let fallbackName = appSlug(req.name)
         Task {
             defer { creatingAppState.wrappedValue = false }
-            await model.settings.perform { client in
+            let succeeded = await model.settings.perform { client in
                 _ = try await client.createApp(req)
             }
-            if model.settings.error == nil {
+            if succeeded {
                 let created = model.status?.sites.first { $0.path == targetPath }
                 selectionState.wrappedValue = created?.name ?? fallbackName
             }

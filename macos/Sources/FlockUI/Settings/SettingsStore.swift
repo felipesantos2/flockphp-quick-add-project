@@ -61,17 +61,24 @@ final class SettingsStore {
     }
 
     /// Runs a change against the daemon, then reloads everything that may depend on it.
-    func perform(_ change: @Sendable (FlockClient) async throws -> Void) async {
+    @discardableResult
+    func perform(_ change: @Sendable (FlockClient) async throws -> Void) async -> Bool {
         isBusy = true
         defer { isBusy = false }
+        var mutationError: String?
         do {
             try await change(client)
             error = nil
         } catch {
-            self.error = error.localizedDescription
+            mutationError = error.localizedDescription
+            self.error = mutationError
         }
         await refresh()
+        if let mutationError {
+            self.error = mutationError
+        }
         await onChange?()
+        return mutationError == nil
     }
 
     /// Reloads the AI clients (only the AI pane lists them).
