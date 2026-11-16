@@ -113,4 +113,36 @@ func TestCreateAppEndpoint(t *testing.T) {
 			t.Fatalf("expected destination not to be created: %v", err)
 		}
 	})
+
+	t.Run("creates-app-inside-parked-parent", func(t *testing.T) {
+		root, parent := t.TempDir(), t.TempDir()
+		cfg := config.Default()
+		cfg.Parked = []string{parent}
+		if err := cfg.Save(root); err != nil {
+			t.Fatal(err)
+		}
+		handler := NewHandler(&fakeBackend{root: root}, "")
+		body, _ := json.Marshal(map[string]any{
+			"name":       "parked-app",
+			"parent_dir": parent,
+			"type":       "php",
+			"php":        "8.4",
+			"secured":    true,
+		})
+		req := httptest.NewRequest(http.MethodPost, "/v1/apps", bytes.NewReader(body))
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusOK {
+			t.Fatalf("POST /v1/apps = %d: %s", rec.Code, rec.Body.String())
+		}
+		updated, err := config.Load(root)
+		if err != nil {
+			t.Fatal(err)
+		}
+		site, ok := updated.FindSite("parked-app")
+		if !ok || site.Parked || site.Path != filepath.Join(parent, "parked-app") || site.PHP != "8.4" || !site.Secured {
+			t.Fatalf("unexpected saved site: %+v", site)
+		}
+	})
 }

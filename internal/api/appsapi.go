@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"path/filepath"
 
 	"flock/internal/apps"
 	"flock/internal/config"
@@ -56,7 +57,7 @@ func registerApps(mux *http.ServeMux, b Backend) {
 			},
 			SaveSite: func(site config.Site) error {
 				return b.Mutate(func(live *config.Config) error {
-					if _, ok := live.FindSite(site.Name); ok {
+					if existing, ok := live.FindSite(site.Name); ok && (!existing.Parked || filepath.Clean(existing.Path) != filepath.Clean(site.Path)) {
 						return invalid("a site named %q already exists; choose another project name", site.Name)
 					}
 					if err := live.Upsert(site); err != nil {
