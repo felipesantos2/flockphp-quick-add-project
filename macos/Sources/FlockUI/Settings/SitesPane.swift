@@ -1295,7 +1295,9 @@ private struct ShareSheet: View {
 private extension SitesPane {
     func openNewAppSheet() {
         guard !creatingAppState.wrappedValue else { return }
+        creatingAppState.wrappedValue = true
         Task {
+            defer { creatingAppState.wrappedValue = false }
             do {
                 let list = try await model.client.appTemplates()
                 newAppTemplatesState.wrappedValue = list.isEmpty ? AppTemplate.builtInDefaults : list

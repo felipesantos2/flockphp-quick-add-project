@@ -403,9 +403,14 @@ impl Inner {
         if self.creating_app.get() {
             return;
         }
+        self.creating_app.set(true);
+        self.render();
         let this = self.clone();
         glib::spawn_future_local(async move {
-            let templates = match gio::spawn_blocking(|| Client.app_templates()).await.expect("templates request") {
+            let result = gio::spawn_blocking(|| Client.app_templates()).await.expect("templates request");
+            this.creating_app.set(false);
+            this.render();
+            let templates = match result {
                 Ok(list) if !list.is_empty() => list,
                 Err(Error::Server { status: 404, .. }) | Ok(_) => default_app_templates(),
                 Err(e) => {

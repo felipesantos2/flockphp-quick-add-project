@@ -131,7 +131,7 @@ func TestConfigureWPConfig(t *testing.T) {
 }
 
 func TestValidateNameRejectsWindowsInvalidCharacters(t *testing.T) {
-	for _, bad := range []string{"foo*", "foo?", "foo<bar", "foo>bar", `foo"bar`, "foo|bar", "foo:bar"} {
+	for _, bad := range []string{"foo*", "foo?", "foo<bar", "foo>bar", `foo"bar`, "foo|bar", "foo:bar", "CON", "prn", "aux", "nul", "com1", "lpt9"} {
 		if _, err := ValidateName(bad); err == nil {
 			t.Fatalf("expected ValidateName(%q) to fail", bad)
 		}

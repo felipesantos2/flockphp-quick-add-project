@@ -198,7 +198,11 @@ func TestManagerRunsOneSetupPerWorktreeAndJoinsIt(t *testing.T) {
 	setup := func(ctx context.Context, log io.Writer, step func(string)) error {
 		runs++
 		step(StepCopy)
-		<-release
+		select {
+		case <-release:
+		case <-ctx.Done():
+			return ctx.Err()
+		}
 		return nil
 	}
 	done := make(chan error, 1)

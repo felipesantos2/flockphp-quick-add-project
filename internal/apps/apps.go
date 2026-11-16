@@ -159,10 +159,21 @@ func ValidateName(folder string) (string, error) {
 	name := config.SiteName(folder)
 	if folder == "" || folder == "." || folder == ".." ||
 		strings.ContainsAny(folder, `/\:*?"<>|`) || strings.TrimSpace(folder) != folder ||
-		strings.HasSuffix(folder, ".") || name == "" || len(name) > 63 {
+		strings.HasSuffix(folder, ".") || isReservedName(folder) || name == "" || len(name) > 63 {
 		return "", fmt.Errorf("%q is not a valid project name: use a single folder name that produces a hostname of 1-63 characters", folder)
 	}
 	return name, nil
+}
+
+func isReservedName(name string) bool {
+	stem, _, _ := strings.Cut(name, ".")
+	switch strings.ToUpper(stem) {
+	case "CON", "PRN", "AUX", "NUL",
+		"COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+		"LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9":
+		return true
+	}
+	return false
 }
 
 // SamePath reports whether paths a and b refer to the same directory path.
@@ -303,27 +314,44 @@ func validKey(key string) bool {
 	return true
 }
 
-// CreateDir populates path from tmpl inside a sibling temporary directory before moving it into place.
+// CreateDir populates path from tmpl inside a sibling temporary directory before publishing it into place
+// without replacing an existing destination.
 func CreateDir(ctx context.Context, client *http.Client, path string, tmpl Template) error {
 	tmpDir, err := os.MkdirTemp(filepath.Dir(path), ".flock-app-*")
 	if err != nil {
 		return fmt.Errorf("create project directory: %w", err)
 	}
-	moved := false
-	defer func() {
-		if !moved {
-			_ = os.RemoveAll(tmpDir)
-		}
-	}()
+	defer os.RemoveAll(tmpDir)
 
 	if err := prepareTemplate(ctx, client, tmpDir, tmpl.Target); err != nil {
 		return err
 	}
 	_ = os.Chmod(tmpDir, 0o755)
-	if err := os.Rename(tmpDir, path); err != nil {
+
+	if err := os.Mkdir(path, 0o755); err != nil {
+		if errors.Is(err, os.ErrExist) {
+			return fmt.Errorf("%w: destination %s already exists", ErrInvalid, path)
+		}
 		return fmt.Errorf("create project directory: %w", err)
 	}
-	moved = true
+
+	published := false
+	defer func() {
+		if !published {
+			_ = os.RemoveAll(path)
+		}
+	}()
+
+	entries, err := os.ReadDir(tmpDir)
+	if err != nil {
+		return fmt.Errorf("create project directory: %w", err)
+	}
+	for _, entry := range entries {
+		if err := os.Rename(filepath.Join(tmpDir, entry.Name()), filepath.Join(path, entry.Name())); err != nil {
+			return fmt.Errorf("create project directory: %w", err)
+		}
+	}
+	published = true
 	return nil
 }
 
