@@ -299,7 +299,24 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane
     /// <summary>Asks for a name, template and parent folder, then creates and links the project.</summary>
     private async Task NewAppAsync()
     {
-        var templates = await Model.Sites.AppTemplatesAsync();
+        List<AppTemplate> templates;
+        try
+        {
+            templates = await Model.Sites.AppTemplatesAsync();
+        }
+        catch (Exception error)
+        {
+            App.Log(error);
+            await new ContentDialog
+            {
+                Title = "Couldn't load app templates",
+                Content = error.Message,
+                CloseButtonText = "OK",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = Window.XamlRoot
+            }.ShowAsync();
+            return;
+        }
         var tld = Model.Status?.Dns.Tld is { Length: > 0 } t ? t : "test";
         var hasRunningDb = Model.Status?.Extras.Any(s => s.Id is "mysql" or "mariadb" && s.Up) ?? false;
 
