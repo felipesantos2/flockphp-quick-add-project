@@ -357,7 +357,7 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane
         var dialog = new ContentDialog
         {
             Title = "New application",
-            Content = Ui.Column(12, nameBox, templateBox, folderGroup, dbCheck, dbServiceBox, dbHint, securedCheck, preview),
+            Content = Ui.DialogForm(Window.XamlRoot, Ui.Column(12, nameBox, templateBox, folderGroup, dbCheck, dbServiceBox, dbHint, securedCheck, preview)),
             PrimaryButtonText = "Create",
             CloseButtonText = "Cancel",
             DefaultButton = ContentDialogButton.Primary,
