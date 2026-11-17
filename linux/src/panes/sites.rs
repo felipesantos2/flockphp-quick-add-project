@@ -476,21 +476,17 @@ impl Inner {
 
         let sync: Rc<dyn Fn()> = Rc::new({
             let (weak, templates) = (dialog.downgrade(), templates.clone());
-            let (name_weak, folder_weak, template_row_weak) = (name.downgrade(), folder.downgrade(), template_row.downgrade());
-            let (db_row_weak, db_service_row_weak, secured_row_weak) = (db_row.downgrade(), db_service_row.downgrade(), secured_row.downgrade());
+            let (name_w, folder_w, template_w) = (name.downgrade(), folder.downgrade(), template_row.downgrade());
+            let (db_w, db_svc_w, secured_w) = (db_row.downgrade(), db_service_row.downgrade(), secured_row.downgrade());
             let tld = tld.clone();
             move || {
-                let (Some(dialog), Some(name), Some(folder), Some(template_row), Some(db_row), Some(db_service_row), Some(secured_row)) = (
-                    weak.upgrade(),
-                    name_weak.upgrade(),
-                    folder_weak.upgrade(),
-                    template_row_weak.upgrade(),
-                    db_row_weak.upgrade(),
-                    db_service_row_weak.upgrade(),
-                    secured_row_weak.upgrade(),
-                ) else {
-                    return;
-                };
+                let Some(dialog) = weak.upgrade() else { return };
+                let Some(name) = name_w.upgrade() else { return };
+                let Some(folder) = folder_w.upgrade() else { return };
+                let Some(template_row) = template_w.upgrade() else { return };
+                let Some(db_row) = db_w.upgrade() else { return };
+                let Some(db_service_row) = db_svc_w.upgrade() else { return };
+                let Some(secured_row) = secured_w.upgrade() else { return };
                 let tmpl = selected_app_template(&templates, template_row.selected());
                 if tmpl.requires_db && !db_row.is_active() {
                     db_row.set_active(true);
@@ -511,12 +507,13 @@ impl Inner {
                 let raw_name = raw_name.trim();
                 let raw_folder = folder.text();
                 let raw_folder = raw_folder.trim();
-                let valid = !raw_name.is_empty() && !raw_folder.is_empty();
+                let slug = app_slug(raw_name);
+                let valid = !slug.is_empty() && !raw_folder.is_empty();
                 dialog.set_response_enabled("create", valid);
 
                 let scheme = if secured_row.is_active() { "https" } else { "http" };
                 let preview = if valid {
-                    format!("{} → {scheme}://{}.{tld}", std::path::Path::new(raw_folder).join(raw_name).display(), app_slug(raw_name))
+                    format!("{} → {scheme}://{slug}.{tld}", std::path::Path::new(raw_folder).join(raw_name).display())
                 } else {
                     format!("Choose a name and folder to serve at {scheme}://<name>.{tld}.")
                 };
@@ -563,7 +560,7 @@ impl Inner {
         dialog.choose(Some(&self.stack), gio::Cancellable::NONE, move |response| {
             let app_name = name.text().trim().to_owned();
             let parent_dir = folder.text().trim().to_owned();
-            if response != "create" || app_name.is_empty() || parent_dir.is_empty() {
+            if response != "create" || app_slug(&app_name).is_empty() || parent_dir.is_empty() {
                 return;
             }
             let tmpl = selected_app_template(&templates, template_row.selected());

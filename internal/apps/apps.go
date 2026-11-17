@@ -338,7 +338,6 @@ func CreateDir(ctx context.Context, client *http.Client, path string, tmpl Templ
 	if err := prepareTemplate(ctx, client, tmpDir, tmpl.Target); err != nil {
 		return err
 	}
-	_ = os.Chmod(tmpDir, 0o755)
 
 	if err := os.Mkdir(path, 0o755); err != nil {
 		if errors.Is(err, os.ErrExist) {

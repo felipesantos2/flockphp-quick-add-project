@@ -1387,7 +1387,8 @@ private struct NewAppSheet: View {
         let wantsDb = tmpl.requiresDb || dbState.wrappedValue
         let rawName = nameState.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines)
         let rawFolder = folderState.wrappedValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        let valid = !rawName.isEmpty && !rawFolder.isEmpty
+        let slug = appSlug(rawName)
+        let valid = !slug.isEmpty && !rawFolder.isEmpty
         let scheme = securedState.wrappedValue ? "https" : "http"
 
         VStack(alignment: .leading, spacing: 12) {
@@ -1452,7 +1453,7 @@ private struct NewAppSheet: View {
             Toggle("Serve over HTTPS", isOn: securedState.projectedValue)
 
             Text(valid
-                 ? "\(URL(fileURLWithPath: rawFolder).appendingPathComponent(rawName).path) → \(scheme)://\(appSlug(rawName)).\(tld)"
+                 ? "\(URL(fileURLWithPath: rawFolder).appendingPathComponent(rawName).path) → \(scheme)://\(slug).\(tld)"
                  : "Choose a name and folder to serve at \(scheme)://<name>.\(tld).")
                 .font(.caption)
                 .foregroundStyle(.secondary)
