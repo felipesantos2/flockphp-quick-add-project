@@ -22,11 +22,13 @@ public struct APIConfig: Decodable, Sendable, Equatable {
 
 public enum FlockError: LocalizedError, Equatable {
     case notRunning
+    case outcomeUnknown
     case server(status: Int, message: String)
 
     public var errorDescription: String? {
         switch self {
         case .notRunning: "Flock is not running"
+        case .outcomeUnknown: "The connection failed. The change may have completed; refresh its state before retrying."
         case let .server(status, message): message.isEmpty ? "Flock answered with HTTP \(status)" : message
         }
     }
@@ -121,7 +123,7 @@ public actor FlockClient {
 
     /// Creates a new project directory from an apps.conf template and links it as a site.
     public func createApp(_ req: CreateAppRequest) async throws -> Status {
-        try await decode(Status.self, "POST", "/v1/apps", body: try JSONEncoder().encode(req), timeout: Self.appCreateTimeout)
+        try await decode(Status.self, "POST", "/v1/apps", body: try JSONEncoder().encode(req), timeout: Self.appCreateTimeout, retryOnTransportError: false)
     }
 
     public func updateSite(_ name: String, _ change: SiteChange) async throws -> Status {
@@ -616,18 +618,24 @@ public actor FlockClient {
 
     // MARK: Transport
 
-    private func decode<T: Decodable>(_ type: T.Type, _ method: String, _ path: String, query: [URLQueryItem] = [], body: Data? = nil, timeout: TimeInterval? = nil) async throws -> T {
-        let data = try await send(method, path, query: query, body: body, timeout: timeout)
+    private func decode<T: Decodable>(_ type: T.Type, _ method: String, _ path: String, query: [URLQueryItem] = [], body: Data? = nil, timeout: TimeInterval? = nil, retryOnTransportError: Bool = true) async throws -> T {
+        let data = try await send(method, path, query: query, body: body, timeout: timeout, retryOnTransportError: retryOnTransportError)
         return try FlockJSON.decoder().decode(T.self, from: data)
     }
 
     /// Sends a request; on a connection failure it re-reads api.json once and retries,
     /// because a restarted daemon may listen on a new port with a new token.
-    private func send(_ method: String, _ path: String, query: [URLQueryItem] = [], body: Data? = nil, timeout: TimeInterval? = nil) async throws -> Data {
+    private func send(_ method: String, _ path: String, query: [URLQueryItem] = [], body: Data? = nil, timeout: TimeInterval? = nil, retryOnTransportError: Bool = true) async throws -> Data {
         do {
             return try await attempt(method, path, query: query, body: body, timeout: timeout, config: try loadConfig(force: false))
-        } catch let error as URLError where error.code != .timedOut && error.code != .cancelled {
+        } catch let error as URLError where error.code != .cancelled {
             config = nil
+            guard retryOnTransportError else {
+                throw FlockError.outcomeUnknown
+            }
+            if error.code == .timedOut {
+                throw error
+            }
             do {
                 return try await attempt(method, path, query: query, body: body, timeout: timeout, config: try loadConfig(force: true))
             } catch is URLError {
@@ -635,7 +643,12 @@ public actor FlockClient {
             }
         } catch FlockError.server(401, _) {
             config = nil
-            return try await attempt(method, path, query: query, body: body, timeout: timeout, config: try loadConfig(force: true))
+            do {
+                return try await attempt(method, path, query: query, body: body, timeout: timeout, config: try loadConfig(force: true))
+            } catch let error as URLError where !retryOnTransportError && error.code != .cancelled {
+                config = nil
+                throw FlockError.outcomeUnknown
+            }
         }
     }
 

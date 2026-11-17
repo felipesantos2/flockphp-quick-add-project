@@ -70,22 +70,32 @@ final class SettingsStore {
         }
     }
 
+    enum MutationOutcome: Equatable, Sendable {
+        case succeeded
+        case unknown
+        case failed
+    }
+
     /// Runs a change against the daemon, then reloads everything that may depend on it.
     @discardableResult
-    func perform(_ change: @Sendable (FlockClient) async throws -> Void) async -> Bool {
+    func perform(_ change: @Sendable (FlockClient) async throws -> Void) async -> MutationOutcome {
         isBusy = true
         defer { isBusy = false }
-        var succeeded = false
+        let outcome: MutationOutcome
         do {
             try await change(client)
             error = nil
-            succeeded = true
+            outcome = .succeeded
+        } catch FlockError.outcomeUnknown {
+            self.error = FlockError.outcomeUnknown.localizedDescription
+            outcome = .unknown
         } catch {
             self.error = error.localizedDescription
+            outcome = .failed
         }
         await refresh()
         await onChange?()
-        return succeeded
+        return outcome
     }
 
     /// Reloads the AI clients (only the AI pane lists them).
