@@ -114,6 +114,9 @@ func TestAppCreate(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			root, _ := appTestEnv(t)
+			if tc.name == "explicit-php" {
+				fakePHP(t, root, "8.3")
+			}
 			cfg := config.Default()
 			cfg.TLD, cfg.DefaultPHP = "local", "8.4"
 			if err := cfg.Save(root); err != nil {

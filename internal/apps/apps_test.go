@@ -1,10 +1,14 @@
 package apps
 
 import (
+	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"flock/internal/php"
 )
 
 func TestParse(t *testing.T) {
@@ -18,10 +22,14 @@ func TestParse(t *testing.T) {
 		dst["wordpress"] != (Template{Name: "wordpress", Target: "https://wordpress.org/latest.tar.gz", RequiresDB: true}) {
 		t.Fatalf("unexpected parsed templates: %+v", dst)
 	}
-	for _, bad := range []string{"no-equals", "=value", "bad key=value", "wp=https://example.com/a.zip | unknown"} {
+	for _, bad := range []string{"no-equals", "=value", "bad key=value", "wp=https://example.com/a.zip | unknown", "php=index.php\n\ufeffblank="} {
 		if err := Parse(bad, map[string]Template{}); err == nil {
 			t.Fatalf("expected error for %q", bad)
 		}
+	}
+	bomDst := map[string]Template{}
+	if err := Parse("\ufeff# comment\nphp=index.php\n", bomDst); err != nil || bomDst["php"] != (Template{Name: "php", Target: "index.php"}) {
+		t.Fatalf("expected leading UTF-8 BOM to be stripped: dst=%+v, err=%v", bomDst, err)
 	}
 }
 
@@ -151,5 +159,41 @@ func TestSamePathComparesIdentities(t *testing.T) {
 		if os.PathSeparator == '\\' {
 			t.Fatal("expected case-insensitive match on Windows")
 		}
+	}
+}
+
+func TestCreateRejectsUninstalledPHP(t *testing.T) {
+	root, parent := t.TempDir(), t.TempDir()
+
+	_, err := Create(context.Background(), CreateRequest{
+		Root:      root,
+		Name:      "bad-php",
+		ParentDir: parent,
+		Type:      "blank",
+		PHP:       "9.9",
+	})
+	if !errors.Is(err, ErrInvalid) || !strings.Contains(err.Error(), "PHP 9.9 is not installed") {
+		t.Fatalf("expected ErrInvalid for uninstalled PHP, got %v", err)
+	}
+	if _, statErr := os.Stat(filepath.Join(parent, "bad-php")); !os.IsNotExist(statErr) {
+		t.Fatalf("expected destination not to be created: %v", statErr)
+	}
+
+	bin := php.Binary(root, "8.4")
+	if err := os.MkdirAll(filepath.Dir(bin), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(bin, nil, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	res, err := Create(context.Background(), CreateRequest{
+		Root:      root,
+		Name:      "ok-php",
+		ParentDir: parent,
+		Type:      "blank",
+		PHP:       "8.4",
+	})
+	if err != nil || res.Site.PHP != "8.4" {
+		t.Fatalf("expected installed PHP 8.4 to succeed, got %+v, err=%v", res, err)
 	}
 }

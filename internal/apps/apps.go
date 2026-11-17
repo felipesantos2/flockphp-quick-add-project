@@ -21,6 +21,7 @@ import (
 	"flock/internal/catalog"
 	"flock/internal/config"
 	"flock/internal/download"
+	"flock/internal/php"
 )
 
 //go:embed apps.conf
@@ -105,6 +106,16 @@ func Create(ctx context.Context, req CreateRequest) (CreateResult, error) {
 		return CreateResult{}, fmt.Errorf("%w: destination %s already exists", ErrInvalid, path)
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return CreateResult{}, err
+	}
+
+	if req.PHP != "" {
+		installed, err := php.Installed(req.Root)
+		if err != nil {
+			return CreateResult{}, err
+		}
+		if !slices.Contains(installed, req.PHP) {
+			return CreateResult{}, fmt.Errorf("%w: PHP %s is not installed", ErrInvalid, req.PHP)
+		}
 	}
 
 	site := config.Site{Name: name, Path: path, PHP: req.PHP, Secured: req.Secured}
@@ -271,6 +282,7 @@ func loadMap(root string) (map[string]Template, error) {
 
 // Parse reads apps.conf key=value entries into dst, skipping blank lines, comments, and --- separators.
 func Parse(src string, dst map[string]Template) error {
+	src = strings.TrimPrefix(src, "\ufeff")
 	for i, raw := range strings.Split(src, "\n") {
 		line := strings.TrimSpace(raw)
 		if line == "" || strings.HasPrefix(line, "#") || strings.HasPrefix(line, ";") || strings.HasPrefix(line, "---") {

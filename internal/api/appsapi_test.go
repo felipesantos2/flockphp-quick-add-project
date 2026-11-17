@@ -12,7 +12,19 @@ import (
 
 	"flock/internal/apps"
 	"flock/internal/config"
+	"flock/internal/php"
 )
+
+func fakeInstalledPHP(t *testing.T, root, minor string) {
+	t.Helper()
+	bin := php.Binary(root, minor)
+	if err := os.MkdirAll(filepath.Dir(bin), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(bin, nil, 0o755); err != nil {
+		t.Fatal(err)
+	}
+}
 
 func TestAppsTemplatesEndpoint(t *testing.T) {
 	root := t.TempDir()
@@ -41,6 +53,7 @@ func TestAppsTemplatesEndpoint(t *testing.T) {
 func TestCreateAppEndpoint(t *testing.T) {
 	t.Run("creates-php-app", func(t *testing.T) {
 		root, parent := t.TempDir(), t.TempDir()
+		fakeInstalledPHP(t, root, "8.4")
 		handler := NewHandler(&fakeBackend{root: root}, "")
 		body, _ := json.Marshal(map[string]any{
 			"name":       "My App",
@@ -116,6 +129,7 @@ func TestCreateAppEndpoint(t *testing.T) {
 
 	t.Run("creates-app-inside-parked-parent", func(t *testing.T) {
 		root, parent := t.TempDir(), t.TempDir()
+		fakeInstalledPHP(t, root, "8.4")
 		cfg := config.Default()
 		cfg.Parked = []string{parent}
 		if err := cfg.Save(root); err != nil {
@@ -143,6 +157,27 @@ func TestCreateAppEndpoint(t *testing.T) {
 		site, ok := updated.FindSite("parked-app")
 		if !ok || site.Parked || site.Path != filepath.Join(parent, "parked-app") || site.PHP != "8.4" || !site.Secured {
 			t.Fatalf("unexpected saved site: %+v", site)
+		}
+	})
+
+	t.Run("rejects-uninstalled-php", func(t *testing.T) {
+		root, parent := t.TempDir(), t.TempDir()
+		handler := NewHandler(&fakeBackend{root: root}, "")
+		body, _ := json.Marshal(map[string]any{
+			"name":       "bad-php",
+			"parent_dir": parent,
+			"type":       "php",
+			"php":        "9.9",
+		})
+		req := httptest.NewRequest(http.MethodPost, "/v1/apps", bytes.NewReader(body))
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusBadRequest || !strings.Contains(rec.Body.String(), "PHP 9.9 is not installed") {
+			t.Fatalf("expected 400 uninstalled PHP error, got %d: %s", rec.Code, rec.Body.String())
+		}
+		if _, err := os.Stat(filepath.Join(parent, "bad-php")); !os.IsNotExist(err) {
+			t.Fatalf("expected destination not to be created: %v", err)
 		}
 	})
 }
