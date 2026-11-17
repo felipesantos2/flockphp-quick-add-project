@@ -1312,6 +1312,7 @@ private extension SitesPane {
     func createApp(_ req: CreateAppRequest) {
         creatingAppState.wrappedValue = true
         let targetPath = URL(fileURLWithPath: req.parentDir).appendingPathComponent(req.name).path
+        let existedBefore = model.status?.sites.contains { $0.path == targetPath } ?? false
         let fallbackName = appSlug(req.name)
         Task {
             defer { creatingAppState.wrappedValue = false }
@@ -1326,9 +1327,11 @@ private extension SitesPane {
                 if model.status?.sites.first(where: { $0.path == targetPath }) == nil {
                     await model.refresh()
                 }
-                if let created = model.status?.sites.first(where: { $0.path == targetPath }) {
+                if !existedBefore, let created = model.status?.sites.first(where: { $0.path == targetPath }) {
                     selectionState.wrappedValue = created.name
-                    model.settings.error = nil
+                    if !created.parked {
+                        model.settings.error = nil
+                    }
                 }
             case .failed:
                 break
