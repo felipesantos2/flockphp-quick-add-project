@@ -60,17 +60,17 @@ func newAppCreateCommand() *cobra.Command {
 				SaveSite: func(site config.Site) error {
 					latest, err := config.Load(s.root)
 					if err != nil {
-						return fmt.Errorf("project created at %s, but loading site settings failed: %w", site.Path, err)
+						return fmt.Errorf("loading site settings failed: %w", err)
 					}
 					if existing, ok := latest.FindSite(site.Name); ok && (!existing.Parked || !apps.SamePath(existing.Path, site.Path)) {
-						return fmt.Errorf("project created at %s, but a site named %q already exists", site.Path, site.Name)
+						return fmt.Errorf("a site named %q already exists", site.Name)
 					}
 					if err := latest.Upsert(site); err != nil {
-						return fmt.Errorf("project created at %s, but applying site settings failed: %w", site.Path, err)
+						return fmt.Errorf("applying site settings failed: %w", err)
 					}
 					s.cfg = latest
 					if err := s.commit(ctx, cmd.ErrOrStderr()); err != nil {
-						return fmt.Errorf("project created at %s, but applying site settings failed: %w", site.Path, err)
+						return fmt.Errorf("applying site settings failed: %w", err)
 					}
 					return nil
 				},

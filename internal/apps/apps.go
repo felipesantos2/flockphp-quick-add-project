@@ -159,7 +159,7 @@ func Create(ctx context.Context, req CreateRequest) (CreateResult, error) {
 
 	if req.SaveSite != nil {
 		if err := req.SaveSite(site); err != nil {
-			return CreateResult{}, err
+			return CreateResult{}, fmt.Errorf("project created at %s, but %w", path, err)
 		}
 	}
 	return CreateResult{Site: site, Database: dbSvc, WPConfigured: wpConfigured}, nil

@@ -180,4 +180,34 @@ func TestCreateAppEndpoint(t *testing.T) {
 			t.Fatalf("expected destination not to be created: %v", err)
 		}
 	})
+
+	t.Run("includes-created-path-on-save-failure", func(t *testing.T) {
+		root, parent := t.TempDir(), t.TempDir()
+		if err := os.Mkdir(filepath.Join(root, "config.json.tmp"), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		handler := NewHandler(&fakeBackend{root: root}, "")
+		body, _ := json.Marshal(map[string]any{
+			"name":       "save-fail",
+			"parent_dir": parent,
+			"type":       "php",
+		})
+		req := httptest.NewRequest(http.MethodPost, "/v1/apps", bytes.NewReader(body))
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+
+		target := filepath.Join(parent, "save-fail")
+		var errOut struct {
+			Error string `json:"error"`
+		}
+		if err := json.Unmarshal(rec.Body.Bytes(), &errOut); err != nil {
+			t.Fatalf("decode error JSON: %v (%s)", err, rec.Body.String())
+		}
+		if rec.Code != http.StatusInternalServerError || !strings.Contains(errOut.Error, "project created at "+target) {
+			t.Fatalf("expected 500 error mentioning %s, got %d: %s", target, rec.Code, rec.Body.String())
+		}
+		if _, err := os.Stat(filepath.Join(target, "index.php")); err != nil {
+			t.Fatalf("expected created project directory to remain on disk: %v", err)
+		}
+	})
 }

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"flock/internal/config"
 	"flock/internal/php"
 )
 
@@ -195,5 +196,27 @@ func TestCreateRejectsUninstalledPHP(t *testing.T) {
 	})
 	if err != nil || res.Site.PHP != "8.4" {
 		t.Fatalf("expected installed PHP 8.4 to succeed, got %+v, err=%v", res, err)
+	}
+}
+
+func TestCreateSaveSiteErrorIncludesProjectPath(t *testing.T) {
+	root, parent := t.TempDir(), t.TempDir()
+	sentinel := errors.New("save conflict")
+	target := filepath.Join(parent, "my-app")
+
+	_, err := Create(context.Background(), CreateRequest{
+		Root:      root,
+		Name:      "my-app",
+		ParentDir: parent,
+		Type:      "blank",
+		SaveSite: func(config.Site) error {
+			return sentinel
+		},
+	})
+	if !errors.Is(err, sentinel) || !strings.Contains(err.Error(), "project created at "+target+", but save conflict") {
+		t.Fatalf("expected created path and wrapped error, got %v", err)
+	}
+	if _, statErr := os.Stat(target); statErr != nil {
+		t.Fatalf("expected created project directory to remain on disk: %v", statErr)
 	}
 }
