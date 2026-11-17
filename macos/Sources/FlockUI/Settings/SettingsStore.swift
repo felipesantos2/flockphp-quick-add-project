@@ -31,7 +31,17 @@ final class SettingsStore {
     /// Node.js majors a flock://install link installs that the daemon hasn't answered for yet
     /// (the Node pane's rows track the installs started there).
     private(set) var nodePending: Set<String> = []
-    var error: String?
+    private var mutationError: String?
+    private var refreshError: String?
+    var error: String? {
+        get { mutationError ?? refreshError }
+        set {
+            mutationError = newValue
+            if newValue == nil {
+                refreshError = nil
+            }
+        }
+    }
     private(set) var isBusy = false
     var isVisible = false
 
@@ -48,9 +58,9 @@ final class SettingsStore {
             if services != self.services {
                 self.services = services
             }
-            error = nil
+            refreshError = nil
         } catch {
-            self.error = error.localizedDescription
+            refreshError = error.localizedDescription
         }
     }
 
@@ -65,20 +75,17 @@ final class SettingsStore {
     func perform(_ change: @Sendable (FlockClient) async throws -> Void) async -> Bool {
         isBusy = true
         defer { isBusy = false }
-        var mutationError: String?
+        var succeeded = false
         do {
             try await change(client)
             error = nil
+            succeeded = true
         } catch {
-            mutationError = error.localizedDescription
-            self.error = mutationError
+            self.error = error.localizedDescription
         }
         await refresh()
-        if let mutationError {
-            self.error = mutationError
-        }
         await onChange?()
-        return mutationError == nil
+        return succeeded
     }
 
     /// Reloads the AI clients (only the AI pane lists them).
@@ -89,7 +96,7 @@ final class SettingsStore {
                 mcp = fresh
             }
         } catch {
-            self.error = error.localizedDescription
+            refreshError = error.localizedDescription
         }
     }
 
@@ -127,7 +134,7 @@ final class SettingsStore {
                 php = fresh
             }
         } catch {
-            self.error = error.localizedDescription
+            refreshError = error.localizedDescription
         }
     }
 
@@ -153,7 +160,7 @@ final class SettingsStore {
                 frankenPHP = fresh
             }
         } catch {
-            self.error = error.localizedDescription
+            refreshError = error.localizedDescription
         }
     }
 
@@ -176,7 +183,7 @@ final class SettingsStore {
                 node = fresh
             }
         } catch {
-            self.error = error.localizedDescription
+            refreshError = error.localizedDescription
         }
     }
 
@@ -209,7 +216,7 @@ final class SettingsStore {
             adopt(fresh.0)
             adopt(fresh.1)
         } catch {
-            self.error = error.localizedDescription
+            refreshError = error.localizedDescription
         }
     }
 
