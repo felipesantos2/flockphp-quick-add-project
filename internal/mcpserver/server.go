@@ -53,6 +53,7 @@ type Daemon interface {
 	WorktreeSetup(ctx context.Context, path string) (api.WorktreeStatus, error)
 	UnpinSite(ctx context.Context, name, tool string) (api.Status, error)
 	RestartSite(ctx context.Context, name string) (api.Status, error)
+	RestartReverb(ctx context.Context, name string) (api.Status, error)
 	StopSite(ctx context.Context, name string) (api.Status, error)
 	UpdateSettings(ctx context.Context, s api.Settings) (api.Status, error)
 }
@@ -127,6 +128,7 @@ func (s *server) instructions(ctx context.Context) string {
 	}
 
 	b.WriteString(`- Flock always serves its sites: don't run "php artisan serve" or another web server. Use site_info for the URL.
+- Flock runs a Laravel app's Reverb server when update_site's reverb_on turned it on: then don't run "php artisan reverb:start".
 - Run php, composer, node and npm as usual: Flock's shims pick the versions the project uses.
 - When code uses a PHP extension (imagick, intl, ...), require it in composer.json ("composer require ext-<name>:*"). php_extensions shows what the project requires and what Flock's PHP has.
 - Mail the app sends is caught by Flock, not delivered: read it with list_mail and read_mail.

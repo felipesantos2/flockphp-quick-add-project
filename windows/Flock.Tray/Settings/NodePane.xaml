@@ -2,6 +2,7 @@
     x:Class="Flock.Tray.Settings.NodePane"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray"
     xmlns:automation="using:Microsoft.UI.Xaml.Automation"
     xmlns:settings="using:Flock.Tray.Settings"
     xmlns:controls="using:Flock.Tray.Controls">
@@ -14,11 +15,11 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
-            <TextBlock Text="Versions" Style="{StaticResource BodyStrongTextBlockStyle}" />
+            <TextBlock Text="{l:Loc Key=Versions_Versions}" Style="{StaticResource BodyStrongTextBlockStyle}" />
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                 <TextBlock Text="{Binding CheckedText}" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
                 <Button Command="{Binding CheckCommand}">
-                    <controls:BusyContent Text="Check now" BusyText="Checking…" IsBusy="{Binding IsChecking}" />
+                    <controls:BusyContent Text="{l:Loc Key=Versions_CheckNow}" BusyText="{l:Loc Key=Versions_Checking}" IsBusy="{Binding IsChecking}" />
                 </Button>
             </StackPanel>
         </Grid>
@@ -28,13 +29,13 @@
                     <Border Style="{StaticResource CardStyle}">
                         <Grid ColumnSpacing="12">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" MinWidth="240" /><ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <StackPanel Spacing="2">
                                 <StackPanel Orientation="Horizontal" Spacing="8">
                                     <TextBlock Text="{Binding DisplayName}" Style="{StaticResource BodyStrongTextBlockStyle}" />
                                     <Border Style="{StaticResource BadgeStyle}" Visibility="{Binding IsDefault, Converter={StaticResource BooleanVisibilityConverter}}">
-                                        <TextBlock Text="Default" FontSize="11" />
+                                        <TextBlock Text="{l:Loc Key=Versions_Default}" FontSize="11" />
                                     </Border>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Spacing="6">
@@ -54,13 +55,13 @@
                                                             Visibility="{Binding HasRunningJob, Converter={StaticResource BooleanVisibilityConverter}}" />
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                <Button Content="Install" Command="{Binding InstallCommand}"
+                                <Button Content="{l:Loc Key=Common_Install}" Command="{Binding InstallCommand}"
                                         Visibility="{Binding ShowPrimaryInstall, Converter={StaticResource BooleanVisibilityConverter}}" />
-                                <Button Content="Update" Style="{StaticResource AccentButtonStyle}" Command="{Binding InstallCommand}"
+                                <Button Content="{l:Loc Key=Common_Update}" Style="{StaticResource AccentButtonStyle}" Command="{Binding InstallCommand}"
                                         Visibility="{Binding ShowPrimaryUpdate, Converter={StaticResource BooleanVisibilityConverter}}" />
-                                <Button Content="Uninstall…" Click="UninstallNode"
+                                <Button Content="{l:Loc Key=Common_UninstallEllipsis}" Click="UninstallNode"
                                         Visibility="{Binding ShowPrimaryUninstall, Converter={StaticResource BooleanVisibilityConverter}}" />
-                                <Button Click="OpenNodeActions" Padding="8,6" ToolTipService.ToolTip="More actions" automation:AutomationProperties.Name="More actions"
+                                <Button Click="OpenNodeActions" Padding="8,6" ToolTipService.ToolTip="{l:Loc Key=Common_MoreActions}" automation:AutomationProperties.Name="{l:Loc Key=Common_MoreActions}"
                                         Visibility="{Binding HasMoreActions, Converter={StaticResource BooleanVisibilityConverter}}">
                                     <FontIcon Glyph="&#xE712;" FontFamily="{StaticResource SymbolsFont}" FontSize="14" />
                                 </Button>
@@ -70,12 +71,12 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
-        <TextBlock Text="No Node.js versions to show yet." Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+        <TextBlock Text="{l:Loc Key=Node_NoVersions}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                    Visibility="{Binding IsEmpty, Converter={StaticResource BooleanVisibilityConverter}}" />
         <TextBlock Text="{Binding CheckErrorText}" Foreground="{ThemeResource SystemFillColorCautionBrush}" TextWrapping="Wrap"
                    Visibility="{Binding CheckErrorText, Converter={StaticResource StringVisibilityConverter}}" />
         <TextBlock
-            Text="Official Node.js builds, the newest release of each major. A project that pins a version in .nvmrc gets that major offered when you run node, npm or npx there. Global packages belong to a Node line and survive its updates; those of the default version are on your PATH."
+            Text="{l:Loc Key=Node_Footnote}"
             Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Margin="2,6,0,0" />
     </StackPanel>
 </UserControl>

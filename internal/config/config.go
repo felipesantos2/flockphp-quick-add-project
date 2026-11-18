@@ -148,6 +148,10 @@ type Site struct {
 	// It is kept while the site runs on FastCGI, for switching back.
 	Worker string `json:"worker,omitempty"`
 	Port   int    `json:"port,omitempty"` // FrankenPHP's loopback port, assigned by SetServer
+	// Reverb runs the app's Laravel Reverb server on ReverbPort, and the web server sends the site's
+	// WebSocket and broadcast requests there. The port is kept while Reverb is off.
+	Reverb     bool `json:"reverb,omitempty"`
+	ReverbPort int  `json:"reverb_port,omitempty"`
 }
 
 // Servers and worker modes of a site (see Site.Server and Site.Worker).
@@ -157,12 +161,16 @@ const (
 	WorkerOctane     = "octane"
 )
 
-// FirstSitePort is where the loopback ports of FrankenPHP sites start.
+// FirstSitePort is where the loopback ports of sites' FrankenPHP and Reverb processes start.
 const FirstSitePort = 21000
 
 // SitePortID is how UsedPorts names the port of a FrankenPHP site: "frankenphp-<site>", which is
 // also the name of its process and log.
 func SitePortID(site string) string { return "frankenphp-" + site }
+
+// ReverbPortID is how UsedPorts names the port of a site's Reverb server: "reverb-<site>", which
+// is also the name of its process and log.
+func ReverbPortID(site string) string { return "reverb-" + site }
 
 // FrankenPHP reports whether the site runs on FrankenPHP.
 func (s Site) FrankenPHP() bool { return s.Kind() == TypePHP && s.Server == ServerFrankenPHP }
@@ -185,31 +193,44 @@ func (c *Config) SetServer(site *Site, server, worker string) error {
 		return fmt.Errorf("unknown worker mode %q (octane, or empty for classic)", worker)
 	}
 	site.Server, site.Worker, site.Parked = server, worker, false
-	if server == ServerFrankenPHP && (site.Port == 0 || c.portTaken(site.Port, site.Name)) {
-		site.Port = c.nextSitePort(site.Name)
+	if server == ServerFrankenPHP {
+		reverb := 0
+		if site.Reverb {
+			reverb = site.ReverbPort
+		}
+		site.Port = c.sitePort(site.Port, SitePortID(site.Name), reverb)
 	}
 	return nil
 }
 
-// portTaken reports whether a service or another site uses port.
-func (c *Config) portTaken(port int, site string) bool {
-	if _, used := c.UsedPorts("")[port]; used {
-		for _, s := range c.Sites {
-			if s.Name == site && s.Port == port && s.FrankenPHP() {
-				return false
-			}
+// SetReverb turns the site's Reverb server on or off, giving it a loopback port the first time.
+// The site becomes linked so the setting can be stored; the caller saves it with Upsert.
+func (c *Config) SetReverb(site *Site, on bool) {
+	site.Reverb, site.Parked = on, false
+	if on {
+		frankenphp := 0
+		if site.FrankenPHP() {
+			frankenphp = site.Port
 		}
-		return true
+		site.ReverbPort = c.sitePort(site.ReverbPort, ReverbPortID(site.Name), frankenphp)
 	}
-	return false
 }
 
-func (c *Config) nextSitePort(site string) int {
-	port := FirstSitePort
-	for c.portTaken(port, site) {
-		port++
+// sitePort keeps port for the process id when nothing else uses it, or finds the first free one.
+// sibling is the site's other process's port, which may not be saved yet.
+func (c *Config) sitePort(port int, id string, sibling int) int {
+	if port != 0 && port != sibling && !c.portTaken(port, id) {
+		return port
+	}
+	for port = FirstSitePort; port == sibling || c.portTaken(port, id); port++ {
 	}
 	return port
+}
+
+// portTaken reports whether a service or a process other than id uses port.
+func (c *Config) portTaken(port int, id string) bool {
+	other, used := c.UsedPorts("")[port]
+	return used && other != id
 }
 
 // Default returns the config used when none exists yet. It has no default PHP and Node.js: the
@@ -267,6 +288,9 @@ func (c *Config) UsedPorts(except string) map[int]string {
 	for _, s := range c.Sites {
 		if s.FrankenPHP() && s.Port != 0 {
 			used[s.Port] = SitePortID(s.Name)
+		}
+		if s.Reverb && s.ReverbPort != 0 {
+			used[s.ReverbPort] = ReverbPortID(s.Name)
 		}
 	}
 	return used

@@ -63,7 +63,7 @@ final class MailStore {
     /// Asks where to save an attachment, then downloads it there.
     func save(_ attachment: MailDetail.Attachment, of mailID: String) async {
         let panel = NSSavePanel()
-        panel.nameFieldStringValue = attachment.filename.isEmpty ? "attachment" : attachment.filename
+        panel.nameFieldStringValue = attachment.filename.isEmpty ? String(localized: "app.attachment") : attachment.filename
         if let type = UTType(mimeType: attachment.contentType) {
             panel.allowedContentTypes = [type]
         }

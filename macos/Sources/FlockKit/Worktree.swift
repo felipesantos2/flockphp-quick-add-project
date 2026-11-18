@@ -48,9 +48,9 @@ public enum DatabaseMode: String, Codable, Sendable, CaseIterable, Identifiable 
 
     public var title: String {
         switch self {
-        case .shared: "The site's"
-        case .copy: "A copy of the site's"
-        case .fresh: "A new, empty one"
+        case .shared: String(localized: "worktrees.database_shared")
+        case .copy: String(localized: "worktrees.database_copy")
+        case .fresh: String(localized: "worktrees.database_fresh")
         }
     }
 }

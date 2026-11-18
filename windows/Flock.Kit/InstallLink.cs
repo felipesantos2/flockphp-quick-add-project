@@ -116,7 +116,7 @@ public sealed record InstallLink(string Service, string? Line = null)
             : catalog.Versions.FirstOrDefault(v => v.Minor == Line);
         if (release is null || (!release.IsInstalled && release.Latest.Length == 0))
         {
-            return InstallLinkResolution.UnknownVersion("PHP", Line ?? "", NoBuild);
+            return InstallLinkResolution.UnknownVersion("PHP", Line ?? "", Strings.Links_Install_NoBuild);
         }
         var name = $"PHP {release.Minor}";
         if (release.IsInstalled)
@@ -128,7 +128,7 @@ public sealed record InstallLink(string Service, string? Line = null)
             return InstallLinkResolution.Installing(name, "PHP");
         }
         return InstallLinkResolution.Install(new InstallLinkTarget(Php, "PHP", release.Minor, release.Minor, release.Latest),
-            "Sites that use it are served as soon as it's installed.");
+            Strings.Links_Install_PurposePhp);
     }
 
     /// <summary>
@@ -147,7 +147,7 @@ public sealed record InstallLink(string Service, string? Line = null)
             : catalog.Versions.FirstOrDefault(v => v.Major == Line);
         if (release is null || (!release.IsInstalled && release.Latest.Length == 0))
         {
-            return InstallLinkResolution.UnknownVersion("Node.js", Line ?? "", NoBuild);
+            return InstallLinkResolution.UnknownVersion("Node.js", Line ?? "", Strings.Links_Install_NoBuild);
         }
         var name = $"Node.js {release.Major}";
         if (release.IsInstalled)
@@ -159,15 +159,12 @@ public sealed record InstallLink(string Service, string? Line = null)
             return InstallLinkResolution.Installing(name, "Node");
         }
         return InstallLinkResolution.Install(new InstallLinkTarget(Node, "Node.js", release.Major, release.Major, release.Latest),
-            "Projects that use it get node, npm and npx as soon as it's installed.");
+            Strings.Links_Install_PurposeNode);
     }
 
     /// <summary>Versions compare by their numbers: "8.10" is newer than "8.9".</summary>
     private static Version Numeric(string version) =>
         Version.TryParse(version.Contains('.') ? version : version + ".0", out var parsed) ? parsed : new Version();
-
-    // A PHP or Node.js version the manifest doesn't publish for this platform, or doesn't know at all.
-    private const string NoBuild = "There's no build of it for this computer, or the link is meant for a newer Flock.";
 }
 
 /// <summary>What an install link would install once the user confirms.</summary>
@@ -180,27 +177,27 @@ public sealed record InstallLinkTarget(string Service, string Name, string Line,
 /// <param name="Target">Set when there is something to install.</param>
 public sealed record InstallLinkResolution(string Title, string Message, InstallLinkTarget? Target = null)
 {
-    /// <param name="purpose">What it is for once installed.</param>
-    public static InstallLinkResolution Install(InstallLinkTarget target, string purpose = "It runs on 127.0.0.1 for your sites.") => new(
-        $"Install {target.Name} {target.Label}?",
-        $"A link asked Flock to install {target.Name} {(target.Version.Length > 0 ? target.Version : target.Label)}. {purpose}",
+    /// <param name="purpose">What it is for once installed; a service that runs for the sites when null.</param>
+    public static InstallLinkResolution Install(InstallLinkTarget target, string? purpose = null) => new(
+        Localization.Format(Strings.Links_Install_InstallTitle, target.Name, target.Label),
+        Localization.Format(Strings.Links_Install_InstallMessage, target.Name, target.Version.Length > 0 ? target.Version : target.Label,
+            purpose ?? Strings.Links_Install_PurposeService),
         target);
 
-    /// <param name="pane">The Settings pane that lists it.</param>
-    public static InstallLinkResolution AlreadyInstalled(string name, string pane = "Services") =>
-        new($"{name} is already installed", $"You'll find it in Settings → {pane}.");
+    /// <param name="pane">The Settings pane that lists it; Services when null.</param>
+    public static InstallLinkResolution AlreadyInstalled(string name, string? pane = null) =>
+        new(Localization.Format(Strings.Links_Install_AlreadyInstalledTitle, name), Localization.Format(Strings.Links_Install_AlreadyInstalledMessage, pane ?? Strings.Settings_Pane_Services));
 
     public static InstallLinkResolution Installing(string name, string pane) =>
-        new($"{name} is already being installed", $"Settings → {pane} shows how far it is.");
+        new(Localization.Format(Strings.Links_Install_InstallingTitle, name), Localization.Format(Strings.Links_Install_InstallingMessage, pane));
 
     public static InstallLinkResolution Unavailable(string name, string reason) =>
-        new($"{name} isn't available on this computer", reason.Length > 0 ? reason : "Flock can't run it on this platform.");
+        new(Localization.Format(Strings.Links_Install_UnavailableTitle, name), reason.Length > 0 ? reason : Strings.Links_Install_UnavailableMessage);
 
     public static InstallLinkResolution Unknown(string name) =>
-        new($"Flock doesn't offer {name}", NewerFlock);
+        new(Localization.Format(Strings.Links_Install_UnknownTitle, name), Strings.Links_Install_NewerFlock);
 
-    public static InstallLinkResolution UnknownVersion(string name, string line, string message = NewerFlock) =>
-        new($"Flock doesn't offer {name} {line}".TrimEnd(), message);
-
-    private const string NewerFlock = "The link may be meant for a newer Flock. Update Flock, then try again.";
+    /// <param name="message">Why; that the link may be meant for a newer Flock when null.</param>
+    public static InstallLinkResolution UnknownVersion(string name, string line, string? message = null) =>
+        new(Localization.Format(Strings.Links_Install_UnknownTitle, $"{name} {line}".TrimEnd()), message ?? Strings.Links_Install_NewerFlock);
 }

@@ -6,7 +6,7 @@ internal sealed class RunningTextConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, string language)
     {
-        return value is true ? "Running" : "Stopped";
+        return value is true ? Strings.Menu_Status_Running : Strings.Services_Postgres_Stopped;
     }
     public object ConvertBack(object value, Type targetType, object parameter, string language)
     {

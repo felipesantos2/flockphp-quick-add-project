@@ -13,6 +13,10 @@
 #ifndef GoArch
   #define GoArch "amd64"
 #endif
+; The Czech and Spanish messages below are UTF-8 without a BOM, which Inno Setup reads since 6.3.
+#if Ver < EncodeVer(6, 3, 0)
+  #error Inno Setup 6.3 or newer is needed to build Flock-Setup.exe.
+#endif
 
 [Setup]
 AppId={{BD44E167-D13B-4AD9-8DA7-E976DEFCFB50}
@@ -37,10 +41,17 @@ SolidCompression=yes
 CloseApplications=no
 ; Tells Explorer to refresh its icon cache, or the Start menu and taskbar keep an updated app's old icon.
 ChangesAssociations=yes
+; Setup speaks the Windows display language when it is one of [Languages], else English (the first).
+; The app's updater passes /LANG with the app's own language, so setup's errors match the app's.
+LanguageDetectionMethod=uilanguage
+ShowLanguageDialog=no
 #ifdef Sign
 ; The "flock" sign tool build-installer.ps1 defines (windows\sign.ps1); signs the uninstaller too.
 SignTool=flock
 #endif
+
+; Setup's languages ([Languages], English first) and its own messages in each, generated from lang/ (tools/i18n).
+#include "Strings.iss"
 
 [Files]
 Source: "..\dist\FlockTray-{#Arch}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -68,7 +79,7 @@ Root: HKCU; Subkey: "Software\Classes\flock\DefaultIcon"; ValueType: string; Val
 Root: HKCU; Subkey: "Software\Classes\flock\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\FlockTray.exe"" ""%1"""
 
 [Run]
-Filename: "{app}\FlockTray.exe"; Description: "Open Flock"; Flags: postinstall nowait skipifsilent
+Filename: "{app}\FlockTray.exe"; Description: "{cm:Installer_OpenFlock}"; Flags: postinstall nowait skipifsilent
 ; The app updates itself by running this installer silently with /RELAUNCH; it starts again quietly.
 Filename: "{app}\FlockTray.exe"; Parameters: "--background"; Flags: nowait; Check: HasParam('/RELAUNCH')
 
@@ -107,28 +118,31 @@ begin
           '', SW_HIDE, ewWaitUntilTerminated, ResultCode) and (ResultCode = 0) then
     Exit;
 
-  Result := 'the steps that need administrator permission failed';
+  Result := CustomMessage('Installer_PrivilegedFailed');
   if LoadStringsFromFile(Output, Lines) then
     for I := 0 to GetArrayLength(Lines) - 1 do
       if Pos('Error: ', Lines[I]) = 1 then
         Result := Copy(Lines[I], 8, Length(Lines[I]));
   if Pos('declined', Result) > 0 then
-    Result := 'Flock needs administrator permission to update its DNS rule, hosts helper or certificate authority. ' +
-              'The update was not installed; Flock stays at its current version.'
+    Result := CustomMessage('Installer_PrivilegedDeclined')
   else
-    Result := 'The update was not installed: ' + Result;
+    Result := FmtMessage(CustomMessage('Installer_UpdateNotInstalled'), [Result]);
 end;
 
 // The running tray app locks its files; an update replaces them, and the new app starts afterwards.
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
   ResultCode: Integer;
+  Lines: TArrayOfString;
 begin
   Result := UpdatePrivileged();
   if Result <> '' then
   begin
+    // UTF-8, as the app reads it: the message may be Czech or Spanish (SaveStringToFile writes ANSI).
+    SetArrayLength(Lines, 1);
+    Lines[0] := Result;
     if ExpandConstant('{param:RESULT|}') <> '' then
-      SaveStringToFile(ExpandConstant('{param:RESULT|}'), Result, False);
+      SaveStringsToUTF8File(ExpandConstant('{param:RESULT|}'), Lines, False);
     // The app's updater waits for setup, except in versions before this check, which quit already.
     if HasParam('/RELAUNCH') and not CheckForMutexes('Local\Flock.Tray') then
       Exec(ExpandConstant('{app}\FlockTray.exe'), '--background', '', SW_SHOW, ewNoWait, ResultCode);

@@ -65,7 +65,7 @@ struct PanelView: View {
                 // The stopped image is already dimmed.
                 .foregroundStyle(model.isRunning && model.isDegraded ? Color.flockEmber : Color.flockMark)
             VStack(alignment: .leading, spacing: 1) {
-                Text("Flock").font(.headline)
+                Text("common.flock").font(.headline)
                 Text(model.headline).font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
@@ -79,9 +79,9 @@ struct PanelView: View {
     private func updateRow(_ version: String) -> some View {
         HStack(spacing: 6) {
             Image(systemName: "arrow.down.circle.fill").foregroundStyle(Color.accentColor)
-            Text("Flock \(version) is available").font(.callout)
+            Text("menu.update_available \(version)").font(.callout)
             Spacer(minLength: 0)
-            Button("Update") {
+            Button("common.update") {
                 closePanel()
                 model.updater.checkForUpdates()
             }
@@ -107,7 +107,7 @@ struct PanelView: View {
                 Image(systemName: "xmark").font(.caption2.weight(.bold))
             }
             .buttonStyle(.borderless)
-            .help("Dismiss")
+            .help("sites.share.dismiss")
         }
         .padding(8)
         .background(.red.opacity(0.12), in: RoundedRectangle(cornerRadius: 6))
@@ -126,27 +126,27 @@ struct PanelView: View {
 
     private func services(_ status: Status) -> some View {
         VStack(alignment: .leading, spacing: 5) {
-            SectionTitle("Services")
-            ServiceRow(name: "Web", detail: "http :\(status.httpPort) · https :\(status.httpsPort)", up: true)
+            SectionTitle("settings.pane.services")
+            ServiceRow(name: String(localized: "menu.web"), detail: "http :\(status.httpPort) · https :\(status.httpsPort)", up: true)
             if status.dns.wildcard {
                 ServiceRow(name: "DNS", detail: "*.\(status.dns.tld)", up: true)
             } else if !status.dns.tld.isEmpty {
-                ServiceRow(name: "DNS", detail: status.dns.wildcardProblem.isEmpty ? "*.\(status.dns.tld) doesn't resolve" : status.dns.wildcardProblem, up: false)
+                ServiceRow(name: "DNS", detail: status.dns.wildcardProblem.isEmpty ? String(localized: "menu.doesnt_resolve \(status.dns.tld)") : status.dns.wildcardProblem, up: false)
                     .help(status.dns.wildcardProblem)
             }
-            ServiceRow(name: "Mail", detail: status.mail.isEmpty ? "stopped" : "smtp \(status.mail)", up: !status.mail.isEmpty)
+            ServiceRow(name: String(localized: "services.category.mail"), detail: status.mail.isEmpty ? String(localized: "menu.stopped") : "smtp \(status.mail)", up: !status.mail.isEmpty)
             if let postgres = status.postgres {
                 ServiceRow(name: "PostgreSQL", detail: postgres, up: status.processes.first { $0.name == "postgres" }?.up ?? false)
             }
             ForEach(status.extras) { extra in
-                ServiceRow(name: extra.name, detail: extra.enabled ? "\(extra.version) on 127.0.0.1:\(extra.port)" : "stopped", up: extra.up)
+                ServiceRow(name: extra.name, detail: extra.enabled ? String(localized: "menu.version_on_port \(extra.version) \(String(extra.port))") : String(localized: "menu.stopped"), up: extra.up)
             }
             notInstalled(status)
             ForEach(status.processes.filter { $0.name.hasPrefix("php") }) { process in
                 ServiceRow(name: process.name, detail: processDetail(process), up: process.up)
             }
             ForEach(status.processes.filter { !$0.up && !$0.name.hasPrefix("php") }) { process in
-                Text("\(process.name): \(process.lastError ?? "down")")
+                Text(verbatim: "\(process.name): \(process.lastError ?? String(localized: "menu.down"))")
                     .font(.caption2)
                     .foregroundStyle(.red)
                     .lineLimit(3)
@@ -160,32 +160,32 @@ struct PanelView: View {
         if status.postgres == nil, status.extras.isEmpty {
             HStack(spacing: 6) {
                 Circle().fill(Color.secondary.opacity(0.4)).frame(width: 7, height: 7)
-                Text("No database or cache installed")
+                Text("menu.no_database_or_cache_installed")
                     .font(.caption).foregroundStyle(.secondary)
                 Spacer()
-                Button("Install…") {
+                Button("services.install_ellipsis") {
                     model.showSettings(.services, service: "postgres")
                     open(WindowID.settings)
                 }
                 .buttonStyle(.link)
                 .font(.caption)
-                .help("Opens Settings → Services")
+                .help("menu.opens_settings_to_services")
             }
         }
     }
 
     private func processDetail(_ process: Status.Process) -> String {
         if !process.up {
-            return process.lastError ?? "down"
+            return process.lastError ?? String(localized: "menu.down")
         }
-        return process.restarts > 0 ? "up (restarted \(process.restarts)×)" : "up"
+        return process.restarts > 0 ? String(localized: "menu.up_restarted \(String(process.restarts))") : String(localized: "menu.up")
     }
 
     private func sites(_ sites: [Status.Site], proxies: [Status.Proxy]) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            SectionTitle("Sites")
+            SectionTitle("settings.pane.sites")
             if sites.isEmpty && proxies.isEmpty {
-                Text("No sites yet — run `flock link` or `flock park`.")
+                Text("menu.no_sites_yet_run_flock")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else {
@@ -199,10 +199,10 @@ struct PanelView: View {
     private func toggles(_ status: Status) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Toggle(isOn: Binding(get: { status.xdebug }, set: { on in Task { await model.setXdebug(on) } })) {
-                Label("Xdebug", systemImage: "ladybug")
+                Label("common.xdebug", systemImage: "ladybug")
             }
             Toggle(isOn: Binding(get: { status.dumps }, set: { on in Task { await model.setDumps(on) } })) {
-                Label("Capture dumps & queries", systemImage: "tray.and.arrow.down")
+                Label("menu.capture_dumps_and_queries", systemImage: "tray.and.arrow.down")
             }
         }
         .toggleStyle(.switch)
@@ -211,13 +211,13 @@ struct PanelView: View {
 
     private func shortcuts(_ status: Status) -> some View {
         HStack(spacing: 8) {
-            ShortcutButton(title: "Mail", symbol: "envelope", count: status.mailCount) {
+            ShortcutButton(title: "services.category.mail", symbol: "envelope", count: status.mailCount) {
                 open(WindowID.mail)
             }
-            ShortcutButton(title: "Dumps", symbol: "ladybug.fill", count: status.dumpCount) {
+            ShortcutButton(title: "menu.dumps", symbol: "ladybug.fill", count: status.dumpCount) {
                 open(WindowID.dumps)
             }
-            ShortcutButton(title: "Logs", symbol: "doc.text.magnifyingglass", count: nil) {
+            ShortcutButton(title: "dumps.event_kind.logs", symbol: "doc.text.magnifyingglass", count: nil) {
                 open(WindowID.logs)
             }
         }
@@ -227,22 +227,22 @@ struct PanelView: View {
     private var notRunning: some View {
         if model.needsSetup {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Flock isn't set up on this Mac yet. Setup installs the daemon, puts php, composer and node on your PATH, and makes *.test sites work with trusted HTTPS.")
+                Text("menu.flock_isnt_set_up_on")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                Button("Set Up Flock…") {
+                Button("menu.set_up_flock") {
                     open(WindowID.setup)
                 }
                 .buttonStyle(.borderedProminent)
             }
         } else {
             VStack(alignment: .leading, spacing: 8) {
-                Text(model.isUpdating ? "Updating Flock…" : model.error ?? "Flock is not running")
+                Text(model.isUpdating ? String(localized: "menu.updating") : model.error ?? String(localized: "app.not_running"))
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                Button("Start Flock") {
+                Button("menu.start_flock") {
                     Task { await model.restart() }
                 }
                 .disabled(model.isRestarting || model.isUpdating)
@@ -254,17 +254,17 @@ struct PanelView: View {
         HStack {
             // Restart and Settings need the daemon; before the setup, Set Up Flock is the way on.
             if !model.needsSetup {
-                Button("Restart") {
+                Button("menu.restart") {
                     Task { await model.restart() }
                 }
                 .disabled(model.isRestarting || model.isUpdating || !model.isRunning)
-                Button("Settings…") {
+                Button("menu.settings") {
                     open(WindowID.settings)
                 }
                 .keyboardShortcut(",")
             }
             Spacer()
-            Button("Quit Flock Bar") {
+            Button("menu.quit_flock_bar") {
                 NSApp.terminate(nil)
             }
         }
@@ -274,14 +274,15 @@ struct PanelView: View {
 }
 
 private struct SectionTitle: View {
-    let title: String
+    let title: LocalizedStringKey
 
-    init(_ title: String) {
+    init(_ title: LocalizedStringKey) {
         self.title = title
     }
 
     var body: some View {
-        Text(title.uppercased())
+        Text(title)
+            .textCase(.uppercase)
             .font(.caption2.weight(.semibold))
             .foregroundStyle(.secondary)
     }
@@ -381,7 +382,7 @@ private struct SiteRow: View {
                 // A button of its own: the row still opens the site.
                 Button(action: toggle) {
                     HStack(spacing: 2) {
-                        Text("\(worktrees)").font(.caption2.monospacedDigit())
+                        Text(worktrees, format: .number).font(.caption2.monospacedDigit())
                         Image(systemName: expanded ? "chevron.down" : "chevron.right").font(.caption2.weight(.semibold))
                     }
                     .foregroundStyle(.secondary)
@@ -389,7 +390,8 @@ private struct SiteRow: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .help(expanded ? "Hide its worktrees" : worktrees == 1 ? "Show its worktree" : "Show its \(worktrees) worktrees")
+                // One apart in code as well: builds without the compiled catalog (swift run) have no plural rules.
+                .help(expanded ? "menu.hide_its_worktrees" : worktrees == 1 ? "menu.show_its_worktree" : "menu.show_its_worktrees \(worktrees)")
             }
         }
         .background(isHovered ? Color.primary.opacity(0.08) : .clear, in: RoundedRectangle(cornerRadius: 5))
@@ -412,19 +414,19 @@ private struct SiteRow: View {
                     StateDot(color: dot.color).help(dot.help)
                 }
                 if site.debugging {
-                    Label("Debugging", systemImage: "ladybug.fill")
+                    Label("services.category.debugging", systemImage: "ladybug.fill")
                         .labelStyle(.iconOnly)
                         .font(.caption2)
                         .foregroundStyle(.orange)
                 }
                 if site.shared {
-                    Badge(text: "Shared", color: .green)
+                    Badge(text: "sites.shared", color: .green)
                         .help(site.share?.url ?? "")
                 }
                 if !site.isNode, site.server == .frankenphp {
-                    Badge(text: site.worker == .octane ? "Octane" : "FrankenPHP", color: .secondary)
+                    Badge(text: site.worker == .octane ? "common.octane" : "common.frankenphp", color: .secondary)
                 }
-                Text(site.isNode ? "Node.js \(site.node ?? "")" : "PHP \(site.php)")
+                Text(site.isNode ? "common.nodejs_version \(site.node ?? "")" : "common.php_version \(site.php)")
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
@@ -440,7 +442,7 @@ private struct SiteRow: View {
     /// The row's tooltip: where a site without a document root is fixed, else its address.
     private var help: String {
         if site.rootState == .notFound {
-            return "No public/, www/, web/ or webroot/ with an index.php in \(site.path). Choose the document root in Settings → Sites."
+            return String(localized: "menu.no_public_www_web_or \(site.path)")
         }
         return site.url ?? site.problem ?? site.path
     }
@@ -471,7 +473,7 @@ private struct ProxyRow: View {
                     ProblemIcon(text: problem)
                 }
                 StateDot(color: proxy.stateDot.color).help(proxy.stateDot.help)
-                Text(proxy.running ? proxy.server ?? "Running" : "Not running")
+                Text(proxy.running ? proxy.server ?? String(localized: "sites.proxy.running") : String(localized: "sites.proxy.not_running"))
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
@@ -481,7 +483,7 @@ private struct ProxyRow: View {
         }
         .buttonStyle(.plain)
         .disabled(proxy.url == nil)
-        .help(proxy.running ? "\(proxy.url ?? proxy.domain) → \(proxy.upstream)" : "Nothing answers at \(proxy.upstream). Start the server there.")
+        .help(proxy.running ? String(localized: "common.from_to \(proxy.url ?? proxy.domain) \(proxy.upstream)") : String(localized: "sites.proxy.nothing_answers \(proxy.upstream)"))
         .background(isHovered ? Color.primary.opacity(0.08) : .clear, in: RoundedRectangle(cornerRadius: 5))
         .onHover { isHovered = $0 }
     }
@@ -510,19 +512,19 @@ private struct WorktreeRow: View {
                     if let setup = worktree.worktree, setup.busy {
                         HStack(spacing: 4) {
                             ProgressView().controlSize(.mini)
-                            Text(setup.step.isEmpty ? "Setting up…" : "\(setup.step.prefix(1).uppercased())\(setup.step.dropFirst())…")
+                            Text(setup.step.isEmpty ? String(localized: "worktrees.setting_up") : "\(setup.step.prefix(1).uppercased())\(setup.step.dropFirst())…")
                         }
                         .font(.caption2).foregroundStyle(.secondary)
                     } else if let setup = worktree.worktree, setup.state == .failed {
-                        Text("Setup failed: \(setup.error ?? "see its log")").font(.caption2).foregroundStyle(.red)
+                        Text("worktrees.job.setup_failed \(setup.error ?? String(localized: "worktrees.see_log"))").font(.caption2).foregroundStyle(.red)
                     } else if let problem = worktree.problem {
                         Text(problem).font(.caption2).foregroundStyle(.red)
                     }
                 }
                 Spacer()
                 if let setup = worktree.worktree, !setup.database.isEmpty {
-                    Badge(text: setup.dbMode == .fresh ? "Fresh DB" : "Own DB", color: .secondary)
-                        .help("Its own database: \(setup.database)")
+                    Badge(text: setup.dbMode == .fresh ? "menu.fresh_db" : "menu.own_db", color: .secondary)
+                        .help("worktrees.own_database_tooltip \(setup.database)")
                 }
             }
             .padding(.vertical, 2)
@@ -539,7 +541,7 @@ private struct WorktreeRow: View {
 }
 
 private struct ShortcutButton: View {
-    let title: String
+    let title: LocalizedStringKey
     let symbol: String
     let count: Int?
     let action: () -> Void
@@ -551,7 +553,7 @@ private struct ShortcutButton: View {
                 HStack(spacing: 3) {
                     Text(title)
                     if let count, count > 0 {
-                        Text("\(count)")
+                        Text(count, format: .number)
                             .font(.caption2.weight(.semibold))
                             .padding(.horizontal, 5)
                             .background(Color.accentColor.opacity(0.25), in: Capsule())

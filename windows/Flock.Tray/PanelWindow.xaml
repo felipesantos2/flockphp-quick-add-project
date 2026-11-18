@@ -1,7 +1,8 @@
 <Window
     x:Class="Flock.Tray.PanelWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray">
     <ScrollViewer
         x:Name="Scroller"
         VerticalScrollBarVisibility="Auto"
@@ -37,7 +38,7 @@
                               Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
                     <TextBlock Text="{Binding UpdateMessage}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
-                <Button Grid.Column="1" Content="Update" Command="{Binding InstallUpdateCommand}" Style="{StaticResource AccentButtonStyle}"
+                <Button Grid.Column="1" Content="{l:Loc Key=Common_Update}" Command="{Binding InstallUpdateCommand}" Style="{StaticResource AccentButtonStyle}"
                         IsEnabled="{Binding CanInstallUpdate}" />
             </Grid>
 
@@ -72,7 +73,7 @@
                 <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="-16,0" />
 
                 <StackPanel Spacing="5">
-                    <TextBlock Text="SERVICES" Style="{StaticResource CaptionTextBlockStyle}" FontSize="11" FontWeight="SemiBold"
+                    <TextBlock Text="{l:Loc Key=Logs_ServicesHeading}" Style="{StaticResource CaptionTextBlockStyle}" FontSize="11" FontWeight="SemiBold"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <ItemsControl ItemsSource="{Binding Services}">
                         <ItemsControl.ItemTemplate>
@@ -97,10 +98,10 @@
                 <Border Height="1" Background="{ThemeResource DividerStrokeColorDefaultBrush}" Margin="-16,0" />
 
                 <StackPanel Spacing="4">
-                    <TextBlock Text="SITES" Style="{StaticResource CaptionTextBlockStyle}" FontSize="11" FontWeight="SemiBold"
+                    <TextBlock Text="{l:Loc Key=Logs_SitesHeading}" Style="{StaticResource CaptionTextBlockStyle}" FontSize="11" FontWeight="SemiBold"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <TextBlock
-                        Text="No sites yet — run `flock link` or `flock park`, or add a site in Settings."
+                        Text="{l:Loc Key=Menu_NoSites}"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap"
                         Visibility="{Binding EmptySitesVisibility}" />
@@ -148,7 +149,7 @@
                                                         </Border>
                                                         <Border Background="{ThemeResource SystemFillColorSuccessBackgroundBrush}" CornerRadius="8" Padding="7,1,7,2"
                                                                 Visibility="{Binding SharedVisibility}" ToolTipService.ToolTip="{Binding ShareTooltip}">
-                                                            <TextBlock Text="Shared" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource SystemFillColorSuccessBrush}" />
+                                                            <TextBlock Text="{l:Loc Key=Sites_Shared}" FontSize="11" FontWeight="SemiBold" Foreground="{ThemeResource SystemFillColorSuccessBrush}" />
                                                         </Border>
                                                         <Ellipse Width="6" Height="6" Fill="{Binding DotBrush}" VerticalAlignment="Center"
                                                                  ToolTipService.ToolTip="{Binding DotTooltip}" Visibility="{Binding DotVisibility}" />
@@ -286,7 +287,7 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Orientation="Horizontal" Spacing="8">
                             <FontIcon Glyph="{StaticResource GlyphDownload}" FontFamily="{StaticResource SymbolsFont}" FontSize="14" />
-                            <TextBlock Text="Capture dumps" />
+                            <TextBlock Text="{l:Loc Key=Menu_CaptureDumps}" />
                         </StackPanel>
                         <ToggleSwitch Grid.Column="1" IsOn="{Binding Dumps, Mode=TwoWay}" IsEnabled="{Binding CaptureEnabled}" OnContent="" OffContent="" MinWidth="0" />
                     </Grid>
@@ -304,7 +305,7 @@
                         <StackPanel Spacing="4" HorizontalAlignment="Center">
                             <FontIcon Glyph="{StaticResource GlyphMail}" FontFamily="{StaticResource SymbolsFont}" FontSize="18" />
                             <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
-                                <TextBlock Text="Mail" FontSize="12" />
+                                <TextBlock Text="{l:Loc Key=Menu_Mail}" FontSize="12" />
                                 <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="8" Padding="6,1"
                                         Visibility="{Binding MailCountVisibility}">
                                     <TextBlock Text="{Binding MailCount}" FontSize="11" />
@@ -316,7 +317,7 @@
                         <StackPanel Spacing="4" HorizontalAlignment="Center">
                             <FontIcon Glyph="{StaticResource GlyphBug}" FontFamily="{StaticResource SymbolsFont}" FontSize="18" />
                             <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Center">
-                                <TextBlock Text="Dumps" FontSize="12" />
+                                <TextBlock Text="{l:Loc Key=Menu_Dumps}" FontSize="12" />
                                 <Border Background="{ThemeResource SubtleFillColorSecondaryBrush}" CornerRadius="8" Padding="6,1"
                                         Visibility="{Binding DumpCountVisibility}">
                                     <TextBlock Text="{Binding DumpCount}" FontSize="11" />
@@ -327,7 +328,7 @@
                     <Button Grid.Column="2" Command="{Binding OpenLogsCommand}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" Padding="4,8">
                         <StackPanel Spacing="4" HorizontalAlignment="Center">
                             <FontIcon Glyph="{StaticResource GlyphDocument}" FontFamily="{StaticResource SymbolsFont}" FontSize="18" />
-                            <TextBlock Text="Logs" FontSize="12" HorizontalAlignment="Center" />
+                            <TextBlock Text="{l:Loc Key=Menu_Logs}" FontSize="12" HorizontalAlignment="Center" />
                         </StackPanel>
                     </Button>
                 </Grid>
@@ -335,16 +336,16 @@
 
             <StackPanel Spacing="8" Visibility="{Binding NotRunningVisibility}">
                 <StackPanel Spacing="8" Visibility="{Binding SetupVisibility}">
-                    <TextBlock Text="Flock isn't set up for this user yet." Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
-                    <Button Content="Set Up Flock…" Command="{Binding OpenSetupCommand}" Style="{StaticResource AccentButtonStyle}" />
+                    <TextBlock Text="{l:Loc Key=Menu_NotSetUp}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    <Button Content="{l:Loc Key=Menu_SetUpFlock}" Command="{Binding OpenSetupCommand}" Style="{StaticResource AccentButtonStyle}" />
                 </StackPanel>
                 <StackPanel Spacing="8" Visibility="{Binding UpdatingVisibility}">
-                    <TextBlock Text="Updating Flock…" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{l:Loc Key=Menu_Updating}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     <ProgressBar IsIndeterminate="True" />
                 </StackPanel>
                 <StackPanel Spacing="8" Visibility="{Binding StoppedVisibility}">
                     <TextBlock Text="{Binding NotRunningMessage}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
-                    <Button Content="Start Flock" Command="{Binding RestartCommand}" Style="{StaticResource AccentButtonStyle}" IsEnabled="{Binding StartEnabled}" />
+                    <Button Content="{l:Loc Key=Menu_StartFlock}" Command="{Binding RestartCommand}" Style="{StaticResource AccentButtonStyle}" IsEnabled="{Binding StartEnabled}" />
                 </StackPanel>
             </StackPanel>
 
@@ -355,11 +356,11 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <StackPanel Orientation="Horizontal" Spacing="4">
-                    <HyperlinkButton Content="Restart" Command="{Binding RestartCommand}" Padding="4,2" Visibility="{Binding FooterVisibility}"
+                    <HyperlinkButton Content="{l:Loc Key=Menu_Restart}" Command="{Binding RestartCommand}" Padding="4,2" Visibility="{Binding FooterVisibility}"
                                      IsEnabled="{Binding RestartEnabled}" />
-                    <HyperlinkButton Content="Settings…" Command="{Binding OpenSettingsCommand}" Padding="4,2" />
+                    <HyperlinkButton Content="{l:Loc Key=Menu_Settings}" Command="{Binding OpenSettingsCommand}" Padding="4,2" />
                 </StackPanel>
-                <HyperlinkButton Grid.Column="1" Content="Quit Flock" Command="{Binding QuitCommand}" Padding="4,2" />
+                <HyperlinkButton Grid.Column="1" Content="{l:Loc Key=Menu_QuitFlock}" Command="{Binding QuitCommand}" Padding="4,2" />
             </Grid>
         </StackPanel>
     </ScrollViewer>

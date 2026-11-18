@@ -1,0 +1,2072 @@
+# Czech texts of the Flock Linux app (linux/src), by key.
+# Generated from lang/ by tools/i18n: edit lang/*/app.json, then run make i18n.
+msgid ""
+msgstr ""
+"Project-Id-Version: flock-app\n"
+"Language: cs\n"
+"X-Language-Name: Čeština\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+
+msgid "about.also_delete_data"
+msgstr "Smazat také nastavení a databáze mých webů"
+
+msgid "about.app_version"
+msgstr "Aplikace {version}"
+
+msgid "about.daemon_not_running"
+msgstr "neběží"
+
+msgid "about.daemon_version"
+msgstr "Démon {version}"
+
+msgid "about.data_folder_title_case"
+msgstr "Složka s daty"
+
+msgid "about.flock_docs"
+msgstr "Dokumentace Flocku"
+
+msgid "about.found_a_bug_report_an"
+msgstr "Našli jste chybu? Nahlaste ji"
+
+msgid "about.license"
+msgstr "Licence"
+
+msgid "about.license_description"
+msgstr "Copyright © Guava s.r.o. Licencováno pod AGPL-3.0."
+
+msgid "about.password_prompt_was_cancelled_so"
+msgstr "Výzva k zadání hesla byla zrušena, takže nastavení DNS i certifikát zůstaly na místě."
+
+msgid "about.sponsor"
+msgstr "Sponzorovat"
+
+msgid "about.star_on_github"
+msgstr "Dát hvězdičku na GitHubu"
+
+msgid "about.stops_flock_and_removes_it_from"
+msgstr "Zastaví Flock a odebere ho z tohoto počítače. Vaše weby, databáze a nastavení zůstanou zachované."
+
+msgid "about.support_description"
+msgstr "Flock je zdarma a open source, navždy. Sponzorství pomáhá udržet jeho vývoj."
+
+msgid "about.tagline"
+msgstr "Nativní lokální vývojové prostředí pro Laravel."
+
+msgid "about.uninstall_flock"
+msgstr "Odinstalovat Flock"
+
+msgid "about.uninstall_flock_ellipsis"
+msgstr "Odinstalovat Flock…"
+
+msgid "about.uninstall_question"
+msgstr "Odinstalovat Flock?"
+
+msgid "about.uninstalling_flock"
+msgstr "Odinstalovává se Flock…"
+
+msgid "ai.add_to_settings"
+msgstr "Přidejte toto do nastavení MCP daného klienta."
+
+msgid "ai.added_once"
+msgstr "Stačí přidat jednou a Flock funguje v každém projektu. Po přidání Flocku klienta restartujte nebo znovu načtěte jeho MCP servery."
+
+msgid "ai.clients"
+msgstr "AI klienti"
+
+msgid "ai.flock_added"
+msgstr "Flock je přidán"
+
+msgid "ai.other_clients"
+msgstr "Další klienti"
+
+msgid "ai.subtitle"
+msgstr "Umožněte AI agentům jako Claude Code a Cursor pracovat s Flockem: s URL a verzemi PHP vašich webů, logy, dumpy a poštou i s instalací verzí a služeb."
+
+msgid "app.conflict.port"
+msgstr "port {port} ({service})"
+
+msgid "app.conflict.quit"
+msgstr "Ukončete {app}"
+
+msgid "app.copy_database"
+msgstr "kopie"
+
+msgid "app.could_not_relaunch"
+msgstr "Flock se nepodařilo znovu spustit: {error}"
+
+msgid "app.flock_is_not_installed_for_this"
+msgstr "Flock není pro tohoto uživatele nainstalovaný (chybí {path}) — spusťte jednou `flk install`."
+
+msgid "app.flock_isnt_installed_install_the"
+msgstr "Flock není nainstalovaný: nejdřív nainstalujte balíček flockphp."
+
+msgid "app.fresh_database"
+msgstr "nová"
+
+msgid "app.http_status"
+msgstr "Flock odpověděl kódem HTTP {status}"
+
+msgid "app.n_events"
+msgid_plural "app.n_events"
+msgstr[0] "{n} událost"
+msgstr[1] "{n} události"
+msgstr[2] "{n} událostí"
+
+msgid "app.needs_attention_version"
+msgstr "Vyžaduje pozornost · {version}"
+
+msgid "app.not_running"
+msgstr "Flock neběží"
+
+msgid "app.program_uses_ports"
+msgstr "{program} používá {ports}."
+
+msgid "app.running_version"
+msgstr "Běží · {version}"
+
+msgid "app.shared_database"
+msgstr "sdílená"
+
+msgid "app.unexpected_answer_from_flock_error"
+msgstr "neočekávaná odpověď od Flocku: {error}"
+
+msgid "common.add"
+msgstr "Přidat"
+
+msgid "common.cancel"
+msgstr "Zrušit"
+
+msgid "common.choose"
+msgstr "Vybrat…"
+
+msgid "common.close"
+msgstr "Zavřít"
+
+msgid "common.copy"
+msgstr "Kopírovat"
+
+msgid "common.done"
+msgstr "Hotovo"
+
+msgid "common.downloading"
+msgstr "Stahuje se…"
+
+msgid "common.e_b"
+msgstr "%e. %-m."
+
+msgid "common.e_b_y_h_m"
+msgstr "%e. %-m. %Y, %H:%M:%S"
+
+msgid "common.empty_parenthesized"
+msgstr "(prázdné)"
+
+msgid "common.hide"
+msgstr "Skrýt"
+
+msgid "common.install"
+msgstr "Nainstalovat"
+
+msgid "common.installed"
+msgstr "Nainstalováno"
+
+msgid "common.installing"
+msgstr "Instaluje se…"
+
+msgid "common.list.and"
+msgstr "{first} a {second}"
+
+msgid "common.loading"
+msgstr "Načítá se…"
+
+msgid "common.n_hours_ago"
+msgid_plural "common.n_hours_ago"
+msgstr[0] "před hodinou"
+msgstr[1] "před {n} hodinami"
+msgstr[2] "před {n} hodinami"
+
+msgid "common.n_minutes_ago"
+msgid_plural "common.n_minutes_ago"
+msgstr[0] "před minutou"
+msgstr[1] "před {n} minutami"
+msgstr[2] "před {n} minutami"
+
+msgid "common.not_installed"
+msgstr "Nenainstalováno"
+
+msgid "common.ok"
+msgstr "OK"
+
+msgid "common.open"
+msgstr "Otevřít"
+
+msgid "common.open_in_browser"
+msgstr "Otevřít v prohlížeči"
+
+msgid "common.open_target"
+msgstr "Otevřít {site}"
+
+msgid "common.remove"
+msgstr "Odebrat"
+
+msgid "common.remove_question"
+msgstr "Odebrat {name}?"
+
+msgid "common.remove_target"
+msgstr "Odebrat {domain}"
+
+msgid "common.retry"
+msgstr "Zkusit znovu"
+
+msgid "common.save"
+msgstr "Uložit"
+
+msgid "common.time.just_now"
+msgstr "právě teď"
+
+msgid "common.uninstall"
+msgstr "Odinstalovat"
+
+msgid "common.uninstall_ellipsis"
+msgstr "Odinstalovat…"
+
+msgid "common.uninstalling"
+msgstr "Odinstalovává se…"
+
+msgid "common.update"
+msgstr "Aktualizovat"
+
+msgid "common.updating"
+msgstr "Aktualizuje se…"
+
+msgid "debugger.availability"
+msgstr "Dostupnost"
+
+msgid "debugger.available"
+msgstr "K dispozici"
+
+msgid "debugger.client_port"
+msgstr "Port klienta"
+
+msgid "debugger.connect_ide"
+msgstr "Připojte své IDE"
+
+msgid "debugger.debugging_now"
+msgstr "Právě se ladí"
+
+msgid "debugger.detect_breakpoints"
+msgstr "Rozpoznávat breakpointy z PhpStormu"
+
+msgid "debugger.detect_requests"
+msgstr "Rozpoznávat požadavky na Xdebug"
+
+msgid "debugger.mode"
+msgstr "Režim"
+
+msgid "debugger.not_in_build"
+msgstr "V tomto sestavení není"
+
+msgid "debugger.start_session"
+msgstr "Spusťte relaci"
+
+msgid "debugger.start_session_description"
+msgstr "Nastavte breakpoint v PhpStormu a zapněte naslouchání ladicím spojením, použijte rozšíření prohlížeče Xdebug, nebo přidejte do URL ?XDEBUG_TRIGGER=1. Na příkazové řádce spusťte `flock debug artisan …`."
+
+msgid "debugger.subtitle"
+msgstr "Krokujte požadavky a příkazy pomocí Xdebugu."
+
+msgid "debugger.xdebug_loads_only_for_requests"
+msgstr "Xdebug se načítá jen pro požadavky, které o něj žádají, takže vše ostatní zůstává rychlé. Dokud má projekt v PhpStormu breakpointy, ladí se každý požadavek na jeho web."
+
+msgid "dumps.capture_description"
+msgstr "Po vypnutí uvidíte dumpy opět na stránce."
+
+msgid "dumps.capture_dumps"
+msgstr "Zachytávat dumpy"
+
+msgid "dumps.capture_dumps_queries_logs_views"
+msgstr "Zachytávat dumpy, dotazy, logy, pohledy a úlohy"
+
+msgid "dumps.capture_is_off_turn_it_on"
+msgstr "Zachytávání je vypnuté — zapněte ho tlačítkem nahrávání a sbírejte zde dumpy, dotazy, logy, pohledy a úlohy."
+
+msgid "dumps.capture_options_and_editor"
+msgstr "Možnosti zachytávání a editor"
+
+msgid "dumps.capture_short"
+msgstr "Zachytávat"
+
+msgid "dumps.captured"
+msgstr "Zachyceno"
+
+msgid "dumps.clear_everything_captured"
+msgstr "Vymazat vše zachycené?"
+
+msgid "dumps.dd_always_shows_in_the"
+msgstr "dd() se vždy zobrazí i na stránce, protože ukončí požadavek."
+
+msgid "dumps.empty_capturing"
+msgstr "Zde se objeví výstup dump() a dd(), dotazy, logy, pohledy a úlohy z vašich webů a příkazů artisan."
+
+msgid "dumps.event_kind.jobs"
+msgstr "Úlohy"
+
+msgid "dumps.event_kind.logs"
+msgstr "Logy"
+
+msgid "dumps.event_kind.queries"
+msgstr "Dotazy"
+
+msgid "dumps.event_kind.requests"
+msgstr "Požadavky"
+
+msgid "dumps.event_kind.views"
+msgstr "Pohledy"
+
+msgid "dumps.every_captured_dump_query_log"
+msgstr "Smažou se všechny zachycené dumpy, dotazy, logy, pohledy a úlohy ze všech požadavků a příkazů."
+
+msgid "dumps.latest_request_only"
+msgstr "Jen poslední požadavek"
+
+msgid "dumps.n_dumps"
+msgid_plural "dumps.n_dumps"
+msgstr[0] "{n} dump"
+msgstr[1] "{n} dumpy"
+msgstr[2] "{n} dumpů"
+
+msgid "dumps.n_entries"
+msgid_plural "dumps.n_entries"
+msgstr[0] "{n} záznam"
+msgstr[1] "{n} záznamy"
+msgstr[2] "{n} záznamů"
+
+msgid "dumps.nothing_captured_yet"
+msgstr "Zatím nic nezachyceno"
+
+msgid "dumps.nothing_matches"
+msgstr "Nic neodpovídá"
+
+msgid "dumps.open"
+msgstr "Otevřít dumpy"
+
+msgid "dumps.open_files_in"
+msgstr "Otevírat soubory v"
+
+msgid "dumps.open_sources_in_sentence_case"
+msgstr "Otevírat zdrojové soubory v"
+
+msgid "dumps.php_versions_only_capture_dumps"
+msgid_plural "dumps.php_versions_only_capture_dumps"
+msgstr[0] "PHP {versions} zachytává jen dumpy — jeho sestavení zatím nemá rozšíření agenta, takže tam chybí dotazy, logy, pohledy a úlohy."
+msgstr[1] "PHP {versions} zachytávají jen dumpy — jejich sestavení zatím nemají rozšíření agenta, takže tam chybí dotazy, logy, pohledy a úlohy."
+msgstr[2] "PHP {versions} zachytávají jen dumpy — jejich sestavení zatím nemají rozšíření agenta, takže tam chybí dotazy, logy, pohledy a úlohy."
+
+msgid "dumps.php_versions_only_capture_dumps_their"
+msgid_plural "dumps.php_versions_only_capture_dumps_their"
+msgstr[0] "PHP {versions} zachytává jen dumpy: jeho sestavení zatím nemá rozšíření agenta."
+msgstr[1] "PHP {versions} zachytávají jen dumpy: jejich sestavení zatím nemají rozšíření agenta."
+msgstr[2] "PHP {versions} zachytávají jen dumpy: jejich sestavení zatím nemají rozšíření agenta."
+
+msgid "dumps.search_dumps_queries_logs"
+msgstr "Hledat v dumpech, dotazech a lozích"
+
+msgid "dumps.send_dump_and_dd_output"
+msgstr "Posílejte výstup dump() a dd(), dotazy, logy, pohledy a úlohy do Flocku místo na stránku nebo do terminálu — bez úprav vašich projektů."
+
+msgid "dumps.show_dump_in_the_page"
+msgstr "Zobrazovat dump() i na stránce"
+
+msgid "dumps.show_dump_output_in_the"
+msgstr "Zobrazovat výstup dump() i na stránce"
+
+msgid "dumps.sources"
+msgstr "Zdrojové soubory"
+
+msgid "dumps.timeline.context"
+msgstr "kontext"
+
+msgid "dumps.timeline.queue_name"
+msgstr "fronta {name}"
+
+msgid "dumps.while_capturing"
+msgstr "Při zachytávání"
+
+msgid "general.add_project_folders_title"
+msgstr "Přidat složky projektů"
+
+msgid "general.beta"
+msgstr "Beta verze"
+
+msgid "general.beta_description"
+msgstr "Získávejte nové verze Flocku, PHP a služeb dříve, včetně předběžných verzí. Nemusí ještě fungovat."
+
+msgid "general.check_for_updates_linux"
+msgstr "Vyhledat aktualizace…"
+
+msgid "general.could_not_change_startup"
+msgstr "Nastavení spouštění se nepodařilo změnit: {error}"
+
+msgid "general.could_not_open_program_error"
+msgstr "{program} se nepodařilo otevřít: {error}"
+
+msgid "general.daemon"
+msgstr "Démon"
+
+msgid "general.data"
+msgstr "Data"
+
+msgid "general.domain"
+msgstr "Doména"
+
+msgid "general.every_name_any_subdomain_included_is"
+msgstr "Každý název včetně libovolné subdomény překládá DNS server Flocku přes systemd-resolved."
+
+msgid "general.experimental_channel_packages_that_arent"
+msgstr "Experimentální kanál: nabízí se i dosud nevydané balíčky. Zpět přepnete příkazem `flock channel stable`."
+
+msgid "general.flocks_dns_server_isnt_running"
+msgstr "DNS server Flocku neběží"
+
+msgid "general.folder"
+msgstr "Složka"
+
+msgid "general.language"
+msgstr "Jazyk"
+
+msgid "general.language_restart_note"
+msgstr "Flock použije nový jazyk po restartu."
+
+msgid "general.language_system"
+msgstr "Podle systému"
+
+msgid "general.network"
+msgstr "Síť"
+
+msgid "general.new_versions_come_from_the"
+msgstr "Nové verze přicházejí z balíčku AUR {package}: aktualizujte ho svým pomocníkem pro AUR, např. `yay -Syu`."
+
+msgid "general.new_versions_come_with_your"
+msgstr "Nové verze přicházejí s aktualizacemi systému. `flock update` jednu nainstaluje hned."
+
+msgid "general.no_project_folders"
+msgstr "Žádné složky projektů"
+
+msgid "general.opens_name"
+msgstr "Otevře {name}"
+
+msgid "general.pid"
+msgstr "PID {pid}"
+
+msgid "general.ports"
+msgstr "Weby používají porty {http} (HTTP) a {https} (HTTPS) nastavené v config.json, takže jejich adresy obsahují port."
+
+msgid "general.process"
+msgstr "Proces"
+
+msgid "general.project_folders"
+msgstr "Složky projektů"
+
+msgid "general.project_folders_description"
+msgstr "Každá složka uvnitř složky projektů se obsluhuje jako <složka>.{tld} — stejně jako po `flock park`."
+
+msgid "general.relaunch_flock"
+msgstr "Znovu spustit Flock"
+
+msgid "general.remove_project_folder_question"
+msgstr "Odebrat {name} ze složek projektů?"
+
+msgid "general.restart_daemon"
+msgstr "Restartovat démona"
+
+msgid "general.restarting"
+msgstr "Restartuje se…"
+
+msgid "general.shows_the_flock_icon_in"
+msgstr "Po přihlášení zobrazí ikonu Flocku v oznamovací oblasti. Samotný démon se spouští vždy spolu s počítačem."
+
+msgid "general.sites_in_path_are_no"
+msgstr "Weby ve složce {path} se přestanou obsluhovat. Složka ani její projekty se nezmění."
+
+msgid "general.software_updater"
+msgstr "Aktualizace softwaru"
+
+msgid "general.startup"
+msgstr "Spouštění"
+
+msgid "general.status"
+msgstr "Stav"
+
+msgid "general.subtitle"
+msgstr "Démon Flocku provozuje na pozadí vaše weby, PHP a služby."
+
+msgid "general.title"
+msgstr "Obecné"
+
+msgid "general.tld_doesnt_resolve_problem_linux"
+msgstr "*.{tld} se nepřekládá: {problem}. Linux nemá záložní soubor hosts, takže weby se neotevřou, dokud se to nespraví; `flock install` to znovu nastaví."
+
+msgid "general.update_to"
+msgstr "Aktualizovat na {version}"
+
+msgid "general.updates"
+msgstr "Aktualizace"
+
+msgid "general.version"
+msgstr "Verze"
+
+msgid "links.install.already_installed_message"
+msgstr "Najdete ho v Nastavení → {pane}."
+
+msgid "links.install.already_installed_title"
+msgstr "Už je nainstalováno: {name}"
+
+msgid "links.install.flock_doesnt_offer_name_version"
+msgstr "Flock nenabízí {name} {version}"
+
+msgid "links.install.install_message"
+msgstr "Odkaz žádá Flock o instalaci {name} {version}. {purpose}"
+
+msgid "links.install.install_title"
+msgstr "Nainstalovat {name} {version}?"
+
+msgid "links.install.installing_message"
+msgstr "Průběh uvidíte v Nastavení → {pane}."
+
+msgid "links.install.installing_title"
+msgstr "{name} se už instaluje"
+
+msgid "links.install.newer_flock"
+msgstr "Odkaz je možná určený pro novější Flock. Aktualizujte Flock a zkuste to znovu."
+
+msgid "links.install.no_build"
+msgstr "Pro tento počítač není k dispozici žádné sestavení, nebo je odkaz určený pro novější Flock."
+
+msgid "links.install.purpose_node"
+msgstr "Projekty, které ho používají, dostanou node, npm a npx hned po instalaci."
+
+msgid "links.install.purpose_php"
+msgstr "Weby, které ho používají, začnou fungovat hned po instalaci."
+
+msgid "links.install.purpose_service"
+msgstr "Běží na 127.0.0.1 pro vaše weby."
+
+msgid "links.install.unavailable_message"
+msgstr "Flock ho na této platformě nedokáže spustit."
+
+msgid "links.install.unavailable_title"
+msgstr "{name} není na tomto počítači k dispozici"
+
+msgid "links.install.unknown_title"
+msgstr "Flock nenabízí {name}"
+
+msgid "links.secure.already_secured_message"
+msgstr "Web běží na https://{domain}."
+
+msgid "links.secure.already_secured_title"
+msgstr "Web {site} už je zabezpečený"
+
+msgid "links.secure.secure_message"
+msgstr "Odkaz žádá Flock o zabezpečení {domain}. Web dostane certifikát, kterému tento počítač už důvěřuje."
+
+msgid "links.secure.secure_title"
+msgstr "Obsluhovat web {site} přes HTTPS?"
+
+msgid "links.secure.unknown_message"
+msgstr "Nejdřív web přidejte v Nastavení → Weby."
+
+msgid "links.secure.unknown_title"
+msgstr "Flock nemá web s názvem {site}"
+
+msgid "logs.all_levels"
+msgstr "Všechny úrovně"
+
+msgid "logs.clear"
+msgstr "Vymazat"
+
+msgid "logs.clear_question"
+msgstr "Vymazat log webu {site}?"
+
+msgid "logs.clear_the_sites_log"
+msgstr "Vymazat log webu"
+
+msgid "logs.deletes_the_laravel_log_files"
+msgstr "Smaže soubory logů Laravelu ve storage/logs webu {site}. Tuto akci nelze vrátit."
+
+msgid "logs.details"
+msgstr "Podrobnosti"
+
+msgid "logs.error_and_above"
+msgstr "Error a závažnější"
+
+msgid "logs.info_and_above"
+msgstr "Info a závažnější"
+
+msgid "logs.laravel_log"
+msgstr "Log Laravelu"
+
+msgid "logs.no_entry_matches_the_search"
+msgstr "Hledání ani úrovni neodpovídá žádný záznam."
+
+msgid "logs.no_log_entries"
+msgstr "Žádné záznamy v logu"
+
+msgid "logs.no_results"
+msgstr "Žádné výsledky"
+
+msgid "logs.pick_a_log"
+msgstr "Vyberte log"
+
+msgid "logs.reload_the_log_every_2"
+msgstr "Načítat log znovu každé 2 sekundy"
+
+msgid "logs.search_logs"
+msgstr "Hledat v lozích"
+
+msgid "logs.service_log"
+msgstr "Log služby"
+
+msgid "logs.show_only_entries_of_this"
+msgstr "Zobrazit jen záznamy této a vyšší úrovně (logy webů)"
+
+msgid "logs.storage_logs_of_site_is"
+msgstr "storage/logs webu {site} je prázdné."
+
+msgid "logs.warning_and_above"
+msgstr "Warning a závažnější"
+
+msgid "mail.add_these_lines_to_your"
+msgstr "Přidejte tyto řádky do .env svého projektu. MAIL_USERNAME určuje schránku, takže každý projekt má svou vlastní."
+
+msgid "mail.catch_your_apps_mail"
+msgstr "Zachytávejte poštu své aplikace"
+
+msgid "mail.caught"
+msgstr "Zachycené e-maily"
+
+msgid "mail.could_not_load_message"
+msgstr "Zprávu se nepodařilo načíst"
+
+msgid "mail.could_not_load_the_raw"
+msgstr "Zdroj zprávy se nepodařilo načíst"
+
+msgid "mail.delete_all"
+msgstr "Smazat vše"
+
+msgid "mail.delete_all_question"
+msgstr "Smazat veškerou zachycenou poštu?"
+
+msgid "mail.detail.cc"
+msgstr "Kopie"
+
+msgid "mail.detail.date"
+msgstr "Datum"
+
+msgid "mail.detail.from"
+msgstr "Od"
+
+msgid "mail.detail.headers"
+msgstr "Hlavičky"
+
+msgid "mail.detail.inbox"
+msgstr "Schránka"
+
+msgid "mail.detail.raw"
+msgstr "Zdroj"
+
+msgid "mail.detail.text"
+msgstr "Text"
+
+msgid "mail.detail.to"
+msgstr "Komu"
+
+msgid "mail.environment_variables_title_case"
+msgstr "Proměnné prostředí"
+
+msgid "mail.flock_catches_every_email_your_apps"
+msgstr "Flock zachytí každý e-mail, který vaše aplikace odešlou — nic neopustí váš počítač."
+
+msgid "mail.host"
+msgstr "Hostitel"
+
+msgid "mail.message"
+msgstr "Zpráva"
+
+msgid "mail.no_html_part_title_case"
+msgstr "Žádná část HTML"
+
+msgid "mail.no_mail_title_case"
+msgstr "Žádná pošta"
+
+msgid "mail.no_message_selected_title_case"
+msgstr "Není vybraná žádná zpráva"
+
+msgid "mail.no_subject"
+msgstr "(bez předmětu)"
+
+msgid "mail.no_text_part"
+msgstr "(bez textové části)"
+
+msgid "mail.open"
+msgstr "Otevřít poštu"
+
+msgid "mail.port"
+msgstr "Port"
+
+msgid "mail.refresh"
+msgstr "Obnovit"
+
+msgid "mail.save_attachment"
+msgstr "Uložit…"
+
+msgid "mail.smtp_server"
+msgstr "Server SMTP"
+
+msgid "mail.username_inbox"
+msgstr "MAIL_USERNAME určuje schránku, takže každý projekt má svou vlastní."
+
+msgid "menu.down"
+msgstr "nefunguje"
+
+msgid "menu.dumps"
+msgstr "Dumpy"
+
+msgid "menu.manage_sites"
+msgstr "Spravovat weby…"
+
+msgid "menu.no_sites_yet"
+msgstr "Zatím žádné weby"
+
+msgid "menu.open_flock"
+msgstr "Otevřít Flock"
+
+msgid "menu.quit_flock"
+msgstr "Ukončit Flock"
+
+msgid "menu.restart"
+msgstr "Restartovat"
+
+msgid "menu.restart_flock"
+msgstr "Restartovat Flock"
+
+msgid "menu.set_up_flock"
+msgstr "Nastavit Flock…"
+
+msgid "menu.settings"
+msgstr "Nastavení…"
+
+msgid "menu.start_flock"
+msgstr "Spustit Flock"
+
+msgid "menu.status.needs_attention"
+msgstr "Vyžaduje pozornost"
+
+msgid "menu.status.not_set_up"
+msgstr "Nenastaveno"
+
+msgid "node.downloads_node_js_new_then"
+msgstr "Stáhne Node.js {new} a pak odebere {old}. Globální balíčky zůstanou."
+
+msgid "node.loading_node_js_versions"
+msgstr "Načítají se verze Node.js…"
+
+msgid "node.make_default"
+msgstr "Nastavit jako výchozí"
+
+msgid "node.making_node_version_the_default"
+msgstr "Node {version} se nastavuje jako výchozí…"
+
+msgid "node.no_versions"
+msgstr "Zatím nejsou k zobrazení žádné verze Node.js."
+
+msgid "node.npm_version_available"
+msgstr " (k dispozici npm {version})"
+
+msgid "node.official_node_js_builds_the"
+msgstr "Oficiální sestavení Node.js, nejnovější vydání každé hlavní verze. Projektu, který má verzi připnutou v .nvmrc, se tato hlavní verze nabídne, když v něm spustíte node, npm nebo npx. Globální balíčky (npm install -g) patří k řadě Node a přežijí její aktualizace; ty z výchozí verze jsou v PATH."
+
+msgid "node.subtitle"
+msgstr "node, npm a npx se řídí souborem .nvmrc / .node-version projektu, pak verzí webu a nakonec výchozí verzí."
+
+msgid "node.uninstall_details"
+msgstr "Odeberou se i jeho globální balíčky npm. Projekty a weby, které používají Node {version}, budou používat výchozí verzi, dokud ho znovu nenainstalujete."
+
+msgid "node.uninstall_node_version"
+msgstr "Odinstalovat Node {version}?"
+
+msgid "node.update_npm"
+msgstr "Aktualizovat npm"
+
+msgid "node.updating_npm_to_version"
+msgstr "Aktualizuje se npm na {version}…"
+
+msgid "php.downloading_percent"
+msgstr "Stahuje se… {percent} %"
+
+msgid "php.downloads_php_version_size_mb"
+msgstr "Stáhne PHP {version} ({size} MB)"
+
+msgid "php.every_installed_version_runs_its"
+msgstr "Každá nainstalovaná verze má vlastní PHP-FPM pool. Weby používají výchozí verzi, pokud nemají připnutou jinou."
+
+msgid "php.loading_php_versions"
+msgstr "Načítají se verze PHP…"
+
+msgid "php.no_install_log_yet"
+msgstr "Zatím žádný log instalace."
+
+msgid "php.open_ini"
+msgstr "Otevřít php.ini"
+
+msgid "php.php_version_install_log"
+msgstr "Log instalace PHP {version}"
+
+msgid "php.php_version_isnt_released_yet"
+msgstr "PHP {version} ještě nevyšlo — nemusí fungovat. Nabízí se v beta kanálu."
+
+msgid "php.sites_that_run_on_frankenphp"
+msgstr "Weby, které běží na FrankenPHP s touto verzí, bude obsluhovat PHP-FPM, dokud se FrankenPHP samo znovu nestáhne."
+
+msgid "php.uninstall_details"
+msgstr "Odebere se i jeho php.ini. Weby připnuté k PHP {version} přestanou fungovat, dokud nevyberete jinou verzi."
+
+msgid "php.uninstall_franken_question"
+msgstr "Odinstalovat FrankenPHP pro PHP {version}?"
+
+msgid "php.uninstall_php_version"
+msgstr "Odinstalovat PHP {version}?"
+
+msgid "php.update_to_php_version"
+msgstr "Aktualizovat na PHP {version}"
+
+msgid "services.active"
+msgstr "Aktivní"
+
+msgid "services.all"
+msgstr "Všechny"
+
+msgid "services.catalog.downloading_name"
+msgstr "Stahuje se {name}…"
+
+msgid "services.catalog.name_version_starts_with_empty"
+msgstr "{name} {version} začne s prázdnými daty."
+
+msgid "services.catalog.name_version_stops_and_name"
+msgstr "{name} {version} se zastaví a aktivní verzí se stane {name} {next}."
+
+msgid "services.catalog.name_version_stops_your_sites"
+msgstr "{name} {version} se zastaví; vaše weby nebudou moci {name} používat, dokud znovu nenainstalujete některou verzi."
+
+msgid "services.catalog.name_version_uses_its_own"
+msgstr "{name} {version} používá vlastní data."
+
+msgid "services.catalog.not_available"
+msgstr "Není k dispozici"
+
+msgid "services.catalog.switch_to_name_version"
+msgstr "Přepnout na {name} {version}?"
+
+msgid "services.catalog.uninstall_and_delete_data"
+msgstr "Odinstalovat a smazat data"
+
+msgid "services.catalog.uninstall_keep_data"
+msgstr "Odinstalovat, ponechat data"
+
+msgid "services.catalog.uninstall_name_version"
+msgstr "Odinstalovat {name} {version}?"
+
+msgid "services.category.cache_queue"
+msgstr "Mezipaměť a fronty"
+
+msgid "services.category.core"
+msgstr "Základní"
+
+msgid "services.category.database"
+msgstr "Databáze"
+
+msgid "services.category.debugging"
+msgstr "Ladění"
+
+msgid "services.category.mail"
+msgstr "Pošta"
+
+msgid "services.category.search"
+msgstr "Vyhledávání"
+
+msgid "services.category.storage"
+msgstr "Úložiště"
+
+msgid "services.change_port"
+msgstr "Změnit port"
+
+msgid "services.connection"
+msgstr "Připojení"
+
+msgid "services.dns_server_isnt_running"
+msgstr "DNS server neběží"
+
+msgid "services.every_service_flock_offers_mysql"
+msgstr "Všechny služby, které Flock nabízí: MySQL, Redis, Meilisearch a další"
+
+msgid "services.extensions_folder"
+msgstr "Složka rozšíření"
+
+msgid "services.flock_cant_run_this_service"
+msgstr "Flock tuto službu nemůže spustit zde."
+
+msgid "services.install_failed"
+msgstr "Instalace selhala"
+
+msgid "services.install_log"
+msgstr "Log instalace {name}"
+
+msgid "services.installing_failed"
+msgstr "Instalace {name} selhala"
+
+msgid "services.installing_name"
+msgstr "Instaluje se {name}…"
+
+msgid "services.keep_its_data_to_pick"
+msgstr "Ponechte jeho data, abyste po opětovné instalaci mohli pokračovat tam, kde jste skončili."
+
+msgid "services.log"
+msgstr "Log"
+
+msgid "services.more"
+msgstr "Další"
+
+msgid "services.more_services_count"
+msgstr "Další služby ({count})…"
+
+msgid "services.name_version_stops_its_data"
+msgstr "{name} {version} se zastaví; jeho data zůstanou, ale nepoužijí se, dokud se nepřepnete zpět. {then}"
+
+msgid "services.no_data"
+msgstr "Neobsahuje žádná data."
+
+msgid "services.not_available_on_linux"
+msgstr "Na Linuxu není k dispozici"
+
+msgid "services.not_installed_its_data_is"
+msgstr "Nenainstalováno · data zůstala zachovaná · {version}"
+
+msgid "services.not_installed_size_of_databases"
+msgstr "Nenainstalováno · zachováno {size} databází"
+
+msgid "services.not_installed_version"
+msgstr "Nenainstalováno · {version}"
+
+msgid "services.not_offered"
+msgstr "Nenabízí se"
+
+msgid "services.old_to_new_available"
+msgstr "{old} → k dispozici {new}"
+
+msgid "services.port_between_1024_and_65535"
+msgstr "Port mezi 1024 a 65535, který nepoužívá žádný jiný program."
+
+msgid "services.port_number"
+msgstr "Port {port}"
+
+msgid "services.port_set_by_flock_install"
+msgstr "{port} · nastavil `flock install`"
+
+msgid "services.postgres.after_installing_one_run_create"
+msgstr "Po instalaci spusťte CREATE EXTENSION v každé databázi, která rozšíření používá."
+
+msgid "services.postgres.also_install_the_extensions_of"
+msgstr "Nainstalovat i rozšíření z PostgreSQL {version}?"
+
+msgid "services.postgres.couldnt_check_for_new_releases"
+msgstr "Nová vydání se nepodařilo vyhledat: {error}"
+
+msgid "services.postgres.extensions_for_postgresql_version_where"
+msgstr "{extensions} pro PostgreSQL {version}, pokud jsou pro něj k dispozici. Později to můžete změnit v části Rozšíření…."
+
+msgid "services.postgres.extensions_of_postgresql_version_postgis"
+msgstr "Rozšíření PostgreSQL {version}: PostGIS, pgRouting, pgvector, TimescaleDB a vaše vlastní"
+
+msgid "services.postgres.install_with_extensions"
+msgstr "Nainstalovat s rozšířeními"
+
+msgid "services.postgres.installing_postgresql_version"
+msgstr "Instaluje se PostgreSQL {version}…"
+
+msgid "services.postgres.license_license"
+msgstr "Licence: {license}"
+
+msgid "services.postgres.no_longer_updated_for_postgresql"
+msgstr "Pro PostgreSQL {version} se už neaktualizuje"
+
+msgid "services.postgres.not_available_for_postgresql_version"
+msgstr "Pro PostgreSQL {version} není k dispozici"
+
+msgid "services.postgres.postgresql_only"
+msgstr "Jen PostgreSQL"
+
+msgid "services.postgres.postgresql_version_extensions"
+msgstr "Rozšíření PostgreSQL {version}"
+
+msgid "services.postgres.postgresql_version_restarts_to_load"
+msgstr "PostgreSQL {version} se kvůli načtení restartuje"
+
+msgid "services.postgres.postgresql_version_starts_with_a"
+msgstr "PostgreSQL {version} začne s novou, prázdnou sadou databází."
+
+msgid "services.postgres.postgresql_version_stops_and_flock"
+msgstr "PostgreSQL {version} se zastaví a Flock se přepne na PostgreSQL {next} s jeho vlastními databázemi."
+
+msgid "services.postgres.postgresql_version_stops_and_your"
+msgstr "PostgreSQL {version} se zastaví a vaše weby nebudou moci PostgreSQL používat, dokud znovu nenainstalujete některou verzi."
+
+msgid "services.postgres.postgresql_version_uses_its_own"
+msgstr "PostgreSQL {version} používá vlastní databáze."
+
+msgid "services.postgres.removes_the_postgresql_version_server"
+msgstr "Odebere server PostgreSQL {version}."
+
+msgid "services.postgres.side_by_side"
+msgstr "Nainstalované verze zůstávají vedle sebe. Běží vždy jen jedna; každá má vlastní databáze, které zůstanou zachovány i při aktualizacích v rámci verze."
+
+msgid "services.postgres.stopped"
+msgstr "Zastaveno"
+
+msgid "services.postgres.switch_to_postgresql_version"
+msgstr "Přepnout na PostgreSQL {version}?"
+
+msgid "services.postgres.switching_to_postgresql_version"
+msgstr "Přepíná se na PostgreSQL {version}…"
+
+msgid "services.postgres.uninstall_name"
+msgstr "Odinstalovat {name}"
+
+msgid "services.postgres.uninstall_postgresql_version"
+msgstr "Odinstalovat PostgreSQL {version}?"
+
+msgid "services.postgres.uninstalling_postgresql_version"
+msgstr "Odinstalovává se PostgreSQL {version}…"
+
+msgid "services.postgres.updating_postgresql_version"
+msgstr "Aktualizuje se PostgreSQL {version}…"
+
+msgid "services.postgres.waiting"
+msgstr "Čeká se…"
+
+msgid "services.postgres.yours"
+msgstr "Vlastní"
+
+msgid "services.postgresql_version_stops_its_databases"
+msgstr "PostgreSQL {version} se zastaví; jeho databáze zůstanou, ale nebudou k dispozici, dokud se nepřepnete zpět. {then}"
+
+msgid "services.put_a_library_in_lib"
+msgstr "Knihovnu vložte do lib/ a její soubory .control a .sql do extension/. Flock je zachová i při aktualizacích PostgreSQL {version}."
+
+msgid "services.reinstall"
+msgstr "Přeinstalovat {version}"
+
+msgid "services.service_port"
+msgstr "Port služby {service}"
+
+msgid "services.show_last_log"
+msgstr "Zobrazit poslední log"
+
+msgid "services.side_by_side"
+msgstr "Nainstalované verze zůstávají vedle sebe. Běží vždy jen jedna; každá má vlastní data, která zůstanou zachována i při aktualizacích v rámci verze."
+
+msgid "services.start"
+msgstr "Spustit"
+
+msgid "services.stop_question"
+msgstr "Zastavit {service}?"
+
+msgid "services.subtitle"
+msgstr "Databáze, mezipaměti, vyhledávání a nástroje kolem vašich webů. Vše naslouchá jen na 127.0.0.1."
+
+msgid "services.switch_ellipsis"
+msgstr "Přepnout…"
+
+msgid "services.systemd_resolved_sends_every_name"
+msgstr "systemd-resolved sem posílá každý název pod .{tld} (nastaveno pomocí `flock install`), takže funguje libovolná subdoména webu (tenant1.app.{tld}, a.b.app.{tld}), aniž byste ji přidávali."
+
+msgid "services.this_flock_daemon_doesnt_know"
+msgstr "Tento démon Flocku tuto službu nezná. Aktualizujte Flock a zkuste to znovu."
+
+msgid "services.uninstall_and_delete_databases_size"
+msgstr "Odinstalovat a smazat databáze ({size})"
+
+msgid "services.uninstall_keep_databases"
+msgstr "Odinstalovat, ponechat databáze"
+
+msgid "services.update_noun"
+msgstr "Aktualizace"
+
+msgid "services.updates_keep_data"
+msgstr "Aktualizace vaše data zachovají."
+
+msgid "services.web_down"
+msgstr "Dokud webový server neběží, weby se neotevřou. Proč, může prozradit jeho log; `flock restart` ho znovu spustí."
+
+msgid "services.web_running"
+msgstr "Caddy obsluhuje každý web přes HTTPS (https://app.{tld}) s certifikáty od místní certifikační autority Flocku, kterou `flock install` přidá mezi důvěryhodné."
+
+msgid "services.withdrawn"
+msgstr "Vyřazeno: {reason}"
+
+msgid "services.withdrawn_update"
+msgstr "Vyřazeno: {reason} — nahraďte ho aktualizací"
+
+msgid "services.your_own_extensions"
+msgstr "Vaše vlastní rozšíření"
+
+msgid "services.your_sites_cant_use_service"
+msgstr "Vaše weby nebudou moci službu {service} používat, dokud ji znovu nespustíte; zůstane zastavená i po restartech."
+
+msgid "settings.editor.none"
+msgstr "Neodkazovat"
+
+msgid "settings.flock_is_not_running"
+msgstr "Flock neběží"
+
+msgid "settings.pane.about"
+msgstr "O aplikaci"
+
+msgid "settings.pane.ai"
+msgstr "AI"
+
+msgid "settings.pane.debugger"
+msgstr "Debugger"
+
+msgid "settings.pane.services"
+msgstr "Služby"
+
+msgid "settings.pane.sites"
+msgstr "Weby"
+
+msgid "settings.start_daemon_to_change"
+msgstr "Pro změnu nastavení spusťte démona."
+
+msgid "setup.as_soon_as_flock_can"
+msgid_plural "setup.as_soon_as_flock_can"
+msgstr[0] "Jakmile ho Flock bude moct stáhnout."
+msgstr[1] "Jakmile je Flock bude moct stáhnout."
+msgstr[2] "Jakmile je Flock bude moct stáhnout."
+
+msgid "setup.back"
+msgstr "Zpět"
+
+msgid "setup.background"
+msgstr "Běží na pozadí"
+
+msgid "setup.check_again_title_case"
+msgstr "Zkontrolovat znovu"
+
+msgid "setup.checking_ports"
+msgstr "Kontrolují se porty Flocku…"
+
+msgid "setup.could_not_change_the_startup"
+msgstr "Nastavení spouštění se nepodařilo změnit: {error}."
+
+msgid "setup.did_not_finish"
+msgstr "Nastavení nebylo dokončeno"
+
+msgid "setup.error_try_again_in_settings"
+msgstr "{error}Zkuste to znovu v Nastavení → {pane}."
+
+msgid "setup.failed"
+msgstr "Něco se pokazilo. Co přesně, uvádí výstup níže; můžete to zkusit znovu."
+
+msgid "setup.flock_daemon_serves_your_sites_and"
+msgstr "Démon Flocku obsluhuje vaše weby a služby a spouští se spolu s počítačem."
+
+msgid "setup.flock_makes_them_the_default"
+msgid_plural "setup.flock_makes_them_the_default"
+msgstr[0] "Flock ho nastaví jako výchozí pro vaše weby a terminál."
+msgstr[1] "Flock je nastaví jako výchozí pro vaše weby a terminál."
+msgstr[2] "Flock je nastaví jako výchozí pro vaše weby a terminál."
+
+msgid "setup.flock_needs_these_ports_and"
+msgstr "Flock potřebuje tyto porty a *.{tld} pro sebe, ale používají je jiné programy. Pokud by běželo obojí, nefungovalo by ani jedno."
+
+msgid "setup.flock_runs_your_laravel_sites_php"
+msgstr "Flock na tomto počítači provozuje vaše weby v Laravelu, PHP, poštu a databáze. Nastavení chvíli potrvá:"
+
+msgid "setup.flock_stops_and_is_removed"
+msgstr "Flock se zastaví a odebere se z vaší PATH spolu se svými verzemi PHP a Node.js, certifikáty, logy a mezipamětí. Linux se zeptá na heslo, aby odebral nastavení DNS pro *.test a důvěryhodný certifikát Flocku.\n\nNastavení a databáze vašich webů zůstanou ve složce {folder}, takže po opětovné instalaci budete pokračovat tam, kde jste skončili — pokud je také nesmažete."
+
+msgid "setup.flock_was_uninstalled_remove_the"
+msgstr "Flock byl odinstalován. Aplikaci odeberte správcem balíčků (sudo apt remove flockphp nebo sudo dnf remove flockphp). Otevřete nový terminál: Flock už není v jeho PATH."
+
+msgid "setup.flock_wont_open_at_login"
+msgstr "Flock se po přihlášení neotevře"
+
+msgid "setup.installing"
+msgstr "Instaluje se {names}…"
+
+msgid "setup.link_project"
+msgstr "Propojte projekt"
+
+msgid "setup.link_project_description"
+msgstr "V projektu v Laravelu spusťte `flock link`: web pak najdete na http://<složka>.test. `flock secure` přidá HTTPS."
+
+msgid "setup.linux_asks_for_your_password"
+msgstr "Linux se za chvíli zeptá na heslo."
+
+msgid "setup.linux_asks_for_your_password_once"
+msgstr "Linux se jednou zeptá na heslo: aby spustil službu na pozadí, překládal *.test přes Flock a důvěřoval certifikátu Flocku v systému i ve vašich prohlížečích."
+
+msgid "setup.name_couldnt_be_installed"
+msgstr "{name} se nepodařilo nainstalovat"
+
+msgid "setup.names_are_installed"
+msgstr "{names} jsou nainstalované"
+
+msgid "setup.new_terminal"
+msgstr "Otevřete nový terminál"
+
+msgid "setup.new_terminal_description"
+msgstr "Terminály, které už byly otevřené, mají stále starou PATH."
+
+msgid "setup.next_steps"
+msgstr "Další kroky"
+
+msgid "setup.open_flock_at_login"
+msgstr "Otevírat Flock po přihlášení"
+
+msgid "setup.open_flock_when_i_log"
+msgstr "Otevřít Flock po přihlášení"
+
+msgid "setup.open_settings"
+msgstr "Otevřít nastavení"
+
+msgid "setup.password_prompt_was_cancelled_flock"
+msgstr "Výzva k zadání hesla byla zrušena. Flock běží, ale weby *.test se nebudou překládat a HTTPS nebude důvěryhodné, dokud to nepovolíte."
+
+msgid "setup.problem_settings_to_general_has"
+msgstr "{problem} Najdete to také v Nastavení → Obecné."
+
+msgid "setup.ready"
+msgstr "Flock je připravený"
+
+msgid "setup.setting_up"
+msgstr "Nastavuje se Flock…"
+
+msgid "setup.star"
+msgstr "Flock je zdarma a open source. Pokud se vám líbí, [hvězdička na GitHubu](https://github.com/flock-php/flock) pomůže ostatním ho najít."
+
+msgid "setup.stop_other_web_servers_first"
+msgstr "Nejdřív zastavte jiné webové servery"
+
+msgid "setup.terminal_description"
+msgstr "Verze z Flocku budou v PATH na prvním místě. Po nastavení otevřete nový terminál."
+
+msgid "setup.terminal_title"
+msgstr "php, composer a node v terminálu"
+
+msgid "setup.theyre_the_defaults_for_your"
+msgstr "Jsou výchozí pro vaše weby a terminál."
+
+msgid "setup.trusted_https_title"
+msgstr "Weby *.test s důvěryhodným HTTPS"
+
+msgid "setup.try_again"
+msgstr "Zkusit znovu"
+
+msgid "setup.uninstalling_didnt_finish_the_output"
+msgstr "Odinstalace se nedokončila. Co přesně se stalo, uvádí výstup níže; můžete to zkusit znovu."
+
+msgid "setup.waiting_to_install_names"
+msgstr "Čeká se na instalaci {names}"
+
+msgid "setup.welcome"
+msgstr "Vítejte ve Flocku"
+
+msgid "setup.window_title"
+msgstr "Nastavit Flock"
+
+msgid "sites.add_domain"
+msgstr "Přidat doménu…"
+
+msgid "sites.add_domain_title"
+msgstr "Přidat doménu k webu {site}"
+
+msgid "sites.add_proxy"
+msgstr "Přidat proxy…"
+
+msgid "sites.add_proxy_title"
+msgstr "Přidat proxy"
+
+msgid "sites.add_site"
+msgstr "Přidat web…"
+
+msgid "sites.add_site_linux"
+msgstr "Přidat web"
+
+msgid "sites.add_to_composer_json"
+msgstr "Přidat do composer.json"
+
+msgid "sites.adding"
+msgstr "Přidává se…"
+
+msgid "sites.alias"
+msgstr "{domain} (alias)"
+
+msgid "sites.boost_add"
+msgstr "Přidat Flock do pokynů…"
+
+msgid "sites.boost_add_question"
+msgstr "Přidat Flock do pokynů Boost webu {site}?"
+
+msgid "sites.boost_missing"
+msgstr "Projekt používá Laravel Boost. Přidáním Flocku do jeho pokynů se AI agenti dozvědí, že aplikaci obsluhuje Flock a vybírá její verzi PHP."
+
+msgid "sites.boost_outdated"
+msgstr "Pokyn Flocku v pokynech Boost projektu je zastaralý."
+
+msgid "sites.boost_update"
+msgstr "Aktualizovat…"
+
+msgid "sites.boost_update_question"
+msgstr "Aktualizovat pokyn Flocku ve webu {site}?"
+
+msgid "sites.branch_pins_it_in_file"
+msgstr "Větev ho připíná v {file}"
+
+msgid "sites.change"
+msgstr "Změnit…"
+
+msgid "sites.change_action"
+msgstr "Změnit"
+
+msgid "sites.change_its_php_and_node"
+msgstr "Verze PHP a Node.js, HTTPS a kořenovou složku změníte u webu."
+
+msgid "sites.change_upstream_details"
+msgstr "Samotný port znamená 127.0.0.1; pro cokoli jiného zadejte hostitele a port (localhost:5173) nebo URL (https://127.0.0.1:8443)."
+
+msgid "sites.change_upstream_title"
+msgstr "Změnit cíl proxy {proxy}"
+
+msgid "sites.choose_folder"
+msgstr "Vybrat složku…"
+
+msgid "sites.choose_folder_in_project_details"
+msgstr "{folder} není ve složce {project}. Kořenová složka webu musí být složkou v projektu."
+
+msgid "sites.choose_folder_linux"
+msgstr "Vybrat složku"
+
+msgid "sites.choose_the_folder_with_the_apps"
+msgstr "Vyberte složku s index.php aplikace ve webu {site}"
+
+msgid "sites.classic"
+msgstr "Klasický"
+
+msgid "sites.command"
+msgstr "Příkaz"
+
+msgid "sites.create_one_here_with_git"
+msgstr "Vytvořte ho zde, pomocí gitu nebo ve své aplikaci s agentem."
+
+msgid "sites.database_of_its_own_gets"
+msgstr "Ve vlastní databázi se spustí migrace větve."
+
+msgid "sites.default"
+msgstr "Výchozí"
+
+msgid "sites.default_tool_version"
+msgstr "Výchozí ({tool} {version})"
+
+msgid "sites.dev_server"
+msgstr "Vývojový server"
+
+msgid "sites.document_root"
+msgstr "Kořenová složka webu"
+
+msgid "sites.document_root_is_the_folder"
+msgstr "Kořenová složka webu je složka, ze které Flock web obsluhuje. Zde vybraná platí jen na tomto počítači; připněte ji, aby se zapsala do .flockrc pro všechny."
+
+msgid "sites.domain_is_no_longer_served"
+msgstr "Web {site} už nebude obsluhovat {domain}."
+
+msgid "sites.downloading_frankenphp"
+msgstr "Stahuje se FrankenPHP pro PHP {version}…"
+
+msgid "sites.e_g_my_app_to"
+msgstr "např. my-app → my-app.{tld}"
+
+msgid "sites.each_git_worktree_of_site"
+msgstr "Každý git worktree webu {site} se obsluhuje na <branch>.{domain} s vlastními závislostmi a .env."
+
+msgid "sites.every_request_passes_to_the"
+msgstr "Každý požadavek se předá cíli i s hlavičkou Host, včetně přechodu na WebSocket (hot reload). Dokud server neodpovídá, {domain} zobrazuje stránku s touto informací."
+
+msgid "sites.every_subdomain_up_to_n"
+msgid_plural "sites.every_subdomain_up_to_n"
+msgstr[0] "Každá subdoména až {n} úroveň pod webem už funguje. Pro alias přidejte celý název jako {site}-2.{tld}, nebo subdoménu (tenant1, a.b), aby byla uvedená zde a překládala se i na počítačích s Windows bez wildcard DNS."
+msgstr[1] "Každá subdoména až {n} úrovně pod webem už funguje. Pro alias přidejte celý název jako {site}-2.{tld}, nebo subdoménu (tenant1, a.b), aby byla uvedená zde a překládala se i na počítačích s Windows bez wildcard DNS."
+msgstr[2] "Každá subdoména až {n} úrovní pod webem už funguje. Pro alias přidejte celý název jako {site}-2.{tld}, nebo subdoménu (tenant1, a.b), aby byla uvedená zde a překládala se i na počítačích s Windows bez wildcard DNS."
+
+msgid "sites.extension_required_by"
+msgstr "Vyžadováno balíčky: {packages}"
+
+msgid "sites.extension_used"
+msgstr "Není vyžadováno, ale používá se: {hint}"
+
+msgid "sites.extensions_footnote"
+msgstr "Když je rozšíření vyžadované v composer.json, composer install odmítne server, který ho nemá, místo aby tam aplikace selhala."
+
+msgid "sites.extensions_laravel"
+msgstr "PHP {version} · aplikace v Laravelu"
+
+msgid "sites.extensions_none"
+msgstr "Projekt nevyžaduje žádná rozšíření PHP."
+
+msgid "sites.extensions_title"
+msgstr "Rozšíření PHP webu {site}"
+
+msgid "sites.extra_domains_subdomains_and_aliases"
+msgstr "Další domény: subdomény a aliasy"
+
+msgid "sites.flock_copies_site_s_database"
+msgstr "Flock zkopíruje databázi webu {site} a spustí v ní migrace větve."
+
+msgid "sites.flock_hasnt_set_this_worktree"
+msgstr "Flock tento worktree nepřipravil"
+
+msgid "sites.flock_runs_the_projects_dev"
+msgstr "Flock spustí skript dev projektu, když někdo web navštíví, a po 30 minutách bez návštěv ho zastaví."
+
+msgid "sites.flock_stops_serving_domain_the"
+msgstr "Flock přestane obsluhovat {domain}. Projekt ve složce {path} se nezmění."
+
+msgid "sites.flocks_php_version_doesnt_include"
+msgstr " — PHP {version} od Flocku ho neobsahuje"
+
+msgid "sites.frankenphp_needs_php_8_2"
+msgstr "FrankenPHP vyžaduje PHP 8.2 nebo novější. Požadavky, které chtějí Xdebug, dál obsluhuje PHP-FPM."
+
+msgid "sites.frankenphp_needs_php_8_2_or"
+msgstr "FrankenPHP vyžaduje PHP 8.2 nebo novější. Požadavky, které chtějí Xdebug, dál obsluhuje PHP-FPM. Pro režim workerů nainstalujte do projektu Laravel Octane (composer require laravel/octane)."
+
+msgid "sites.frankenphp_running"
+msgstr "Běží FrankenPHP {version} s PHP {php}"
+
+msgid "sites.give_flock_the_commands_that"
+msgstr "Zadejte Flocku příkazy, které server spouštějí a zastavují, a budete ho moct spustit tady."
+
+msgid "sites.give_worktree_a_copy_of"
+msgstr "Dát worktree {worktree} kopii databáze?"
+
+msgid "sites.give_worktree_a_fresh_database"
+msgstr "Dát worktree {worktree} novou databázi?"
+
+msgid "sites.n3000_host_port_or_url"
+msgstr "3000, hostitel:port nebo URL. Samotný port znamená 127.0.0.1."
+
+msgid "sites.n_worktrees"
+msgid_plural "sites.n_worktrees"
+msgstr[0] "{n} worktree"
+msgstr[1] "{n} worktrees"
+msgstr[2] "{n} worktrees"
+
+msgid "sites.new_app"
+msgstr "New App…"
+
+msgid "sites.new_app_tooltip"
+msgstr "Create a new project from a template and link it as a site"
+
+msgid "sites.no_public_www_web_or"
+msgstr "Nebyla nalezena složka public/, www/, web/ ani webroot/ se souborem index.php, takže Flock místo webu zobrazuje informační stránku. Vyberte složku se souborem index.php aplikace."
+
+msgid "sites.no_sites"
+msgstr "Žádné weby"
+
+msgid "sites.no_sites_description"
+msgstr "Přidejte sem jednotlivý web, nebo přidejte složku projektů v části Obecné."
+
+msgid "sites.no_worktrees"
+msgstr "Žádné worktrees"
+
+msgid "sites.node_version_is_isolated_here"
+msgstr "Node {version} je zde izolovaný; projekt v {file} připíná {pinned}."
+
+msgid "sites.node_wins"
+msgstr "Node {pinned} z .flockrc má přednost před {other}."
+
+msgid "sites.nothing_answers_yet"
+msgstr "Na {upstream} zatím nic neodpovídá."
+
+msgid "sites.open_in_the_browser"
+msgstr "Otevřít v prohlížeči"
+
+msgid "sites.open_log"
+msgstr "Otevřít log"
+
+msgid "sites.open_the_folder"
+msgstr "Otevřít složku"
+
+msgid "sites.open_the_project_folder"
+msgstr "Otevřít složku projektu"
+
+msgid "sites.output"
+msgstr "Výstup"
+
+msgid "sites.percent"
+msgstr "{percent} %"
+
+msgid "sites.php_extensions"
+msgstr "Rozšíření PHP"
+
+msgid "sites.php_fpm_serves_the_site"
+msgstr "Mezitím web obsluhuje PHP-FPM."
+
+msgid "sites.php_fpm_serves_the_site_until"
+msgstr "Dokud nebude připravené, web obsluhuje PHP-FPM."
+
+msgid "sites.php_version_is_isolated_here"
+msgstr "PHP {version} je zde izolované; projekt v {file} připíná {pinned}."
+
+msgid "sites.pin"
+msgstr "Připnout"
+
+msgid "sites.pin_menu_tooltip"
+msgstr "Připnout verze a kořenovou složku k projektu"
+
+msgid "sites.pin_node_item"
+msgstr "Připnout Node {version} k projektu…"
+
+msgid "sites.pin_node_question"
+msgstr "Připnout Node {version} k webu {site}?"
+
+msgid "sites.pin_php_item"
+msgstr "Připnout PHP {version} k projektu…"
+
+msgid "sites.pin_php_question"
+msgstr "Připnout PHP {version} k webu {site}?"
+
+msgid "sites.pin_root_item"
+msgstr "Připnout kořenovou složku ({root}) k projektu…"
+
+msgid "sites.pin_root_question"
+msgstr "Připnout kořenovou složku {root} k webu {site}?"
+
+msgid "sites.project_folder_badge"
+msgstr "Složka projektu"
+
+msgid "sites.project_pins_tool_version_in"
+msgstr "Projekt připíná {tool} {version} v {file}."
+
+msgid "sites.proxies"
+msgstr "Proxy"
+
+msgid "sites.proxy"
+msgstr "Proxy"
+
+msgid "sites.proxy.add_commands"
+msgstr "Přidat příkazy…"
+
+msgid "sites.proxy.commands"
+msgstr "Příkazy"
+
+msgid "sites.proxy.commands_optional"
+msgstr "Příkazy (volitelné)"
+
+msgid "sites.proxy.commands_title"
+msgstr "Příkazy pro {proxy}"
+
+msgid "sites.proxy.not_running"
+msgstr "Neběží"
+
+msgid "sites.proxy.remove_commands"
+msgstr "Odebrat příkazy"
+
+msgid "sites.proxy.running"
+msgstr "Běží"
+
+msgid "sites.proxy.stop_command_hint"
+msgstr "Jen pro server, který běží na pozadí, jako docker compose up -d."
+
+msgid "sites.proxy_footnote_no_commands"
+msgstr "Každý požadavek se předá cíli i s hlavičkou Host, včetně přechodu na WebSocket (hot reload). Flock server nespouští, takže ho spusťte jako obvykle, nebo mu níže zadejte příkazy. Dokud neodpovídá, {domain} zobrazuje stránku s touto informací."
+
+msgid "sites.proxy_name"
+msgstr "Název"
+
+msgid "sites.qr_code_of_url"
+msgstr "QR kód pro {url}"
+
+msgid "sites.rebuild_assets"
+msgstr "Znovu sestavit assety"
+
+msgid "sites.remove_proxy"
+msgstr "Odebrat proxy"
+
+msgid "sites.remove_proxy_details"
+msgstr "Flock přestane obsluhovat {domain}. Server na {upstream} poběží dál."
+
+msgid "sites.remove_site"
+msgstr "Odebrat web"
+
+msgid "sites.removes_root_from_flockrc_in"
+msgstr "Odebere root= z .flockrc ve složce {path}. Flock pak kořenovou složku najde sám. Tím se změní soubory ve vašem projektu."
+
+msgid "sites.removes_the_node_js_version"
+msgstr "Odebere verzi Node.js z .flockrc a smaže .nvmrc / .node-version ve složce {path}. Web pak použije výchozí Node.js Flocku. Tím se změní soubory ve vašem projektu."
+
+msgid "sites.removes_the_php_version_from"
+msgstr "Odebere verzi PHP z {file}. Web pak použije výchozí PHP Flocku. Tím se změní soubory ve vašem projektu."
+
+msgid "sites.require"
+msgstr "Vyžadovat"
+
+msgid "sites.require_ext_name_in_composer"
+msgstr "Vyžadovat ext-{name} v composer.json?"
+
+msgid "sites.require_tooltip"
+msgstr "Spustí composer require ext-{name}:* ve složce {path}, což změní composer.json a composer.lock. Commitněte je s projektem."
+
+msgid "sites.restart_frankenphp_tooltip"
+msgstr "Restartovat FrankenPHP, např. aby workery Octane načetly změněný kód"
+
+msgid "sites.reverb.env_needs"
+msgstr "Soubor .env aplikace potřebuje:"
+
+msgid "sites.reverb.explanation"
+msgstr "Flock pro web spouští php artisan reverb:start. Prohlížeče se k němu připojí na {address}, bez vlastního portu či certifikátu."
+
+msgid "sites.reverb.footnote"
+msgstr "Spojení WebSocket pod /app a broadcasty Laravelu pod /apps jdou do Reverbu; všechny ostatní požadavky zůstávají aplikaci. Flock soubor .env projektu nemění. Po jeho změně znovu sestavte front-end."
+
+msgid "sites.reverb.install"
+msgstr "Pro spouštění nainstalujte do projektu Laravel Reverb (php artisan install:broadcasting --reverb)."
+
+msgid "sites.reverb.restart_tooltip"
+msgstr "Restartovat Reverb, např. aby načetl změněný kód"
+
+msgid "sites.reverb.run"
+msgstr "Spouštět Reverb"
+
+msgid "sites.reverb.running_at"
+msgstr "Běží na {address}"
+
+msgid "sites.reverb.title"
+msgstr "Reverb"
+
+msgid "sites.root_automatic"
+msgstr "Automaticky"
+
+msgid "sites.root_automatic_found"
+msgstr "Automaticky ({root})"
+
+msgid "sites.root_automatic_none"
+msgstr "Automaticky (nic nenalezeno)"
+
+msgid "sites.root_missing"
+msgstr "Vyberte složku se souborem index.php aplikace, nebo vytvořte {root}."
+
+msgid "sites.root_no_index"
+msgstr "{root} neobsahuje index.php ani index.html, takže Flock místo webu zobrazuje informační stránku, dokud tam nebudou."
+
+msgid "sites.root_shadowed"
+msgstr "Zde je nastaveno {root}; projekt v .flockrc nastavuje {pinned}."
+
+msgid "sites.runs_npm_run_build_again"
+msgstr "Znovu spustí npm run build, aby návštěvníci po obnovení stránky viděli vaše poslední změny"
+
+msgid "sites.runs_on"
+msgstr "Běží na"
+
+msgid "sites.secure"
+msgstr "Zabezpečit"
+
+msgid "sites.serve_a_server_of_its"
+msgstr "Obsluhovat vlastní server, např. dashboard, úložiště objektů, kontejner Dockeru nebo aplikaci v Go či Pythonu, na doméně .{tld}"
+
+msgid "sites.served_over_https"
+msgstr "Obsluhováno přes HTTPS"
+
+msgid "sites.server"
+msgstr "Server"
+
+msgid "sites.server.choose"
+msgstr "Vybrat"
+
+msgid "sites.server.failed"
+msgstr "Selhalo"
+
+msgid "sites.server.failed_because"
+msgstr "Selhalo: {problem}"
+
+msgid "sites.server.running_on_port"
+msgstr "Běží na portu {port}"
+
+msgid "sites.server.sleeping"
+msgstr "Spí · spustí se při další návštěvě"
+
+msgid "sites.server.stopped_because"
+msgstr "Zastaveno: {problem}"
+
+msgid "sites.server.stopping"
+msgstr "Zastavuje se…"
+
+msgid "sites.setting_it_up_copies_dependencies"
+msgstr "Příprava zkopíruje závislosti a .env, nainstaluje je a spustí hooky projektu."
+
+msgid "sites.share.allow_explanation"
+msgstr "Web může otevřít kdokoli s odkazem, pokud neuvedete e-mailové adresy — Cloudflare jim pak pošle kód e-mailem. Odkaz přestane fungovat po 8 hodinách nebo po ukončení sdílení."
+
+msgid "sites.share.allow_header"
+msgstr "Jen tito lidé (volitelné)"
+
+msgid "sites.share.building"
+msgstr "Sestavují se assety…"
+
+msgid "sites.share.debug_on"
+msgstr "Ladicí režim je zapnutý: návštěvníci vidí výpisy zásobníku"
+
+msgid "sites.share.dismiss"
+msgstr "Zavřít"
+
+msgid "sites.share.ends_at"
+msgstr "Skončí v {time}"
+
+msgid "sites.share.explanation"
+msgstr "Zpřístupněte web na dočasné veřejné adrese k náhledu rozpracované práce, nikdy ne pro produkci. Návštěvníci neuvidí ladicí stránky, dumpy ani vývojářské nástroje."
+
+msgid "sites.share.only_for"
+msgstr "Jen pro: {emails}"
+
+msgid "sites.share.rebuilding"
+msgstr "Znovu se sestavuje…"
+
+msgid "sites.share.share"
+msgstr "Sdílet"
+
+msgid "sites.share.share_ellipsis"
+msgstr "Sdílet…"
+
+msgid "sites.share.show_errors"
+msgstr "Zobrazovat návštěvníkům podrobnosti chyb"
+
+msgid "sites.share.show_errors_explanation"
+msgstr "Zapne pro toto sdílení ladicí režim aplikace, takže návštěvníci uvidí výpisy zásobníku. Jen pro lidi, kterým důvěřujete."
+
+msgid "sites.share.starting"
+msgstr "Spouští se tunel…"
+
+msgid "sites.share.stop"
+msgstr "Zastavit"
+
+msgid "sites.share.title"
+msgstr "Sdílet {site}"
+
+msgid "sites.shared"
+msgstr "Sdíleno"
+
+msgid "sites.sharing_failed"
+msgstr "Sdílení selhalo."
+
+msgid "sites.show_log"
+msgstr "Zobrazit log"
+
+msgid "sites.site"
+msgstr "Web"
+
+msgid "sites.stop_sharing"
+msgstr "Ukončit sdílení"
+
+msgid "sites.subdomains_only_here"
+msgstr "Subdomény fungují, jen když je přidáte sem: {problem}."
+
+msgid "sites.subtitle"
+msgstr "Weby přidané jednotlivě a každá složka uvnitř vašich složek projektů."
+
+msgid "sites.tenant1_a_b_or_site"
+msgstr "tenant1, a.b nebo {site}-2.{tld}"
+
+msgid "sites.tool_version_is_set_for"
+msgstr "Pro tento web je na tomto počítači nastavena verze {tool} {version} (izolovaně)."
+
+msgid "sites.type"
+msgstr "Typ"
+
+msgid "sites.unpin"
+msgstr "Odepnout"
+
+msgid "sites.unpin_node_item"
+msgstr "Odepnout Node ({file})…"
+
+msgid "sites.unpin_node_question"
+msgstr "Odepnout Node od webu {site}?"
+
+msgid "sites.unpin_php_item"
+msgstr "Odepnout PHP ({file})…"
+
+msgid "sites.unpin_php_question"
+msgstr "Odepnout PHP od webu {site}?"
+
+msgid "sites.unpin_root_item"
+msgstr "Odepnout kořenovou složku (.flockrc)…"
+
+msgid "sites.unpin_root_question"
+msgstr "Odepnout kořenovou složku od webu {site}?"
+
+msgid "sites.upstream"
+msgstr "Cíl"
+
+msgid "sites.upstream_placeholder"
+msgstr "Port, hostitel:port nebo URL"
+
+msgid "sites.url"
+msgstr "URL"
+
+msgid "sites.use_file"
+msgstr "Použít {file}"
+
+msgid "sites.use_file_tool_version"
+msgstr "Použít {file} ({tool} {version})"
+
+msgid "sites.use_flockrc"
+msgstr "Použít .flockrc"
+
+msgid "sites.use_flockrc_root"
+msgstr "Použít .flockrc ({root})"
+
+msgid "sites.uses_site_s_settings"
+msgstr "Používá nastavení webu {site}"
+
+msgid "sites.version_default"
+msgstr "Web se řídí výchozí verzí {tool} ve Flocku."
+
+msgid "sites.version_picked_here_applies_on_this_machine"
+msgstr "Zde vybraná verze platí jen na tomto počítači. Chcete-li ji nastavit všem, kdo na projektu pracují, připněte ji: PHP se zapíše do .flockrc, Node.js do .nvmrc."
+
+msgid "sites.wildcard_subdomains_dont_work_here"
+msgstr "Zástupné subdomény tu nefungují ({problem}), takže přidejte každou subdoménu, kterou používáte (tenant1, a.b). Celé jméno přidá alias."
+
+msgid "sites.worker_mode"
+msgstr " · režim workerů"
+
+msgid "sites.worktree_then_uses_site_s"
+msgstr "{worktree} pak bude používat databázi webu {site}."
+
+msgid "sites.writes_ai_guidelines_flock_md"
+msgstr "Zapíše .ai/guidelines/flock.md do {path} a spustí php artisan boost:update, aby AI agenti věděli, že aplikaci obsluhuje Flock a vybírá její verzi PHP. Commitněte ho se zbytkem .ai/guidelines. Tím se změní soubory ve vašem projektu."
+
+msgid "sites.writes_php_version_to_flockrc"
+msgstr "Zapíše php={version} do .flockrc ve složce {path}. Commitněte ho a každý, kdo na tomto projektu používá Flock, dostane PHP {version}. Tím se změní soubor ve vašem projektu."
+
+msgid "sites.writes_root_value_to_flockrc"
+msgstr "Zapíše root={value} do .flockrc ve složce {path}. Commitněte ho a každý, kdo na tomto projektu používá Flock, ho bude obsluhovat z {root}. Tím se změní soubor ve vašem projektu."
+
+msgid "sites.writes_version_to_file_in"
+msgstr "Zapíše {version} do {file} ve složce {path}. Commitněte ho a Flock, nvm i další nástroje pro Node použijí pro tento projekt Node {version}. Tím se změní soubor ve vašem projektu."
+
+msgid "versions.check_now"
+msgstr "Zkontrolovat"
+
+msgid "versions.checked_just_now"
+msgstr "Zkontrolováno právě teď"
+
+msgid "versions.checked_n_days_ago"
+msgid_plural "versions.checked_n_days_ago"
+msgstr[0] "Zkontrolováno před {n} dnem"
+msgstr[1] "Zkontrolováno před {n} dny"
+msgstr[2] "Zkontrolováno před {n} dny"
+
+msgid "versions.checked_n_hours_ago"
+msgid_plural "versions.checked_n_hours_ago"
+msgstr[0] "Zkontrolováno před hodinou"
+msgstr[1] "Zkontrolováno před {n} hodinami"
+msgstr[2] "Zkontrolováno před {n} hodinami"
+
+msgid "versions.checked_n_minutes_ago"
+msgid_plural "versions.checked_n_minutes_ago"
+msgstr[0] "Zkontrolováno před minutou"
+msgstr[1] "Zkontrolováno před {n} minutami"
+msgstr[2] "Zkontrolováno před {n} minutami"
+
+msgid "versions.checking"
+msgstr "Kontroluje se…"
+
+msgid "versions.could_not_check_updates"
+msgstr "Aktualizace se nepodařilo vyhledat: {error}"
+
+msgid "versions.download_failed"
+msgstr "Stahování selhalo."
+
+msgid "versions.downloading_node"
+msgstr "Stahuje se Node.js {version}…"
+
+msgid "versions.franken_not_installed"
+msgstr "Nenainstalováno · stáhne se samo, až ho nějaký web použije"
+
+msgid "versions.new_build"
+msgstr "K dispozici je nové sestavení"
+
+msgid "versions.not_checked"
+msgstr "Zatím nezkontrolováno"
+
+msgid "versions.prerelease"
+msgstr "Předběžná verze"
+
+msgid "versions.show_last_install_log"
+msgstr "Zobrazit log poslední instalace"
+
+msgid "versions.up_to_date"
+msgstr "Aktuální"
+
+msgid "versions.update_available"
+msgstr "K dispozici je aktualizace"
+
+msgid "versions.versions"
+msgstr "Verze"
+
+msgid "worktrees.branch_stays"
+msgstr "Větev {branch} zůstane."
+
+msgid "worktrees.could_not_remove"
+msgstr "{name} se nepodařilo odebrat"
+
+msgid "worktrees.create"
+msgstr "Vytvořit"
+
+msgid "worktrees.database_copy"
+msgstr "Kopie databáze webu"
+
+msgid "worktrees.database_fresh"
+msgstr "Nová, prázdná"
+
+msgid "worktrees.database_shared"
+msgstr "Databáze webu"
+
+msgid "worktrees.detached_head"
+msgstr "Žádná (odpojený HEAD)"
+
+msgid "worktrees.drop_question"
+msgstr "Smazat databázi {database}?"
+
+msgid "worktrees.give_fresh_details"
+msgstr "Flock vytvoří prázdnou databázi a spustí migrace."
+
+msgid "worktrees.its_database_database_is_dropped"
+msgstr "Jeho databáze {database} se smaže."
+
+msgid "worktrees.job.ready"
+msgstr "Připraveno"
+
+msgid "worktrees.job.ready_at"
+msgstr "Připraveno na {url}"
+
+msgid "worktrees.job.see_log"
+msgstr "viz log"
+
+msgid "worktrees.job.setup_failed"
+msgstr "Příprava selhala: {error}"
+
+msgid "worktrees.job.starting"
+msgstr "Spouští se…"
+
+msgid "worktrees.new"
+msgstr "Nový worktree…"
+
+msgid "worktrees.new.branch"
+msgstr "Větev"
+
+msgid "worktrees.new.branch_placeholder"
+msgstr "název jako brave-otter"
+
+msgid "worktrees.new.current_branch"
+msgstr "{name} (aktuální)"
+
+msgid "worktrees.new.current_commit"
+msgstr "Aktuální commit"
+
+msgid "worktrees.new.database"
+msgstr "Databáze"
+
+msgid "worktrees.new.default_branch"
+msgstr "{name} (výchozí)"
+
+msgid "worktrees.new.explain_existing"
+msgstr "Větev {branch} už existuje, takže ji worktree použije. Flock ho vytvoří vedle webu {site}, připraví ho a bude ho obsluhovat na {address}."
+
+msgid "worktrees.new.explain_new"
+msgstr "Flock vytvoří worktree vedle webu {site} na nové větvi {branch}, připraví ho a bude ho obsluhovat na {address}."
+
+msgid "worktrees.new.explain_unnamed"
+msgstr "Flock vytvoří worktree vedle webu {site} na nové větvi s vlastním názvem, připraví ho a bude ho obsluhovat na vlastní adrese."
+
+msgid "worktrees.new.start_from"
+msgstr "Vycházet z"
+
+msgid "worktrees.new_title"
+msgstr "Nový worktree webu {site}"
+
+msgid "worktrees.own_database"
+msgstr "vlastní databáze"
+
+msgid "worktrees.own_database_tooltip"
+msgstr "Vlastní databáze: {database}"
+
+msgid "worktrees.project_default"
+msgstr "Výchozí podle projektu"
+
+msgid "worktrees.remove"
+msgstr "Odebrat worktree"
+
+msgid "worktrees.remove_anyway"
+msgstr "Přesto odebrat"
+
+msgid "worktrees.remove_details"
+msgstr "Flock spustí jeho hook before_delete a smaže {path}."
+
+msgid "worktrees.remove_details_database"
+msgstr "Flock spustí jeho hook before_delete a smaže {path} i jeho databázi {database}."
+
+msgid "worktrees.run_again"
+msgstr "Znovu spustit přípravu"
+
+msgid "worktrees.see_log"
+msgstr "viz jeho log"
+
+msgid "worktrees.set_up_action"
+msgstr "Připravit"
+
+msgid "worktrees.setting_up"
+msgstr "Připravuje se…"
+
+msgid "worktrees.setting_up_title"
+msgstr "Připravuje se {worktree}"
+
+msgid "worktrees.setup"
+msgstr "Příprava"
+
+msgid "worktrees.setup_failed"
+msgstr "Příprava selhala"
+
+msgid "worktrees.setup_failed_sentence"
+msgstr "Příprava selhala."
+
+msgid "worktrees.setup_failed_title"
+msgstr "Příprava {worktree} se nezdařila"
+
+msgid "worktrees.setup_goes_on_flock_tells"
+msgstr "Příprava pokračuje; pokud selže, Flock vám dá vědět"
+
+msgid "worktrees.switch"
+msgstr "Přepnout"
+
+msgid "worktrees.switching_database"
+msgstr "Přepíná se databáze worktree {worktree}"
+
+msgid "worktrees.use_site_s_database"
+msgstr "Použít databázi webu {site}?"
+
+msgid "worktrees.worktree"
+msgstr "Worktree"
+
+msgid "worktrees.worktrees"
+msgstr "Worktrees"

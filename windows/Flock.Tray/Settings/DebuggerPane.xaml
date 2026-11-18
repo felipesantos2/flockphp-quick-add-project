@@ -1,7 +1,8 @@
 <UserControl
     x:Class="Flock.Tray.Settings.DebuggerPane"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray">
     <StackPanel Spacing="0">
         <StackPanel Spacing="4" Margin="0,0,0,24">
             <Border Style="{StaticResource CardStyle}">
@@ -10,8 +11,8 @@
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Spacing="1">
-                        <TextBlock Text="Detect Xdebug requests" />
-                        <TextBlock Text="Xdebug loads only for requests that ask for it, so everything else stays fast." Style="{StaticResource CaptionTextBlockStyle}"
+                        <TextBlock Text="{l:Loc Key=Debugger_DetectRequests}" />
+                        <TextBlock Text="{l:Loc Key=Debugger_DetectRequestsDescription}" Style="{StaticResource CaptionTextBlockStyle}"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                     </StackPanel>
                     <ToggleSwitch Grid.Column="1" MinWidth="0" IsOn="{Binding Enabled, Mode=TwoWay}" OnContent="" OffContent="" />
@@ -23,8 +24,8 @@
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Spacing="1">
-                        <TextBlock Text="Detect PhpStorm breakpoints" />
-                        <TextBlock Text="While a project has breakpoints in PhpStorm, every request to its site is debugged."
+                        <TextBlock Text="{l:Loc Key=Debugger_DetectBreakpoints}" />
+                        <TextBlock Text="{l:Loc Key=Debugger_DetectBreakpointsDescription}"
                                    Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                     </StackPanel>
                     <ToggleSwitch x:Name="Breakpoints" Grid.Column="1" MinWidth="0" IsOn="{Binding Breakpoints, Mode=TwoWay}" IsEnabled="{Binding Enabled}"
@@ -33,7 +34,7 @@
             </Border>
         </StackPanel>
         <StackPanel Spacing="4" Margin="0,0,0,24" Visibility="{Binding DebuggingVisibility}">
-            <TextBlock Text="Debugging now" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
+            <TextBlock Text="{l:Loc Key=Debugger_DebuggingNow}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
             <ItemsControl ItemsSource="{Binding DebuggingSites}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -45,7 +46,7 @@
                                 <TextBlock Text="{Binding}" />
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
                                     <FontIcon Glyph="&#xEBE8;" FontFamily="{StaticResource SymbolsFont}" />
-                                    <TextBlock Text="Breakpoints in PhpStorm" Style="{StaticResource CaptionTextBlockStyle}" />
+                                    <TextBlock Text="{l:Loc Key=Debugger_BreakpointsInPhpstorm}" Style="{StaticResource CaptionTextBlockStyle}" />
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -54,13 +55,13 @@
             </ItemsControl>
         </StackPanel>
         <StackPanel Spacing="4" Margin="0,0,0,24">
-            <TextBlock Text="Connect your IDE" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
+            <TextBlock Text="{l:Loc Key=Debugger_ConnectIde}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
             <Border Style="{StaticResource CardStyle}">
                 <Grid Style="{StaticResource SettingRowStyle}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Client port" /><TextBlock Grid.Column="1" Text="9003" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{l:Loc Key=Debugger_ClientPort}" /><TextBlock Grid.Column="1" Text="9003" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </Grid>
             </Border>
             <Border Style="{StaticResource CardStyle}">
@@ -68,20 +69,20 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Mode" /><TextBlock Grid.Column="1" Text="debug, develop" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{l:Loc Key=Debugger_Mode}" /><TextBlock Grid.Column="1" Text="debug, develop" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </Grid>
             </Border>
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel>
-                    <TextBlock Text="Start a session" />
+                    <TextBlock Text="{l:Loc Key=Debugger_StartSession}" />
                     <TextBlock
-                        Text="Set a breakpoint in PhpStorm and listen for debug connections, use the Xdebug browser extension, or add ?XDEBUG_TRIGGER=1 to the URL. On the command line, run `flock debug artisan …`."
+                        Text="{l:Loc Key=Debugger_StartSessionDescription}"
                         Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" Margin="0,4,0,0" />
                 </StackPanel>
             </Border>
         </StackPanel>
         <StackPanel Spacing="4" Margin="0,0,0,24">
-            <TextBlock Text="Availability" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
+            <TextBlock Text="{l:Loc Key=Debugger_Availability}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
             <ItemsControl ItemsSource="{Binding PhpVersions}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -95,13 +96,13 @@
                                             Visibility="{Binding AvailableVisibility}">
                                     <FontIcon Glyph="{StaticResource GlyphCheck}" FontFamily="{StaticResource SymbolsFont}" FontSize="12"
                                               Foreground="{ThemeResource SystemFillColorSuccessBrush}" VerticalAlignment="Center" />
-                                    <TextBlock Text="Available" VerticalAlignment="Center" />
+                                    <TextBlock Text="{l:Loc Key=Debugger_Available}" VerticalAlignment="Center" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
                                             Visibility="{Binding UnavailableVisibility}">
                                     <FontIcon Glyph="{StaticResource GlyphCancel}" FontFamily="{StaticResource SymbolsFont}" FontSize="12"
                                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
-                                    <TextBlock Text="Not in this build" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{l:Loc Key=Debugger_NotInBuild}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Grid>
                         </Border>

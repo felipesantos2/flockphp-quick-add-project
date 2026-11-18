@@ -27,7 +27,7 @@ pub fn enabled() -> bool {
 /// Points an existing entry at this app, which may have moved (a development build, then the
 /// package's).
 pub fn refresh() {
-    if enabled() && fs::read_to_string(file()).ok() != std::env::current_exe().ok().map(|exe| entry(&exe.to_string_lossy())) {
+    if enabled() && fs::read_to_string(file()).ok() != paths::app_exe().ok().map(|exe| entry(&exe.to_string_lossy())) {
         let _ = set(true);
     }
 }
@@ -41,12 +41,13 @@ pub fn set(on: bool) -> io::Result<()> {
         };
     }
     fs::create_dir_all(file.parent().expect("autostart dir"))?;
-    fs::write(&file, entry(&std::env::current_exe()?.to_string_lossy()))
+    fs::write(&file, entry(&paths::app_exe()?.to_string_lossy()))
 }
 
+/// The desktops' startup settings list it by Comment, in their language like dev.flock.Flock.desktop.
 fn entry(exe: &str) -> String {
     format!(
-        "[Desktop Entry]\nType=Application\nName=Flock\nComment=Shows Flock in the tray\nExec={} --background\nIcon={APP_ID}\nTerminal=false\nX-GNOME-Autostart-enabled=true\n",
+        "[Desktop Entry]\nType=Application\nName=Flock\nComment=Shows Flock in the tray\nComment[cs]=Zobrazí Flock v oznamovací oblasti\nComment[es]=Muestra Flock en la bandeja\nExec={} --background\nIcon={APP_ID}\nTerminal=false\nX-GNOME-Autostart-enabled=true\n",
         quote(exe)
     )
 }

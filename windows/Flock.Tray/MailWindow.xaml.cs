@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Flock.Kit;
 using Flock.Tray.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -12,7 +13,7 @@ internal sealed partial class MailWindow : FlockWindow
     private MailDetailView? detailView;
     private bool rendering;
 
-    public MailWindow(MailViewModel viewModel) : base("Mail", 1000, 660)
+    public MailWindow(MailViewModel viewModel) : base(Strings.Settings_Pane_Mail, 1000, 660)
     {
         this.viewModel = viewModel;
         InitializeComponent();
@@ -43,7 +44,7 @@ internal sealed partial class MailWindow : FlockWindow
         rendering = true;
         MailList.SelectedItem = viewModel.SelectedId is { } id ? viewModel.Messages.FirstOrDefault(message => message.Id == id) : null;
         EmptyStateHost.Content = viewModel.Messages.Count == 0
-            ? Ui.EmptyState(Ui.GlyphMail, "No mail", $"Send mail to {viewModel.SmtpAddress}. MAIL_USERNAME picks the inbox.")
+            ? Ui.EmptyState(Ui.GlyphMail, Strings.Mail_NoMail, Localization.Format(Strings.Mail_NoMailDescription, viewModel.SmtpAddress))
             : null;
         rendering = false;
         if (viewModel.SelectedId is null)
@@ -56,11 +57,11 @@ internal sealed partial class MailWindow : FlockWindow
     {
         if (viewModel.Env.Length == 0)
         {
-            return Ui.EmptyState(Ui.GlyphMail, "No message selected");
+            return Ui.EmptyState(Ui.GlyphMail, Strings.Mail_NoMessageSelected);
         }
-        var note = Ui.Caption("MAIL_USERNAME picks the inbox, so every project gets its own.");
+        var note = Ui.Caption(Strings.Mail_UsernameInbox);
         note.TextAlignment = TextAlignment.Center;
-        return Ui.EmptyState(Ui.GlyphMail, "Catch your app's mail", "Add these lines to your project's .env:", Ui.Column(8, Ui.CodeBlock(viewModel.Env), note));
+        return Ui.EmptyState(Ui.GlyphMail, Strings.Mail_CatchTitle, Strings.Mail_CatchDescription, Ui.Column(8, Ui.CodeBlock(viewModel.Env), note));
     }
 
     private async void SelectionChanged(object sender, SelectionChangedEventArgs args)
@@ -75,9 +76,9 @@ internal sealed partial class MailWindow : FlockWindow
     {
         var dialog = new ContentDialog
         {
-            Title = "Delete all caught mail?",
-            PrimaryButtonText = "Delete All",
-            CloseButtonText = "Cancel",
+            Title = Strings.Mail_DeleteAllQuestion,
+            PrimaryButtonText = Strings.Mail_DeleteAll,
+            CloseButtonText = Strings.Common_Cancel,
             DefaultButton = ContentDialogButton.Close,
             XamlRoot = WindowRoot.XamlRoot
         };
@@ -109,7 +110,7 @@ internal sealed partial class MailWindow : FlockWindow
         }
         if (viewModel.Detail.Current is null)
         {
-            DetailHost.Content = Ui.EmptyState(Ui.GlyphWarning, "Could not load message", viewModel.Detail.Error);
+            DetailHost.Content = Ui.EmptyState(Ui.GlyphWarning, Strings.Mail_CouldNotLoad, viewModel.Detail.Error);
             return;
         }
         detailView = new MailDetailView(Hwnd, viewModel.Detail, viewModel.Detail.Current, viewModel.Model.Shell);

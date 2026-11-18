@@ -209,7 +209,7 @@ public sealed class PreferencesService
         log?.Invoke(error);
     }
 
-    private static string SafeMessage(Exception error) => error is OperationCanceledException ? "Preference save canceled." : error.Message;
+    private static string SafeMessage(Exception error) => error is OperationCanceledException ? Strings.Settings_SaveCanceled : error.Message;
 
     private static void TryDelete(string file)
     {

@@ -2,8 +2,8 @@
 # and references an open issue, here or in flock-php/binaries, that a maintainer has approved for it:
 #   - labelled "help wanted": anyone may send a PR for it, or
 #   - assigned to the PR's author: only they may (only maintainers can assign issues).
-# A PR that changes only files in docs/ needs no issue; it's checked again on every push, so it
-# can't pick up other changes later.
+# A PR that changes only docs/ or translations (lang/ and the files generated from it) needs no
+# issue; it's checked again on every push, so it can't pick up other changes later.
 # Every other PR from a non-collaborator is closed with a comment pointing at CONTRIBUTING.md.
 # Keep Settings > General > Pull requests at "All users"; this workflow does the gating.
 name: PR gate
@@ -13,7 +13,8 @@ on:
   # out or runs the PR's code.
   pull_request_target:
     # "edited": a PR's base can change after it opens, and a gate-closed PR can add an approved
-    # issue to its description. "synchronize": a docs-only PR can get other changes pushed to it.
+    # issue to its description. "synchronize": a docs-only or translation PR can get other changes
+    # pushed to it.
     types: [ opened, reopened, edited, synchronize ]
 
 permissions:

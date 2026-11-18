@@ -1,18 +1,32 @@
 # Labels for pull requests by the files they change; contribution-pr-labels.yml applies them.
-# "documentation" only when every changed file is in docs/; an "os:" label when any changed file
-# is in that platform's app.
+# "documentation" only when every changed file is in docs/; "translations" when any is in lang/;
+# an "os:" label when any changed file is in that platform's app, other than the translation files
+# tools/i18n generates from lang/.
 documentation:
     -   changed-files:
             -   all-globs-to-all-files: docs/**
 
+translations:
+    -   changed-files:
+            -   any-glob-to-any-file: lang/**
+
 "os: mac":
     -   changed-files:
-            -   any-glob-to-any-file: macos/**
+            -   all-globs-to-any-file:
+                    - macos/**
+                    - "!macos/Resources/Localizable.xcstrings"
+                    - "!macos/Sources/FlockUI/Languages.swift"
 
 "os: windows":
     -   changed-files:
-            -   any-glob-to-any-file: windows/**
+            -   all-globs-to-any-file:
+                    - windows/**
+                    - "!windows/Flock.Kit/Strings*.resx"
+                    - "!windows/Flock.Kit/Languages.g.cs"
+                    - "!windows/installer/Strings.iss"
 
 "os: linux":
     -   changed-files:
-            -   any-glob-to-any-file: linux/**
+            -   all-globs-to-any-file:
+                    - linux/**
+                    - "!linux/po/*.po"

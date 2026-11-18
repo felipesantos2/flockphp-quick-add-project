@@ -62,12 +62,12 @@ internal sealed partial class ServicesPane
         {
             if (Model.Postgres.Current?.Majors.FirstOrDefault(m => m.Update) is { } major)
             {
-                return major.Latest == major.Installed ? $"A new build of PostgreSQL {major.Latest} is available" : $"PostgreSQL {major.Latest} is available";
+                return Localization.Format(major.Latest == major.Installed ? Strings.Services_NewBuildAvailable : Strings.Services_VersionAvailable, $"PostgreSQL {major.Latest}");
             }
         }
         if (Model.Catalog.Current?[service.Id] is { } entry && entry.Lines.FirstOrDefault(l => l.Update) is { } line)
         {
-            return $"{entry.Name} {line.Latest} is available";
+            return Localization.Format(Strings.Services_VersionAvailable, $"{entry.Name} {line.Latest}");
         }
         return null;
     }
@@ -84,7 +84,7 @@ internal sealed partial class ServicesPane
         }
         if (CatalogWorking(service.Id))
         {
-            return Model.Catalog.Current?[service.Id]?.Job?.PhaseText ?? "Working…";
+            return Model.Catalog.Current?[service.Id]?.Job?.PhaseText ?? Strings.Common_Working;
         }
         return null;
     }
@@ -95,7 +95,7 @@ internal sealed partial class ServicesPane
     {
         if (Model.Postgres.Current is not { } versions)
         {
-            panel.Children.Add(LoadingRow("Loading PostgreSQL versions…"));
+            panel.Children.Add(LoadingRow(Strings.Services_Postgres_Loading));
             return;
         }
         if (!versions.AnyInstalled)
@@ -108,8 +108,7 @@ internal sealed partial class ServicesPane
             panel.Children.Add(VersionList(versions, rows.ReleaseActions.ResolveRow("postgres")));
         }
         panel.Children.Add(CheckFooter("postgres", rows.ReleaseActions.Resolve("postgres")));
-        panel.Children.Add(Ui.Caption(
-            "psql, pg_dump and the other command-line tools come with PostgreSQL. In a terminal, Flock uses those of the newest installed version, which work with every version above and with remote servers."));
+        panel.Children.Add(Ui.Caption(Strings.Services_Postgres_ClientTools));
     }
 
     /// <summary>Nothing installed yet: the version and port, and Install, as for the catalog services.</summary>
@@ -117,15 +116,13 @@ internal sealed partial class ServicesPane
     {
         if (targets.Count == 0)
         {
-            return Inner(Ui.Caption("Flock offers no PostgreSQL versions for this computer."));
+            return Inner(Ui.Caption(Localization.Format(Strings.Services_NoVersions, "PostgreSQL")));
         }
-        var hero = InstallCard("postgres", "PostgreSQL",
-            "The database for your apps. You can add other versions later; one runs at a time, and each keeps its own databases.",
-            targets, versions.Port, null, "");
+        var hero = InstallCard("postgres", "PostgreSQL", Strings.Services_Postgres_Description, targets, versions.Port, null, "");
         var kept = versions.Majors.Where(m => m.HasData).Select(m => m.Major).ToList();
         if (kept.Count > 0)
         {
-            var note = Ui.Caption($"Databases of PostgreSQL {string.Join(", ", kept)} are still here — installing that version again picks them up.");
+            var note = Ui.Caption(Localization.Format(Strings.Services_Postgres_DatabasesKept, string.Join(", ", kept)));
             note.TextAlignment = TextAlignment.Center;
             ((Panel)hero.Child).Children.Add(note);
         }
@@ -137,11 +134,11 @@ internal sealed partial class ServicesPane
     {
         var major = versions.Majors.FirstOrDefault(m => m.IsBusy);
         var name = major is null ? "PostgreSQL" : $"PostgreSQL {(major.Latest.Length > 0 ? major.Latest : major.Major)}";
-        var verb = major is { Busy: PostgresBusy.Uninstalling } ? "Uninstalling" : "Installing";
+        var heading = major is { Busy: PostgresBusy.Uninstalling } ? Strings.Services_Postgres_Uninstalling : Strings.Setup_Installing;
         return Inner(Ui.Column(10,
-                Ui.Text($"{verb} {name}…", "BodyStrongTextBlockStyle"),
-                new Controls.OperationProgress { Text = "Downloading and creating the database cluster…", IsIndeterminate = true },
-                Ui.Caption("Downloading the server and creating its database cluster. This takes a minute or two; you can close this window meanwhile.")),
+                Ui.Text(Localization.Format(heading, name), "BodyStrongTextBlockStyle"),
+                new Controls.OperationProgress { Text = Strings.Services_Postgres_CreatingCluster, IsIndeterminate = true },
+                Ui.Caption(Strings.Services_Postgres_FirstInstallDetails)),
             new Thickness(16, 14, 16, 14));
     }
 
@@ -150,12 +147,13 @@ internal sealed partial class ServicesPane
     {
         if (versions.ActiveMajor is not { } active)
         {
-            return Inner(Ui.Caption("No version is active. Switch to an installed version below to start PostgreSQL."));
+            return Inner(Ui.Caption(Strings.Services_Postgres_NoneActive));
         }
-        var (state, up) = versions.Running ? ("Running", true) : versions.Enabled ? ("Not running", false) : ("Stopped", false);
-        var facts = $"{state} · Port {versions.Port}" + (active.HasData ? $" · {Ui.Bytes(active.DataSize)} of data" : "");
+        var (state, up) = versions.Running ? (Strings.Menu_Status_Running, true) : versions.Enabled ? (Strings.Menu_Status_NotRunning, false) : (Strings.Services_Postgres_Stopped, false);
+        var facts = $"{state} · " + Localization.Format(Strings.Services_PortNumber, versions.Port)
+                    + (active.HasData ? " · " + Localization.Format(Strings.Services_DataSize, Ui.Bytes(active.DataSize)) : "");
 
-        var text = Ui.Column(2, Ui.Caption("Active version", wrap: false), Ui.Text($"PostgreSQL {active.Installed}", "SubtitleTextBlockStyle", wrap: false),
+        var text = Ui.Column(2, Ui.Caption(Strings.Services_Postgres_ActiveVersion, wrap: false), Ui.Text($"PostgreSQL {active.Installed}", "SubtitleTextBlockStyle", wrap: false),
             Ui.Row(6, Ui.StatusDot(up), Ui.Caption(facts)));
         if (BusyText(active) is { } busy)
         {
@@ -163,13 +161,13 @@ internal sealed partial class ServicesPane
         }
         else if (active.Update)
         {
-            var what = active.Latest == active.Installed ? $"A new build of {active.Latest}" : active.Latest;
-            text.Children.Add(Ui.Caption($"{what} is available — update it below; your databases stay.", Ui.Accent));
+            text.Children.Add(Ui.Caption(Localization.Format(active.Latest == active.Installed ? Strings.Services_Postgres_NewBuildUpdateBelow : Strings.Services_Postgres_UpdateBelow,
+                active.Latest), Ui.Accent));
         }
         if (active.Yanked.Length > 0)
         {
-            var withdrawn = Ui.Caption($"This build was withdrawn: {active.Yanked}", Ui.Caution);
-            ToolTipService.SetToolTip(withdrawn, "Flock replaces it as soon as a fixed build is published.");
+            var withdrawn = Ui.Caption(Localization.Format(Strings.Services_Postgres_Withdrawn, active.Yanked), Ui.Caution);
+            ToolTipService.SetToolTip(withdrawn, Strings.Services_Postgres_WithdrawnTooltip);
             text.Children.Add(Ui.Row(6, Ui.Icon(Ui.GlyphWarning, 12, Ui.Caution), withdrawn));
         }
         var icon = Ui.Icon(Ui.GlyphServer, 26, up ? Ui.Accent : Ui.TertiaryText);
@@ -180,9 +178,9 @@ internal sealed partial class ServicesPane
 
     private StackPanel VersionList(PostgresVersions versions, ServiceReleaseRow row)
     {
-        return Ui.Column(6, Ui.Text("Versions", "BodyStrongTextBlockStyle"),
+        return Ui.Column(6, Ui.Text(Strings.Versions_Versions, "BodyStrongTextBlockStyle"),
             VersionRows(versions.Majors.Zip(row.Lines).Select(pair => MajorRow(versions, pair.First, pair.Second))),
-            Ui.Caption("Installed versions stay side by side. One runs at a time; each keeps its own databases, and updates within a version keep them."));
+            Ui.Caption(Strings.Services_Postgres_SideBySide));
     }
 
     private string? BusyText(PostgresMajor major)
@@ -196,7 +194,7 @@ internal sealed partial class ServicesPane
         var title = Ui.Row(8, Ui.Text($"PostgreSQL {line.Target.Label}", line.IsInstalled ? "BodyStrongTextBlockStyle" : "BodyTextBlockStyle", wrap: false));
         if (line.IsActive)
         {
-            title.Children.Add(Ui.Badge("Active"));
+            title.Children.Add(Ui.Badge(Strings.Services_Active));
         }
         var info = Ui.Column(2, title, Ui.Caption(line.Facts, line.HasUpdate ? Ui.Accent : null));
         var actions = Ui.Row(8);
@@ -225,14 +223,14 @@ internal sealed partial class ServicesPane
     {
         return command switch
         {
-            ServiceRowCommandKind.Install => Ui.Button("Install", () => _ = RunAsync(() => rows.ReleaseActions.RunAsync(line.Target, command)), glyph: Ui.GlyphDownload,
-                tooltip: (major.Latest.Length > 0 ? $"Downloads PostgreSQL {major.Latest}." : "Downloads the newest release.")
-                         + (versions.Active.Length > 0 ? $" PostgreSQL {versions.Active} stays active until you switch." : "")
-                         + (major.HasData ? " Its databases are still here and come back." : "")),
-            ServiceRowCommandKind.Update => Ui.Button($"Update to {major.Latest}", () => _ = RunAsync(() => rows.ReleaseActions.RunAsync(line.Target, command)), true,
+            ServiceRowCommandKind.Install => Ui.Button(Strings.Common_Install, () => _ = RunAsync(() => rows.ReleaseActions.RunAsync(line.Target, command)), glyph: Ui.GlyphDownload,
+                tooltip: (major.Latest.Length > 0 ? Localization.Format(Strings.Services_Downloads, $"PostgreSQL {major.Latest}") : Strings.Services_DownloadsNewest)
+                         + (versions.Active.Length > 0 ? " " + Localization.Format(Strings.Services_Postgres_StaysActive, $"PostgreSQL {versions.Active}") : "")
+                         + (major.HasData ? " " + Strings.Services_Postgres_DatabasesComeBack : "")),
+            ServiceRowCommandKind.Update => Ui.Button(Localization.Format(Strings.General_UpdateTo, major.Latest), () => _ = RunAsync(() => rows.ReleaseActions.RunAsync(line.Target, command)), true,
                 Ui.GlyphDownload,
-                $"Installs {major.Latest} in place of {major.Installed}. Your databases stay{(major.Active && versions.Running ? "; PostgreSQL restarts for a moment" : "")}."),
-            ServiceRowCommandKind.Uninstall => Ui.Button("Uninstall…", () => _ = UninstallAsync(versions, major, line.Target)),
+                Localization.Format(major.Active && versions.Running ? Strings.Services_Postgres_UpdateTooltipRestart : Strings.Services_Postgres_UpdateTooltip, major.Latest, major.Installed)),
+            ServiceRowCommandKind.Uninstall => Ui.Button(Strings.Common_UninstallEllipsis, () => _ = UninstallAsync(versions, major, line.Target)),
             _ => throw new ArgumentOutOfRangeException(nameof(command), command, null)
         };
     }
@@ -245,14 +243,14 @@ internal sealed partial class ServicesPane
             switch (command)
             {
                 case ServiceRowCommandKind.Uninstall:
-                    menu.Items.Add(Item("Uninstall…", () => _ = UninstallAsync(versions, major, line.Target)));
+                    menu.Items.Add(Item(Strings.Common_UninstallEllipsis, () => _ = UninstallAsync(versions, major, line.Target)));
                     break;
                 case ServiceRowCommandKind.Activate:
-                    menu.Items.Add(Item("Switch…", () => _ = SwitchAsync(versions, major, line.Target)));
+                    menu.Items.Add(Item(Strings.Services_SwitchEllipsis, () => _ = SwitchAsync(versions, major, line.Target)));
                     break;
             }
         }
-        var button = Ui.IconButton(Ui.GlyphMore, "More", () => { });
+        var button = Ui.IconButton(Ui.GlyphMore, Strings.Services_More, () => { });
         button.Flyout = menu;
         button.IsEnabled = !PostgresWorking;
         return button;
@@ -260,10 +258,9 @@ internal sealed partial class ServicesPane
 
     private async Task SwitchAsync(PostgresVersions versions, PostgresMajor major, ServiceReleaseTarget target)
     {
-        if (versions.Active.Length > 0 && !await Window.Confirm($"Switch to PostgreSQL {major.Major}?",
-                $"PostgreSQL {versions.Active} stops; its databases stay but aren't available until you switch back. {major.Major} uses its own databases."
-                + (major.HasData ? "" : " It starts with a new, empty database cluster."),
-                "Switch"))
+        if (versions.Active.Length > 0 && !await Window.Confirm(Localization.Format(Strings.Services_SwitchQuestion, $"PostgreSQL {major.Major}"),
+                Localization.Format(Strings.Services_Postgres_SwitchDetails, versions.Active, major.Major) + (major.HasData ? "" : " " + Strings.Services_Postgres_StartsEmpty),
+                Strings.Worktrees_Switch))
         {
             return;
         }
@@ -274,25 +271,25 @@ internal sealed partial class ServicesPane
     {
         var next = versions.Majors.FirstOrDefault(m => m.IsInstalled && m.Major != major.Major);
         var details = !major.Active ? ""
-            : next is not null ? $"PostgreSQL {major.Major} stops and PostgreSQL {next.Major} becomes the active version. "
-            : $"PostgreSQL {major.Major} stops; no PostgreSQL runs until you install a version again. ";
+            : next is not null ? Localization.Format(Strings.Services_UninstallNext, $"PostgreSQL {major.Major}", $"PostgreSQL {next.Major}") + " "
+            : Localization.Format(Strings.Services_Postgres_UninstallLast, major.Major) + " ";
         details += major.HasData
-            ? $"Its databases stay unless you delete them below; installing {major.Major} again picks them up."
-            : "It holds no databases.";
+            ? Localization.Format(Strings.Services_Postgres_DatabasesStay, major.Major)
+            : Strings.Services_Postgres_NoDatabases;
 
         CheckBox? delete = null;
         UIElement? extra = null;
         if (major.HasData)
         {
-            delete = new CheckBox { Content = $"Also delete its databases ({Ui.Bytes(major.DataSize)})" };
-            var warning = Ui.Caption("Deleted databases can't be recovered.", Ui.Caution);
+            delete = new CheckBox { Content = Localization.Format(Strings.Services_Postgres_AlsoDeleteDatabases, Ui.Bytes(major.DataSize)) };
+            var warning = Ui.Caption(Strings.Services_Postgres_DeletedDatabasesGone, Ui.Caution);
             warning.Visibility = Visibility.Collapsed;
             warning.Margin = new Thickness(28, -4, 0, 0);
             delete.Checked += (_, _) => warning.Visibility = Visibility.Visible;
             delete.Unchecked += (_, _) => warning.Visibility = Visibility.Collapsed;
             extra = Ui.Column(4, delete, warning);
         }
-        if (await Window.Confirm($"Uninstall PostgreSQL {major.Major}?", details, "Uninstall", true, extra))
+        if (await Window.Confirm(Localization.Format(Strings.Services_UninstallQuestion, $"PostgreSQL {major.Major}"), details, Strings.Common_Uninstall, true, extra))
         {
             var deleteData = delete?.IsChecked == true;
             await RunAsync(() => rows.ReleaseActions.RunAsync(target, ServiceRowCommandKind.Uninstall, deleteData));
@@ -309,7 +306,7 @@ internal sealed partial class ServicesPane
     /// <summary>"Last checked …" with "Check for Updates", and the last check's error, kept small.</summary>
     private StackPanel CheckFooter(string serviceId, ServiceReleaseAction action)
     {
-        var text = action.CheckedAt is { } at ? $"Last checked {Ui.Relative(at)}" : "Not checked yet";
+        var text = action.CheckedAt is { } at ? Localization.Format(Strings.Versions_LastChecked, Ui.Relative(at)) : Strings.Versions_NotChecked;
         UIElement release = action.Kind switch
         {
             ServiceReleaseActionKind.Check => Ui.Link(action.AccessibleLabel, () => _ = RunReleaseActionAsync(serviceId, action)),
@@ -326,7 +323,7 @@ internal sealed partial class ServicesPane
         var footer = Ui.Column(2, Ui.Spread(Ui.Caption(text, wrap: false), release));
         if (action.CheckError.Length > 0)
         {
-            var error = Ui.Caption($"Couldn't check: {action.CheckError}", Ui.Caution);
+            var error = Ui.Caption(Localization.Format(Strings.Versions_CouldNotCheck, action.CheckError), Ui.Caution);
             error.MaxLines = 2;
             ToolTipService.SetToolTip(error, action.CheckError);
             footer.Children.Add(Ui.Row(6, Ui.Icon(Ui.GlyphWarning, 12, Ui.Caution), error));
@@ -351,7 +348,8 @@ internal sealed partial class ServicesPane
         {
             var serviceName = serviceId == "postgres" ? "PostgreSQL" : Model.Catalog.Current?[serviceId]?.Name ?? serviceId;
             var details = string.Join(Environment.NewLine, action.Targets.Select(target => $"{target.Label} → {target.Latest}"));
-            if (await Window.Confirm($"Install {action.Targets.Count} updates for {serviceName}?", details, "Install"))
+            if (await Window.Confirm(Localization.Plural(Strings.ResourceManager, "Services_InstallUpdatesQuestion", action.Targets.Count, serviceName), details,
+                    Strings.Common_Install))
             {
                 await rows.ReleaseActions.RunAllUpdatesAsync(serviceId);
             }
@@ -394,7 +392,7 @@ internal sealed partial class ServicesPane
     private Border InstallCard(string id, string name, string description, IReadOnlyList<ServiceReleaseTarget> targets, int port, string? portNote, string estimate)
     {
         var form = Ui.Column(10);
-        var picker = new ComboBox { Header = "Version", MinWidth = 220 };
+        var picker = new ComboBox { Header = Strings.General_Version, MinWidth = 220 };
         foreach (var target in targets)
         {
             picker.Items.Add(new ComboBoxItem { Content = target.Latest.Length > 0 ? $"{target.Label} ({target.Latest})" : target.Label, Tag = target.Line });
@@ -422,7 +420,7 @@ internal sealed partial class ServicesPane
 
         var portBox = new NumberBox
         {
-            Header = "Port",
+            Header = Strings.Mail_Port,
             Value = id == "postgres" ? rows.PostgresDraftPort : catalogDraft?.DraftPort ?? port,
             Minimum = 1024,
             Maximum = 65535,
@@ -452,7 +450,7 @@ internal sealed partial class ServicesPane
         }
 
         UIElement[] actions = estimate.Length > 0 ? [form, Ui.Caption(Capitalize(estimate), wrap: false)] : [form];
-        return Hero(Ui.GlyphServer, $"Install {name}", description, actions);
+        return Hero(Ui.GlyphServer, Localization.Format(Strings.Services_InstallName, name), description, actions);
     }
 
     /// <summary>Version rows in one surface, divided like the macOS list.</summary>

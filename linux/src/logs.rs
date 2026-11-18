@@ -9,6 +9,7 @@ use adw::prelude::*;
 use gtk::{gio, glib};
 
 use crate::api::{Client, LogEntry, LogIndex};
+use crate::i18n::{self, tr, tr_noop};
 use crate::ui;
 
 /// A log the window shows.
@@ -19,8 +20,12 @@ pub enum Source {
 }
 
 /// The level filter's choices: the minimum level, "" for all.
-const LEVELS: [(&str, &str); 4] =
-    [("", "All levels"), ("error", "Error and above"), ("warning", "Warning and above"), ("info", "Info and above")];
+const LEVELS: [(&str, &str); 4] = [
+    ("", tr_noop!("logs.all_levels")),
+    ("error", tr_noop!("logs.error_and_above")),
+    ("warning", tr_noop!("logs.warning_and_above")),
+    ("info", tr_noop!("logs.info_and_above")),
+];
 
 pub struct LogsWindow {
     pub window: adw::Window,
@@ -48,27 +53,29 @@ impl LogsWindow {
         let sidebar_view = adw::ToolbarView::new();
         sidebar_view.add_top_bar(&adw::HeaderBar::new());
         sidebar_view.set_content(Some(&gtk::ScrolledWindow::builder().child(&list).vexpand(true).build()));
-        let sidebar = adw::NavigationPage::new(&sidebar_view, "Logs");
+        let sidebar = adw::NavigationPage::new(&sidebar_view, tr!("dumps.event_kind.logs"));
 
-        let title = adw::WindowTitle::new("Logs", "");
+        let title = adw::WindowTitle::new(tr!("dumps.event_kind.logs"), "");
         let header = adw::HeaderBar::builder().title_widget(&title).build();
-        let level = gtk::DropDown::from_strings(&LEVELS.map(|(_, t)| t));
-        level.set_tooltip_text(Some("Show only entries of this level and above (site logs)"));
-        let auto_refresh =
-            gtk::ToggleButton::builder().icon_name("emblem-synchronizing-symbolic").tooltip_text("Reload the log every 2 seconds").build();
-        let refresh = gtk::Button::builder().icon_name("view-refresh-symbolic").tooltip_text("Refresh").build();
-        let clear = gtk::Button::builder().icon_name("user-trash-symbolic").tooltip_text("Clear the site's log").build();
+        let level = gtk::DropDown::from_strings(&LEVELS.map(|(_, t)| i18n::translate(t)));
+        level.set_tooltip_text(Some(tr!("logs.show_only_entries_of_this")));
+        let auto_refresh = gtk::ToggleButton::builder()
+            .icon_name("emblem-synchronizing-symbolic")
+            .tooltip_text(tr!("logs.reload_the_log_every_2"))
+            .build();
+        let refresh = gtk::Button::builder().icon_name("view-refresh-symbolic").tooltip_text(tr!("mail.refresh")).build();
+        let clear = gtk::Button::builder().icon_name("user-trash-symbolic").tooltip_text(tr!("logs.clear_the_sites_log")).build();
         header.pack_start(&level);
         header.pack_end(&clear);
         header.pack_end(&refresh);
         header.pack_end(&auto_refresh);
-        let search = gtk::SearchEntry::builder().placeholder_text("Search logs").hexpand(true).build();
+        let search = gtk::SearchEntry::builder().placeholder_text(tr!("logs.search_logs")).hexpand(true).build();
         let search_bar = gtk::SearchBar::builder()
             .child(&adw::Clamp::builder().maximum_size(520).child(&search).build())
             .search_mode_enabled(true)
             .build();
         search_bar.connect_entry(&search);
-        let banner = adw::Banner::builder().button_label("Dismiss").use_markup(false).build();
+        let banner = adw::Banner::builder().button_label(tr!("sites.share.dismiss")).use_markup(false).build();
         let content = adw::Bin::builder().vexpand(true).build();
         let body = gtk::Box::new(gtk::Orientation::Vertical, 0);
         body.append(&banner);
@@ -77,12 +84,12 @@ impl LogsWindow {
         content_view.add_top_bar(&header);
         content_view.add_top_bar(&search_bar);
         content_view.set_content(Some(&body));
-        let page = adw::NavigationPage::new(&content_view, "Log");
+        let page = adw::NavigationPage::new(&content_view, tr!("services.log"));
 
         let split = adw::NavigationSplitView::builder().sidebar(&sidebar).content(&page).min_sidebar_width(220.0).build();
         let window = adw::Window::builder()
             .application(app)
-            .title("Logs")
+            .title(tr!("dumps.event_kind.logs"))
             .default_width(1100)
             .default_height(720)
             .content(&split)
@@ -150,8 +157,8 @@ impl LogsWindow {
         self.shown.replace(String::new());
         self.split.set_show_content(true);
         let (name, kind) = match &source {
-            Source::Site(n) => (n.clone(), "Laravel log"),
-            Source::Service(n) => (n.clone(), "Service log"),
+            Source::Site(n) => (n.clone(), tr!("logs.laravel_log")),
+            Source::Service(n) => (n.clone(), tr!("logs.service_log")),
         };
         self.title.set_title(&name);
         self.title.set_subtitle(kind);
@@ -266,7 +273,7 @@ impl LogsWindow {
     fn render(&self) {
         let query = self.search.text().trim().to_lowercase();
         let Some(source) = self.selected.borrow().clone() else {
-            self.content.set_child(Some(&ui::empty("text-x-generic-symbolic", "Pick a Log", "")));
+            self.content.set_child(Some(&ui::empty("text-x-generic-symbolic", tr!("logs.pick_a_log"), "")));
             return;
         };
         match source {
@@ -282,7 +289,7 @@ impl LogsWindow {
                     return;
                 }
                 self.shown.replace(key);
-                let view = ui::monospace(if lines.is_empty() { "(empty)" } else { &lines });
+                let view = ui::monospace(if lines.is_empty() { tr!("common.empty_parenthesized") } else { &lines });
                 // The newest lines are at the bottom.
                 let adjustment = view.vadjustment();
                 glib::idle_add_local_once(move || adjustment.set_value(adjustment.upper()));
@@ -307,9 +314,9 @@ impl LogsWindow {
                 self.shown.replace(key);
                 if entries.is_empty() {
                     let page = if all.is_empty() {
-                        ui::empty("emblem-ok-symbolic", "No Log Entries", &format!("storage/logs of {name} is empty."))
+                        ui::empty("emblem-ok-symbolic", tr!("logs.no_log_entries"), &tr!("logs.storage_logs_of_site_is", site = name))
                     } else {
-                        ui::empty("system-search-symbolic", "No Results", "No entry matches the search or level.")
+                        ui::empty("system-search-symbolic", tr!("logs.no_results"), tr!("logs.no_entry_matches_the_search"))
                     };
                     self.content.set_child(Some(&page));
                     return;
@@ -334,10 +341,10 @@ impl LogsWindow {
     fn confirm_clear(self: &Rc<Self>) {
         let Some(Source::Site(name)) = self.selected.borrow().clone() else { return };
         let dialog = adw::AlertDialog::new(
-            Some(&format!("Clear the log of {name}?")),
-            Some(&format!("Deletes the Laravel log files in storage/logs of {name}. This can't be undone.")),
+            Some(&tr!("logs.clear_question", site = name)),
+            Some(&tr!("logs.deletes_the_laravel_log_files", site = name)),
         );
-        dialog.add_responses(&[("cancel", "Cancel"), ("clear", "Clear")]);
+        dialog.add_responses(&[("cancel", tr!("common.cancel")), ("clear", tr!("logs.clear"))]);
         dialog.set_response_appearance("clear", adw::ResponseAppearance::Destructive);
         let this = self.clone();
         dialog.choose(Some(&self.window), gio::Cancellable::NONE, move |response| {
@@ -396,7 +403,7 @@ fn entry_row(entry: &LogEntry) -> gtk::Widget {
         } else {
             details.upcast()
         };
-        column.append(&gtk::Expander::builder().label("Details").child(&child).build());
+        column.append(&gtk::Expander::builder().label(tr!("logs.details")).child(&child).build());
     }
     gtk::ListBoxRow::builder().child(&column).activatable(false).build().upcast()
 }

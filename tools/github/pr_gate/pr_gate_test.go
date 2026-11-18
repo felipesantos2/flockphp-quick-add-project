@@ -76,6 +76,35 @@ func TestRunAllowsDocsOnlyPullRequestsWithoutAnApprovedIssue(t *testing.T) {
 	}
 }
 
+func TestTranslationsNeedNoIssue(t *testing.T) {
+	files := func(names ...string) []*github.CommitFile {
+		var list []*github.CommitFile
+		for _, name := range names {
+			list = append(list, &github.CommitFile{Filename: new(name)})
+		}
+		return list
+	}
+	for _, test := range []struct {
+		files []*github.CommitFile
+		want  bool
+	}{
+		{files("lang/de/app.json"), true},
+		{files("lang/cs/app.json", "macos/Resources/Localizable.xcstrings", "windows/Flock.Kit/Strings.cs.resx",
+			"windows/Flock.Kit/Languages.g.cs", "windows/installer/Strings.iss", "linux/po/cs.po", "docs/sites.md"), true},
+		{files("lang/cs/app.json", "linux/src/i18n.rs"), false},
+		{files("lang/cs/app.json", "windows/Flock.Kit/Localization.cs"), false},
+		{[]*github.CommitFile{{Filename: new("lang/cs/app.json"), PreviousFilename: new("linux/src/main.rs")}}, false},
+	} {
+		var names []string
+		for _, file := range test.files {
+			names = append(names, file.GetFilename())
+		}
+		if got := needsNoIssue(test.files); got != test.want {
+			t.Errorf("needsNoIssue(%v) = %t, want %t", names, got, test.want)
+		}
+	}
+}
+
 func TestRunBypassesMaintainersWithoutCheckingIssuesOrFiles(t *testing.T) {
 	pr := pullRequest("open", "")
 	pr.AuthorAssociation = new("MEMBER")

@@ -2,16 +2,21 @@
     x:Class="Flock.Tray.Settings.GeneralPane"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Flock.Tray.Controls">
+    xmlns:controls="using:Flock.Tray.Controls"
+    xmlns:settings="using:Flock.Tray.Settings"
+    xmlns:l="using:Flock.Tray">
+    <UserControl.Resources>
+        <settings:InverseBooleanVisibilityConverter x:Key="InverseBooleanVisibilityConverter" />
+    </UserControl.Resources>
     <StackPanel Spacing="0">
         <StackPanel Spacing="4" Margin="0,0,0,24">
-            <TextBlock Text="Daemon" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
-            <Border Style="{StaticResource CardStyle}" Visibility="{Binding StatusVisibility}">
+            <TextBlock Text="{l:Loc Key=General_Daemon}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
+            <Border Style="{StaticResource CardStyle}">
                 <Grid Style="{StaticResource SettingRowStyle}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Status" />
+                    <TextBlock Text="{l:Loc Key=General_Status}" />
                     <Grid Grid.Column="1" ColumnSpacing="8" VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" />
@@ -26,7 +31,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Version" /><TextBlock Grid.Column="1" Text="{Binding VersionText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{l:Loc Key=General_Version}" /><TextBlock Grid.Column="1" Text="{Binding VersionText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </Grid>
             </Border>
             <Border Style="{StaticResource CardStyle}" Visibility="{Binding StatusVisibility}">
@@ -34,7 +39,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Process" /><TextBlock Grid.Column="1" Text="{Binding ProcessText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBlock Text="{l:Loc Key=General_Process}" /><TextBlock Grid.Column="1" Text="{Binding ProcessText}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </Grid>
             </Border>
             <Border Style="{StaticResource CardStyle}">
@@ -43,21 +48,21 @@
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Spacing="1">
-                        <TextBlock Text="Restart" />
-                        <TextBlock Text="Restarts the daemon and every service it runs." Style="{StaticResource CaptionTextBlockStyle}"
+                        <TextBlock Text="{l:Loc Key=General_Restart}" />
+                        <TextBlock Text="{l:Loc Key=General_RestartDescription}" Style="{StaticResource CaptionTextBlockStyle}"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                     </StackPanel>
                     <Button Grid.Column="1" Command="{Binding RestartCommand}">
-                        <controls:BusyContent Text="Restart Daemon" BusyText="Restarting…" IsBusy="{Binding IsRestarting}" />
+                        <controls:BusyContent Text="{l:Loc Key=General_RestartDaemon}" BusyText="{l:Loc Key=General_Restarting}" IsBusy="{Binding IsRestarting}" />
                     </Button>
                 </Grid>
             </Border>
         </StackPanel>
         <StackPanel Spacing="4" Margin="0,0,0,24" Visibility="{Binding ConfigVisibility}">
-            <TextBlock Text="Network" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
+            <TextBlock Text="{l:Loc Key=General_Network}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
             <Border Style="{StaticResource CardStyle}">
                 <StackPanel Spacing="1">
-                    <TextBlock Text="Domain" />
+                    <TextBlock Text="{l:Loc Key=General_Domain}" />
                     <TextBlock Text="{Binding DomainDescription}" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                TextWrapping="Wrap" />
                     <TextBlock Text="{Binding DomainValue}" Margin="0,4,0,0" />
@@ -67,64 +72,88 @@
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="2,6,0,0" TextWrapping="Wrap" />
         </StackPanel>
         <StackPanel Spacing="4" Margin="0,0,0,24" Visibility="{Binding ConfigVisibility}">
-            <TextBlock Text="Data" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
+            <TextBlock Text="{l:Loc Key=General_Data}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
             <Border Style="{StaticResource CardStyle}">
                 <Grid Style="{StaticResource SettingRowStyle}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Spacing="1">
-                        <TextBlock Text="Folder" />
+                        <TextBlock Text="{l:Loc Key=General_Folder}" />
                         <TextBlock Text="{Binding Root}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
-                    <Button Grid.Column="1" Content="Show in Explorer" Click="ShowRoot" />
+                    <Button Grid.Column="1" Content="{l:Loc Key=Common_ShowInExplorer}" Click="ShowRoot" />
                 </Grid>
             </Border>
         </StackPanel>
         <StackPanel Spacing="4" Margin="0,0,0,24">
-            <TextBlock Text="Startup" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
+            <TextBlock Text="{l:Loc Key=General_Startup}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
             <Border Style="{StaticResource CardStyle}">
                 <Grid Style="{StaticResource SettingRowStyle}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Spacing="1">
-                        <TextBlock Text="Open Flock at sign-in" />
-                        <TextBlock Text="Shows the Flock icon in the notification area when you sign in. The daemon itself always starts at sign-in."
+                        <TextBlock Text="{l:Loc Key=General_OpenAtSignIn}" />
+                        <TextBlock Text="{l:Loc Key=General_OpenAtSignInDescription}"
                                    Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                     </StackPanel>
                     <ToggleSwitch x:Name="Startup" Grid.Column="1" MinWidth="0" Toggled="StartupToggled" OnContent="" OffContent="" />
                 </Grid>
             </Border>
         </StackPanel>
+        <StackPanel x:Name="LanguageHost" />
         <StackPanel Spacing="4" Margin="0,0,0,24">
-            <TextBlock Text="Updates" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
-            <StackPanel x:Name="UpdateHost" Spacing="4" />
+            <TextBlock Text="{l:Loc Key=General_Updates}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
+            <Border Style="{StaticResource CardStyle}">
+                <Grid Style="{StaticResource SettingRowStyle}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Spacing="1">
+                        <TextBlock Text="Flock" />
+                        <TextBlock Text="{Binding UpdateDescription}" Style="{StaticResource CaptionTextBlockStyle}"
+                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center"
+                                Visibility="{Binding UpdateActionsVisibility}">
+                        <ProgressRing Width="16" Height="16" IsActive="{Binding IsUpdateBusy}" Visibility="{Binding UpdateProgressVisibility}" />
+                        <HyperlinkButton Content="{l:Loc Key=General_ReleaseNotes}" Padding="4,2" Click="ReleaseNotesClicked"
+                                         Visibility="{Binding ReleaseNotesVisibility}" />
+                        <Button Content="{l:Loc Key=General_CheckForUpdates}" Command="{Binding UpdateCommand}"
+                                Visibility="{Binding CheckForUpdatesVisibility}" />
+                        <Button Content="{Binding UpdateToText}" Command="{Binding UpdateCommand}" Style="{StaticResource AccentButtonStyle}"
+                                Visibility="{Binding UpdateToVisibility}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
             <Border Style="{StaticResource CardStyle}" Visibility="{Binding ConfigVisibility}">
                 <Grid Style="{StaticResource SettingRowStyle}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Spacing="1">
-                        <TextBlock Text="Beta versions" />
-                        <TextBlock Text="Get new versions of Flock, PHP and services earlier, including pre-releases. They may not work yet."
+                        <TextBlock Text="{l:Loc Key=General_Beta}" />
+                        <TextBlock Text="{l:Loc Key=General_BetaDescription}"
                                    Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                     </StackPanel>
                     <ToggleSwitch x:Name="Beta" Grid.Column="1" MinWidth="0" IsOn="{Binding IsBeta}" IsEnabled="{Binding BetaEnabled}" Toggled="BetaToggled" OnContent=""
                                   OffContent="" />
                 </Grid>
             </Border>
-            <TextBlock Text="Experimental channel: packages that aren't released yet are offered. `flock channel stable` switches back."
+            <TextBlock Text="{l:Loc Key=General_Experimental}"
                        Visibility="{Binding ExperimentalVisibility}" Style="{StaticResource CaptionTextBlockStyle}"
                        Foreground="{ThemeResource SystemFillColorCautionBrush}" Margin="2,6,0,0" TextWrapping="Wrap" />
         </StackPanel>
         <StackPanel Spacing="4" Margin="0,0,0,24" Visibility="{Binding ConfigVisibility}">
-            <TextBlock Text="Project folders" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
+            <TextBlock Text="{l:Loc Key=General_ProjectFolders}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
             <Border Style="{StaticResource CardStyle}" Padding="8">
                 <StackPanel Spacing="4">
-                    <TextBlock x:Name="NoParked" Text="No project folders" Visibility="Collapsed" Style="{StaticResource CaptionTextBlockStyle}"
+                    <TextBlock Text="{l:Loc Key=General_NoProjectFolders}" Visibility="{Binding HasParked, Converter={StaticResource InverseBooleanVisibilityConverter}}"
+                               Style="{StaticResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                    <ListView x:Name="Parked" ItemsSource="{Binding Config.Parked}" SelectionChanged="ParkedSelectionChanged" SelectionMode="Single" MinHeight="60">
+                    <ListView x:Name="Parked" ItemsSource="{Binding Config.Parked}" SelectedItem="{Binding SelectedParked, Mode=TwoWay}" SelectionMode="Single"
+                              MinHeight="60">
                         <ListView.ItemTemplate>
                             <DataTemplate>
                                 <StackPanel Orientation="Horizontal" Spacing="10">
@@ -135,8 +164,8 @@
                         </ListView.ItemTemplate>
                     </ListView>
                     <StackPanel Orientation="Horizontal" Spacing="4">
-                        <Button x:Name="AddParked" Content="Add project folders…" Click="AddParkedClicked" />
-                        <Button x:Name="RemoveParked" Content="Remove" Click="RemoveParkedClicked" IsEnabled="False" />
+                        <Button x:Name="AddParked" Content="{l:Loc Key=General_AddProjectFolders}" Click="AddParkedClicked" />
+                        <Button Content="{l:Loc Key=Common_Remove}" Click="RemoveParkedClicked" IsEnabled="{Binding HasSelectedParked}" />
                     </StackPanel>
                 </StackPanel>
             </Border>

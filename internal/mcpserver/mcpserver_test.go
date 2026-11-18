@@ -192,6 +192,11 @@ func (f *fakeDaemon) RestartSite(_ context.Context, name string) (api.Status, er
 	return f.status, nil
 }
 
+func (f *fakeDaemon) RestartReverb(_ context.Context, name string) (api.Status, error) {
+	f.record("restart_reverb", name)
+	return f.status, nil
+}
+
 func (f *fakeDaemon) StopSite(_ context.Context, name string) (api.Status, error) {
 	f.record("stop", name)
 	return f.status, nil

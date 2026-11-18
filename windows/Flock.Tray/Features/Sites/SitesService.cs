@@ -71,6 +71,9 @@ public sealed class SitesService : IAsyncDisposable
     public Task<OperationOutcome> RestartAsync(string site, CancellationToken token = default) =>
         MutateAsync(Key(site), site, (_, cancellationToken) => client.RestartSiteAsync(site, cancellationToken), token);
 
+    public Task<OperationOutcome> RestartReverbAsync(string site, CancellationToken token = default) =>
+        MutateAsync(Key(site), site, (_, cancellationToken) => client.RestartReverbAsync(site, cancellationToken), token);
+
     /// <summary>Adds a proxy, or changes its upstream (a port, host:port or URL). Site and proxy names never clash, so they share the site keys.</summary>
     public Task<OperationOutcome> ProxyAsync(string name, string upstream, CancellationToken token = default) =>
         ProxyAsync(name, upstream, null, token);
@@ -229,7 +232,7 @@ public sealed class SitesService : IAsyncDisposable
         }, token);
         if (outcome is OperationOutcome.Rejected or OperationOutcome.Canceled)
         {
-            return (null, outcome == OperationOutcome.Canceled ? "Extension request canceled." : null);
+            return (null, outcome == OperationOutcome.Canceled ? Strings.Sites_ExtensionCanceled : null);
         }
         return await SiteExtensionsAsync(site, token);
     }
@@ -283,8 +286,8 @@ public sealed class SitesService : IAsyncDisposable
         }
         return outcome switch
         {
-            OperationOutcome.Rejected => "Another change to this site is still running. Try again when it's done.",
-            OperationOutcome.Canceled => "Canceled.",
+            OperationOutcome.Rejected => Strings.Sites_ChangeRunning,
+            OperationOutcome.Canceled => Strings.Common_Canceled,
             _ => errors.Action,
         };
     }

@@ -4,6 +4,7 @@
 mod api;
 mod autostart;
 mod dumps;
+mod i18n;
 mod installation;
 mod links;
 mod logs;
@@ -28,6 +29,7 @@ use std::time::Duration;
 
 use adw::prelude::*;
 use gtk::{gio, glib};
+use i18n::tr;
 
 const APP_ID: &str = "dev.flock.Flock";
 
@@ -37,9 +39,12 @@ const VERSION: &str = match option_env!("FLOCK_VERSION") {
     None => "dev",
 };
 
-/// Styles libadwaita has no class for: the small labels next to versions and sites.
+/// Styles libadwaita has no class for: the small labels next to versions and sites. A row's title
+/// keeps a minimum width, so its suffixes (versions, badges, buttons; longer in Czech and Spanish)
+/// can't squeeze it into a letter per line: the window's minimum width grows instead.
 const STYLE: &str = "
 .badge { padding: 1px 7px; border-radius: 99px; font-weight: 600; background: alpha(currentColor, 0.12); }
+row > box.header > box.title { min-width: 150px; }
 ";
 
 /// The app's windows: the Flock window, created at start, and the others when first opened.
@@ -166,6 +171,16 @@ fn main() -> glib::ExitCode {
         return screenshots::main(&args);
     }
     let flag = |name: &str| args.iter().position(|a| a == name).and_then(|i| args.get(i + 1)).cloned();
+    // --after <pid>: a restart (app.relaunch) waits for the old app to exit, which until then
+    // holds the application ID: GApplication would hand this start to it. No time limit, since
+    // starting early would leave no app running once the old one is gone.
+    if let Some(pid) = flag("--after") {
+        let process = PathBuf::from(format!("/proc/{pid}"));
+        while process.exists() {
+            std::thread::sleep(Duration::from_millis(50));
+        }
+    }
+    i18n::init(&prefs::load().language);
     // --background: the start at login, which stays in the tray (when the desktop has one).
     // --open <window>: opens setup, mail, settings or settings/<pane> at start.
     // --screenshot <file.png>: renders that window (else the main one) once it shows the status,
@@ -235,7 +250,18 @@ fn main() -> glib::ExitCode {
             }
         })
         .build();
-    let mut entries = vec![quit, open_action];
+    // Restarts the app, e.g. in another language: the daemon and the sites keep running.
+    let relaunch = gio::ActionEntry::builder("relaunch")
+        .activate(|app: &adw::Application, _, _| match relaunch() {
+            Ok(()) => app.quit(),
+            Err(e) => {
+                let dialog = adw::AlertDialog::new(Some(&tr!("app.could_not_relaunch", error = e)), None);
+                dialog.add_response("ok", tr!("common.ok"));
+                dialog.present(app.active_window().as_ref());
+            }
+        })
+        .build();
+    let mut entries = vec![quit, open_action, relaunch];
     for name in ["settings", "setup", "mail", "dumps", "logs"] {
         let (m, w) = (model.clone(), windows.clone());
         entries.push(
@@ -279,7 +305,7 @@ fn start_tray(app: &adw::Application, model: &Rc<model::AppModel>, windows: &Rc<
         tray::Command::Open(name) => {
             w.open(&app, &m, name);
         }
-        tray::Command::Browse(url) => gtk::UriLauncher::new(&url).launch(None::<&gtk::Window>, gio::Cancellable::NONE, |_| {}),
+        tray::Command::Browse(url) => ui::open_uri(None, &url),
         tray::Command::Change(change) => {
             let model = m.clone();
             m.change_settings(change, move |error| model.report(error));
@@ -288,6 +314,17 @@ fn start_tray(app: &adw::Application, model: &Rc<model::AppModel>, windows: &Rc<
         tray::Command::Quit => app.quit(),
         tray::Command::Available(_) => {}
     });
+}
+
+/// Starts this app again once this process has exited, at General, where the Language is.
+/// Through the display's launch context: the new window gets the activation token (Wayland
+/// focuses it), and the app the system's language back.
+fn relaunch() -> Result<(), Box<dyn std::error::Error>> {
+    let exe = glib::shell_quote(paths::app_exe()?);
+    let command = format!("{} --open settings --after {}", exe.to_string_lossy(), std::process::id());
+    let app = gio::AppInfo::create_from_commandline(command, Some("Flock"), gio::AppInfoCreateFlags::SUPPORTS_STARTUP_NOTIFICATION)?;
+    app.launch(&[], Some(&ui::launch_context()))?;
+    Ok(())
 }
 
 /// Renders the window's content (a toplevel can't paint itself into a paintable) into a PNG.

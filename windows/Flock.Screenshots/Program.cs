@@ -24,7 +24,8 @@ public static class ScreenshotProgram
             return RunEachTheme(args);
         }
 
-        // Dates, numbers and sizes look the same on every machine.
+        // Dates, numbers and sizes look the same on every machine, and the text is English (the app's
+        // Language preference is applied by FlockTray's own Main only).
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo("en-US");
         CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
 

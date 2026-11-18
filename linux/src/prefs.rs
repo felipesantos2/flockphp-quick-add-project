@@ -5,6 +5,7 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
+use crate::i18n::tr_noop;
 use crate::paths;
 
 #[derive(Serialize, Deserialize, Default, Clone, PartialEq, Debug)]
@@ -14,11 +15,14 @@ pub struct Prefs {
     pub editor: String,
     /// The sites whose worktrees the Sites list shows, by name; the others are collapsed.
     pub expanded_sites: Vec<String>,
+    /// The app's language: "system" (also when unset) or a code of i18n::LANGUAGES. It applies
+    /// from the next start.
+    pub language: String,
 }
 
 /// Editors the Dumps window can open files in: id, name and URL scheme ("" for none).
 pub const EDITORS: [(&str, &str); 5] =
-    [("phpstorm", "PhpStorm"), ("vscode", "VS Code"), ("cursor", "Cursor"), ("zed", "Zed"), ("none", "Don't link")];
+    [("phpstorm", "PhpStorm"), ("vscode", "VS Code"), ("cursor", "Cursor"), ("zed", "Zed"), ("none", tr_noop!("settings.editor.none"))];
 
 pub fn dir() -> PathBuf {
     std::env::var_os("XDG_CONFIG_HOME")

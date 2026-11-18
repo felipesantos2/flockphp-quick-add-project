@@ -1,0 +1,145 @@
+<UserControl
+    x:Class="Flock.Tray.Settings.WorktreeDetailView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray"
+    xmlns:settings="using:Flock.Tray.Settings">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///Settings/DetailStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <!-- The selected worktree (WorktreeDetailViewModel): its branch, folder and address, its site's settings, its database and its setup. -->
+    <Border Style="{StaticResource DetailCardStyle}" Visibility="{Binding IsShown, Converter={StaticResource BooleanVisibilityConverter}}">
+        <StackPanel Spacing="20">
+            <!-- Header: branch, address and folder, and the worktree's actions. -->
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Spacing="2">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="{Binding Label}" Style="{StaticResource DetailTitleStyle}" VerticalAlignment="Center" />
+                        <Border Style="{StaticResource NeutralBadgeStyle}">
+                            <TextBlock Text="{l:Loc Key=Worktrees_Worktree}" Style="{StaticResource NeutralBadgeTextStyle}" />
+                        </Border>
+                    </StackPanel>
+                    <HyperlinkButton Content="{Binding Url}" Command="{Binding OpenCommand}" Padding="0"
+                                     Visibility="{Binding HasUrl, Converter={StaticResource BooleanVisibilityConverter}}" />
+                    <TextBlock Text="{Binding Path}" Style="{StaticResource DetailNoteLineStyle}" ToolTipService.ToolTip="{Binding Path}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                    <Button Command="{Binding OpenCommand}" IsEnabled="{Binding HasUrl}" Padding="8,6,8,6" Background="Transparent" BorderThickness="0"
+                            VerticalAlignment="Center" ToolTipService.ToolTip="{Binding OpenLabel}" AutomationProperties.Name="{Binding OpenLabel}">
+                        <FontIcon Glyph="{StaticResource GlyphOpen}" Style="{StaticResource IconStyle}" />
+                    </Button>
+                    <Button Command="{Binding RemoveCommand}" Padding="8,6,8,6" Background="Transparent" BorderThickness="0"
+                            VerticalAlignment="Center" ToolTipService.ToolTip="{l:Loc Key=Worktrees_Remove}" AutomationProperties.Name="{l:Loc Key=Worktrees_Remove}">
+                        <FontIcon Glyph="{StaticResource GlyphDelete}" Style="{StaticResource IconStyle}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+            <settings:DetailWarning Text="{Binding Problem}" Visibility="{Binding Problem, Converter={StaticResource StringVisibilityConverter}}" />
+
+            <!-- Worktree: its branch, folder and site. -->
+            <StackPanel Style="{StaticResource DetailSectionStyle}">
+                <TextBlock Text="{l:Loc Key=Worktrees_Worktree}" Style="{StaticResource DetailHeadingStyle}" />
+                <settings:DetailField Label="{l:Loc Key=Worktrees_New_Branch}">
+                    <TextBlock Text="{Binding Branch}" Style="{StaticResource DetailLineStyle}" />
+                </settings:DetailField>
+                <settings:DetailField Label="{l:Loc Key=General_Folder}">
+                    <Grid ColumnSpacing="4">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding Path}" Style="{StaticResource DetailLineStyle}" VerticalAlignment="Center" ToolTipService.ToolTip="{Binding Path}" />
+                        <Button Grid.Column="1" Command="{Binding RevealCommand}" Padding="4" Background="Transparent" BorderThickness="0"
+                                ToolTipService.ToolTip="{l:Loc Key=Common_ShowInExplorer}" AutomationProperties.Name="{l:Loc Key=Common_ShowInExplorer}">
+                            <FontIcon Glyph="{StaticResource GlyphFolder}" Style="{StaticResource IconStyle}" />
+                        </Button>
+                    </Grid>
+                </settings:DetailField>
+                <settings:DetailField Label="{l:Loc Key=Sites_Url}">
+                    <Grid>
+                        <HyperlinkButton Content="{Binding Url}" Command="{Binding OpenCommand}" Padding="0"
+                                         Visibility="{Binding HasUrl, Converter={StaticResource BooleanVisibilityConverter}}" />
+                        <TextBlock Text="{Binding Domain}" Style="{StaticResource DetailLineStyle}"
+                                   Visibility="{Binding HasUrl, Converter={StaticResource InverseBooleanVisibilityConverter}}" />
+                    </Grid>
+                </settings:DetailField>
+                <settings:DetailField Label="{l:Loc Key=Sites_Site}">
+                    <Grid>
+                        <HyperlinkButton Content="{Binding Parent}" Command="{Binding OpenSiteCommand}" Padding="0"
+                                         Visibility="{Binding HasParent, Converter={StaticResource BooleanVisibilityConverter}}" />
+                        <TextBlock Text="{Binding Parent}" Style="{StaticResource DetailLineStyle}"
+                                   Visibility="{Binding HasNoParent, Converter={StaticResource BooleanVisibilityConverter}}" />
+                    </Grid>
+                </settings:DetailField>
+            </StackPanel>
+
+            <!-- Settings: the site's, so they are changed there. -->
+            <StackPanel Style="{StaticResource DetailSectionStyle}">
+                <TextBlock Text="{l:Loc Key=Worktrees_Settings}" Style="{StaticResource DetailHeadingStyle}" />
+                <settings:DetailField Label="{l:Loc Key=Common_Php}" Visibility="{Binding IsPhp, Converter={StaticResource BooleanVisibilityConverter}}">
+                    <TextBlock Text="{Binding PhpText}" Style="{StaticResource DetailLineStyle}" />
+                </settings:DetailField>
+                <settings:DetailField Label="{l:Loc Key=Common_Nodejs}">
+                    <TextBlock Text="{Binding NodeText}" Style="{StaticResource DetailLineStyle}" />
+                </settings:DetailField>
+                <settings:DetailField Label="{l:Loc Key=Common_Https}">
+                    <TextBlock Text="{Binding HttpsText}" Style="{StaticResource DetailLineStyle}" />
+                </settings:DetailField>
+                <TextBlock Text="{Binding SettingsNote}" Style="{StaticResource DetailNoteStyle}" />
+            </StackPanel>
+            <Grid Visibility="{Binding IsNode, Converter={StaticResource BooleanVisibilityConverter}}">
+                <settings:DevServerSection DataContext="{Binding DevServer}" />
+            </Grid>
+
+            <!-- Database: the site's or its own, and a picker that switches it. -->
+            <StackPanel Style="{StaticResource DetailSectionStyle}">
+                <TextBlock Text="{l:Loc Key=Worktrees_New_Database}" Style="{StaticResource DetailHeadingStyle}" />
+                <settings:DetailField Label="{l:Loc Key=Worktrees_Current}">
+                    <TextBlock Text="{Binding CurrentDatabase}" Style="{StaticResource DetailLineStyle}" IsTextSelectionEnabled="True" />
+                </settings:DetailField>
+                <settings:DetailField Label="{l:Loc Key=Worktrees_New_Database}">
+                    <ComboBox MinWidth="150" PlaceholderText="{l:Loc Key=Worktrees_ProjectDefault}" ItemsSource="{Binding DatabaseItems}"
+                              SelectedIndex="{Binding DatabaseIndex, Mode=TwoWay}" IsEnabled="{Binding CanSwitchDatabase}"
+                              AutomationProperties.Name="{l:Loc Key=Worktrees_New_Database}" ToolTipService.ToolTip="{Binding DatabaseTooltip}" />
+                </settings:DetailField>
+                <TextBlock Text="{l:Loc Key=Worktrees_SharedDatabaseNote}" Style="{StaticResource DetailNoteStyle}" />
+            </StackPanel>
+
+            <!-- Setup: queued, running (the step), set up or failed (why), with its log and Run Setup Again. -->
+            <StackPanel Style="{StaticResource DetailSectionStyle}">
+                <TextBlock Text="{l:Loc Key=Worktrees_Setup}" Style="{StaticResource DetailHeadingStyle}" />
+                <StackPanel Spacing="8" Visibility="{Binding IsNotSetUp, Converter={StaticResource BooleanVisibilityConverter}}">
+                    <TextBlock Text="{l:Loc Key=Worktrees_NotSetUp}"
+                               Style="{StaticResource DetailCaptionStyle}" />
+                    <Button Content="{l:Loc Key=Worktrees_SetUpAction}" Command="{Binding SetUpCommand}" />
+                </StackPanel>
+                <StackPanel Spacing="8" Visibility="{Binding IsSetUp, Converter={StaticResource BooleanVisibilityConverter}}">
+                    <StackPanel Spacing="8" Visibility="{Binding IsBusy, Converter={StaticResource BooleanVisibilityConverter}}">
+                        <TextBlock Text="{Binding BusyText}" Style="{StaticResource DetailCaptionLineStyle}" />
+                        <ProgressBar IsIndeterminate="True" HorizontalAlignment="Left" Width="320" />
+                    </StackPanel>
+                    <StackPanel Spacing="8" Visibility="{Binding IsFailed, Converter={StaticResource BooleanVisibilityConverter}}">
+                        <settings:DetailWarning Text="{Binding FailedText}" />
+                        <TextBlock Text="{l:Loc Key=Worktrees_StillServed}" Style="{StaticResource DetailCaptionStyle}" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="6" Visibility="{Binding IsReady, Converter={StaticResource BooleanVisibilityConverter}}">
+                        <Ellipse Style="{StaticResource StatusDotStyle}" Fill="{ThemeResource SystemFillColorSuccessBrush}" />
+                        <TextBlock Text="{l:Loc Key=Worktrees_IsSetUp}" Style="{StaticResource DetailCaptionLineStyle}" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="{l:Loc Key=Sites_ShowLog}" Command="{Binding ShowLogCommand}"
+                                Visibility="{Binding HasLog, Converter={StaticResource BooleanVisibilityConverter}}" />
+                        <Button Content="{l:Loc Key=Worktrees_RunAgain}" Command="{Binding RunSetupAgainCommand}" IsEnabled="{Binding CanRunAgain}"
+                                ToolTipService.ToolTip="{l:Loc Key=Worktrees_RunAgainTooltip}" />
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

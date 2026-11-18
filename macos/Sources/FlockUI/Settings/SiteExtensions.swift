@@ -30,11 +30,11 @@ struct SiteExtensionsSheet: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("PHP extensions of \(site.name)").font(.headline)
+                    Text("sites.extensions_title \(site.name)").font(.headline)
                     Text(subtitle).font(.caption).foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button("Done") { dismiss() }.keyboardShortcut(.defaultAction)
+                Button("common.done") { dismiss() }.keyboardShortcut(.defaultAction)
             }
 
             if let error {
@@ -46,7 +46,7 @@ struct SiteExtensionsSheet: View {
 
             if let report {
                 if report.extensions.isEmpty {
-                    Text("The project requires no PHP extensions.").foregroundStyle(.secondary)
+                    Text("sites.extensions_none").foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, minHeight: 80)
                 } else {
                     List(report.extensions) { ext in
@@ -58,26 +58,26 @@ struct SiteExtensionsSheet: View {
                 ProgressView().frame(maxWidth: .infinity, minHeight: 80)
             }
 
-            Text("Requiring an extension in composer.json makes composer install refuse a server without it, instead of the app failing there.")
+            Text("sites.extensions_footnote")
                 .font(.caption).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(16)
         .frame(width: 560, height: 420)
         .task { await load() }
-        .confirmationDialog("Require ext-\(confirmState.wrappedValue?.name ?? "") in composer.json?",
+        .confirmationDialog("sites.require_ext_name_in_composer \(confirmState.wrappedValue?.name ?? "")",
                             isPresented: Binding(get: { confirmState.wrappedValue != nil }, set: { if !$0 { confirmState.wrappedValue = nil } }),
                             presenting: confirmState.wrappedValue) { ext in
-            Button("Require") { add(ext) }
-            Button("Cancel", role: .cancel) {}
+            Button("sites.require") { add(ext) }
+            Button("common.cancel", role: .cancel) {}
         } message: { ext in
-            Text("Runs composer require ext-\(ext.name):* in \(site.path), which changes composer.json and composer.lock. Commit them with the project.")
+            Text("sites.require_tooltip \(ext.name) \(site.path)")
         }
     }
 
     private var subtitle: String {
         guard let report else { return site.path }
-        return report.laravel ? "PHP \(report.php) · Laravel app" : "PHP \(report.php)"
+        return report.laravel ? String(localized: "sites.extensions_laravel \(report.php)") : "PHP \(report.php)"
     }
 
     private func row(_ ext: PHPExtension) -> some View {
@@ -95,7 +95,7 @@ struct SiteExtensionsSheet: View {
             if adding == ext.name {
                 ProgressView().controlSize(.small)
             } else if !ext.declared {
-                Button("Add to composer.json") { confirmState.wrappedValue = ext }
+                Button("sites.add_to_composer_json") { confirmState.wrappedValue = ext }
                     .disabled(adding != nil)
             }
         }
@@ -108,11 +108,9 @@ struct SiteExtensionsSheet: View {
     }
 
     private func detail(_ ext: PHPExtension) -> String {
-        var text = ext.declared ? "Required by \(ext.requiredBy.joined(separator: ", "))" : "Not required, but used: \(ext.hint)"
-        if !ext.available {
-            text += " — Flock's PHP \(report?.php ?? "") doesn't include it"
-        }
-        return text
+        let text = ext.declared ? String(localized: "sites.extension_required_by \(ext.requiredBy.joined(separator: ", "))") : String(localized: "sites.extension_used \(ext.hint)")
+        guard !ext.available else { return text }
+        return text + " — " + String(localized: "sites.extension_missing \(report?.php ?? "")")
     }
 
     private func load() async {

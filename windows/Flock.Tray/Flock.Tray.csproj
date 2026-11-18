@@ -7,6 +7,7 @@
         <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
         <RootNamespace>Flock.Tray</RootNamespace>
         <AssemblyName>FlockTray</AssemblyName>
+        <StartupObject>Flock.Tray.Program</StartupObject>
         <Product>Flock</Product>
         <!-- The file description: the name Windows shows on the tray icon's notifications and in Task Manager. -->
         <AssemblyTitle>Flock</AssemblyTitle>
@@ -49,6 +50,10 @@
     </ItemGroup>
     <ItemGroup>
         <Content Include="Assets\*.ico;Assets\*.png" CopyToOutputDirectory="PreserveNewest"/>
+    </ItemGroup>
+    <ItemGroup>
+        <!-- The texts are Flock.Kit's Strings, generated from lang/; XAML reads them with {l:Loc}. -->
+        <Using Include="Flock.Kit.Strings" Alias="Strings"/>
     </ItemGroup>
     <!-- Hide SDK payload links in the IDE while keeping their output-copy metadata. -->
     <Target Name="HideWindowsAppSDKPayloadLinks" AfterTargets="AddMicrosoftWindowsAppSDKPayloadFilesFromComponents">

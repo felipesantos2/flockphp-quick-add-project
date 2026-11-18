@@ -7,11 +7,11 @@ namespace Flock.Kit;
 public class FlockException(string message, Exception? innerException = null) : Exception(message, innerException);
 
 /// <summary>Nothing answers on the daemon's API.</summary>
-public sealed class FlockNotRunningException(Exception? innerException = null) : FlockException("Flock is not running", innerException);
+public sealed class FlockNotRunningException(Exception? innerException = null) : FlockException(Strings.App_NotRunning, innerException);
 
 /// <summary>The daemon answered with an error.</summary>
 public sealed class FlockServerException(int status, string message, Exception? innerException = null)
-    : FlockException(message.Length == 0 ? $"Flock answered with HTTP {status}" : message, innerException)
+    : FlockException(message.Length == 0 ? Localization.Format(Strings.App_HttpStatus, status) : message, innerException)
 {
     public int StatusCode { get; } = status;
 }
@@ -19,7 +19,7 @@ public sealed class FlockServerException(int status, string message, Exception? 
 
 /// <summary>The daemon may have applied a write before the connection failed.</summary>
 public sealed class FlockRequestOutcomeUnknownException(Exception innerException)
-    : FlockException("The connection failed. The change may have completed; refresh its state before retrying.", innerException);
+    : FlockException(Strings.App_OutcomeUnknown, innerException);
 
 /// <summary>Talks to the daemon's local HTTP API (the loopback listener described by api.json).</summary>
 public sealed class FlockClient : IDisposable
@@ -88,13 +88,16 @@ public sealed class FlockClient : IDisposable
     public Task<Status> CreateAppAsync(string name, string parentDir, string type = "php", bool db = false, string? dbService = null, string? php = null, bool secured = false, CancellationToken cancellationToken = default) =>
         Send<Status>(HttpMethod.Post, "/v1/apps", new { name, parent_dir = parentDir, type, db, db_service = dbService, php, secured }, timeout: AppCreateTimeout, cancellationToken: cancellationToken);
 
-    /// <summary>Switching the server or worker mode reloads the web server and may start FrankenPHP, so it gets longer.</summary>
+    /// <summary>Switching the server or worker mode, or turning Reverb on or off, reloads the web server and may start a process, so it gets longer.</summary>
     public Task<Status> UpdateSiteAsync(string name, SiteChange change, CancellationToken cancellationToken = default) =>
         Send<Status>(HttpMethod.Patch, $"/v1/sites/{Escape(name)}", change,
-            timeout: change.Server is not null || change.Worker is not null ? ServerSwitchTimeout : null, cancellationToken: cancellationToken);
+            timeout: change.Server is not null || change.Worker is not null || change.Reverb is not null ? ServerSwitchTimeout : null, cancellationToken: cancellationToken);
 
     /// <summary>Restarts a FrankenPHP site's process, e.g. so Octane's workers load changed code, or a Node.js site's dev server (starting it when it sleeps).</summary>
     public Task<Status> RestartSiteAsync(string name, CancellationToken cancellationToken = default) => Send<Status>(HttpMethod.Post, $"/v1/sites/{Escape(name)}/restart", timeout: ServerSwitchTimeout, cancellationToken: cancellationToken);
+
+    /// <summary>Restarts only a site's Reverb server, e.g. so it loads changed code.</summary>
+    public Task<Status> RestartReverbAsync(string name, CancellationToken cancellationToken = default) => Send<Status>(HttpMethod.Post, $"/v1/sites/{Escape(name)}/reverb/restart", timeout: ServerSwitchTimeout, cancellationToken: cancellationToken);
 
     /// <summary>Puts a Node.js site's dev server to sleep until the site's next request.</summary>
     public Task<Status> StopSiteAsync(string name, CancellationToken cancellationToken = default) => Send<Status>(HttpMethod.Post, $"/v1/sites/{Escape(name)}/stop", timeout: ServerSwitchTimeout, cancellationToken: cancellationToken);
@@ -462,11 +465,11 @@ public sealed class FlockClient : IDisposable
         }
         try
         {
-            return JsonSerializer.Deserialize<T>(data, FlockJson.Options) ?? throw new FlockException($"empty answer from {path}");
+            return JsonSerializer.Deserialize<T>(data, FlockJson.Options) ?? throw new FlockException(Localization.Format(Strings.App_EmptyAnswer, path));
         }
         catch (JsonException e)
         {
-            throw new FlockException($"Unexpected answer from {path}: {e.Message}", e);
+            throw new FlockException(Localization.Format(Strings.App_UnexpectedAnswer, path, e.Message), e);
         }
     }
 
@@ -558,7 +561,7 @@ public sealed class FlockClient : IDisposable
 
     private static Exception TimeoutFailure(HttpMethod method, string path, Exception cause) =>
         method == HttpMethod.Get
-            ? new FlockException($"Flock did not answer {method} {path} in time", cause)
+            ? new FlockException(Localization.Format(Strings.App_Timeout, method, path), cause)
             : new FlockRequestOutcomeUnknownException(cause);
 
     private static Exception TerminalTransportFailure(HttpMethod method, Exception cause) =>

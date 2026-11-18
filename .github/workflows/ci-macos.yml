@@ -30,6 +30,10 @@ jobs:
             -   name: Test
                 run: swift test --package-path macos
 
+            # Every key in the code is in Localizable.xcstrings, which tools/i18n generates from lang/.
+            -   name: Translations
+                run: macos/check-strings.sh
+
     macos:
         name: macOS (Apple silicon)
         if: github.event_name != 'pull_request'

@@ -16,29 +16,29 @@ struct NodePane: View {
         let store = model.settings
 
         VStack(spacing: 0) {
-            PaneHeader(title: "Node", subtitle: "node, npm and npx follow the project's .nvmrc / .node-version, then the site's version, then the default.")
+            PaneHeader(title: "common.node", subtitle: "node.subtitle")
             Form {
                 if let catalog = store.node {
                     Section {
                         if catalog.versions.isEmpty {
-                            Text("No Node.js versions to show yet.").foregroundStyle(.secondary)
+                            Text("node.no_versions").foregroundStyle(.secondary)
                         }
                         ForEach(catalog.versions) { release in
                             NodeReleaseRow(release: release, installing: installing.contains(release.major))
                         }
                     } header: {
                         HStack {
-                            Text("Versions")
+                            Text("versions.versions")
                             Spacer()
                             checkedLine(catalog)
                         }
                     } footer: {
                         VStack(alignment: .leading, spacing: 6) {
                             if !catalog.checkError.isEmpty {
-                                Label("Couldn't check for updates: \(catalog.checkError)", systemImage: "exclamationmark.triangle.fill")
+                                Label("versions.could_not_check_updates \(catalog.checkError)", systemImage: "exclamationmark.triangle.fill")
                                     .foregroundStyle(.orange)
                             }
-                            Text("Official Node.js builds, the newest release of each major. A project that pins a version in .nvmrc gets that major offered when you run node, npm or npx there. Global packages (npm install -g) belong to a Node line and survive its updates; those of the default version are on your PATH.")
+                            Text("node.official_node_js_builds_the")
                                 .foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
@@ -47,7 +47,7 @@ struct NodePane: View {
                 } else {
                     HStack {
                         ProgressView().controlSize(.small)
-                        Text("Loading Node.js versions…").foregroundStyle(.secondary)
+                        Text("node.loading_node_js_versions").foregroundStyle(.secondary)
                     }
                 }
             }
@@ -60,13 +60,13 @@ struct NodePane: View {
         .alert(linkRequest?.title ?? "", isPresented: Binding(get: { linkRequest != nil }, set: { if !$0 { model.pendingInstall = nil } }),
                presenting: linkRequest) { request in
             if let install = request.confirmation {
-                Button("Install") {
+                Button("common.install") {
                     let major = install.line
                     Task { await store.installNode(major) }
                 }
-                Button("Cancel", role: .cancel) {}
+                Button("common.cancel", role: .cancel) {}
             } else {
-                Button("OK") {}
+                Button("common.ok") {}
             }
         } message: { request in
             Text(request.message)
@@ -93,11 +93,11 @@ struct NodePane: View {
     private func checkedLine(_ catalog: NodeCatalog) -> some View {
         HStack(spacing: 6) {
             if let checked = catalog.checkedAt {
-                Text("Checked \(checked, format: .relative(presentation: .named))")
+                Text("node.checked \(checked, format: .relative(presentation: .named))")
             } else {
-                Text("Not checked yet")
+                Text("versions.not_checked")
             }
-            Text("·")
+            Text(verbatim: "·")
             Button {
                 checking = true
                 Task {
@@ -105,7 +105,7 @@ struct NodePane: View {
                     checking = false
                 }
             } label: {
-                BusyLabel(title: "Check now", busyTitle: "Checking…", isBusy: checking)
+                BusyLabel(title: "versions.check_now", busyTitle: "versions.checking", isBusy: checking)
             }
             .buttonStyle(.link)
             .disabled(checking)
@@ -132,7 +132,7 @@ private struct NodeReleaseRow: View {
 
     /// The row's own work, or an install it didn't start, which shows the same way.
     private var step: String? {
-        busy ?? (installing ? "Downloading Node.js \(release.latest)…" : nil)
+        busy ?? (installing ? String(localized: "versions.downloading_node \(release.latest)") : nil)
     }
     private let confirmUninstallState = State<Bool>(initialValue: false)
     private var confirmUninstall: Bool {
@@ -146,29 +146,32 @@ private struct NodeReleaseRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text("Node \(release.major)").font(.body.weight(.semibold))
-                    Text(versionText).font(.callout.monospacedDigit()).foregroundStyle(.secondary)
-                    if release.isDefault { Badge(text: "Default") }
+                    Text("common.node_version \(release.major)").font(.body.weight(.semibold)).fixedSize()
+                    Text(versionText).font(.callout.monospacedDigit()).foregroundStyle(.secondary).fixedSize()
+                    if release.isDefault { Badge(text: "sites.default") }
                 }
                 detail
             }
 
             Spacer(minLength: 12)
+            // The buttons keep their whole titles (longer in Czech and Spanish).
             actions
+                .fixedSize()
                 .disabled(step != nil)
         }
         .padding(.vertical, 3)
-        .confirmationDialog("Uninstall Node \(release.major)?", isPresented: confirmUninstallState.projectedValue) {
-            Button("Uninstall", role: .destructive) {
-                run("Uninstalling…") { try await $0.uninstallNode(release.major) }
+        .confirmationDialog("node.uninstall_node_version \(release.major)", isPresented: confirmUninstallState.projectedValue) {
+            Button("common.uninstall", role: .destructive) {
+                run(String(localized: "common.uninstalling")) { try await $0.uninstallNode(release.major) }
             }
         } message: {
-            Text("Its global npm packages are removed too. Projects and sites that use Node \(release.major) fall back to the default version until you install it again.")
+            Text("node.uninstall_details \(release.major)")
         }
     }
 
+    /// The installed version; an update's version is on its Update to button.
     private var versionText: String {
-        release.update ? "\(release.installed) → \(release.latest)" : (release.isInstalled ? release.installed : release.latest)
+        release.isInstalled ? release.installed : release.latest
     }
 
     /// The status line under the name.
@@ -181,17 +184,22 @@ private struct NodeReleaseRow: View {
             }
             .font(.caption).foregroundStyle(.secondary)
         } else {
-            HStack(spacing: 0) {
-                Text(release.update ? "Update available" : (release.isInstalled ? "Up to date" : "Not installed"))
-                    .foregroundStyle(release.update ? Color.blue : Color.secondary)
-                if !release.npm.isEmpty {
-                    Text(" · npm \(release.npm)").foregroundStyle(.secondary)
-                    if !release.npmLatest.isEmpty {
-                        Text(" (npm \(release.npmLatest) available)").foregroundStyle(.blue)
+            // Versions never wrap; a newer npm gets a line of its own, as the row has no room left
+            // next to Update npm and Make Default in Czech and Spanish.
+            VStack(alignment: .leading, spacing: 1) {
+                HStack(spacing: 0) {
+                    Text(release.update ? "versions.update_available" : (release.isInstalled ? "versions.up_to_date" : "common.not_installed"))
+                        .foregroundStyle(release.update ? Color.blue : Color.secondary)
+                    if !release.npm.isEmpty {
+                        Text(verbatim: " · npm \(release.npm)").foregroundStyle(.secondary)
                     }
+                }
+                if !release.npm.isEmpty, !release.npmLatest.isEmpty {
+                    Text("versions.npm_available \(release.npmLatest)").foregroundStyle(.blue)
                 }
             }
             .font(.caption)
+            .fixedSize()
         }
     }
 
@@ -199,30 +207,30 @@ private struct NodeReleaseRow: View {
     private var actions: some View {
         if !release.isInstalled {
             Button {
-                run("Downloading Node.js \(release.latest)…") { try await $0.installNodeMajor(release.major) }
+                run(String(localized: "versions.downloading_node \(release.latest)")) { try await $0.installNodeMajor(release.major) }
             } label: {
-                Label("Install", systemImage: "arrow.down.circle")
+                Label("common.install", systemImage: "arrow.down.circle")
             }
-            .help("Downloads Node.js \(release.latest)")
+            .help("node.downloads_node_js \(release.latest)")
         } else {
             if release.update {
                 Button {
-                    run("Downloading Node.js \(release.latest)…") { try await $0.installNodeMajor(release.major) }
+                    run(String(localized: "versions.downloading_node \(release.latest)")) { try await $0.installNodeMajor(release.major) }
                 } label: {
-                    Label("Update to \(release.latest)", systemImage: "arrow.down.circle")
+                    Label("general.update_to \(release.latest)", systemImage: "arrow.down.circle")
                 }
                 .buttonStyle(.borderedProminent)
-                .help("Downloads Node.js \(release.latest), then removes \(release.installed). Global packages stay.")
+                .help("node.downloads_node_js_new_then \(release.latest) \(release.installed)")
             }
             if !release.npmLatest.isEmpty {
-                Button("Update npm") {
-                    run("Updating npm to \(release.npmLatest)…") { try await $0.updateNpm(release.major) }
+                Button("node.update_npm") {
+                    run(String(localized: "node.updating_npm_to_version \(release.npmLatest)")) { try await $0.updateNpm(release.major) }
                 }
-                .help("Installs npm \(release.npmLatest), the newest npm that supports Node.js \(release.installed), for Node \(release.major)")
+                .help("node.installs_npm_the_newest_npm \(release.npmLatest) \(release.installed) \(release.major)")
             }
             if !release.isDefault {
-                Button("Make Default") {
-                    busy = "Making Node \(release.major) the default…"
+                Button("node.make_default") {
+                    busy = String(localized: "node.making_node_version_the_default \(release.major)")
                     Task {
                         await model.settings.perform { _ = try await $0.updateSettings(SettingsChange(defaultNode: release.major)) }
                         await model.settings.refreshNode()
@@ -231,7 +239,7 @@ private struct NodeReleaseRow: View {
                 }
             }
             Menu {
-                Button("Uninstall…", role: .destructive) { confirmUninstall = true }
+                Button("common.uninstall_ellipsis", role: .destructive) { confirmUninstall = true }
                     .disabled(release.isDefault)
             } label: {
                 Image(systemName: "ellipsis.circle")
@@ -239,7 +247,7 @@ private struct NodeReleaseRow: View {
             .menuStyle(.borderlessButton)
             .menuIndicator(.hidden)
             .fixedSize()
-            .help("More")
+            .help("services.more")
         }
     }
 

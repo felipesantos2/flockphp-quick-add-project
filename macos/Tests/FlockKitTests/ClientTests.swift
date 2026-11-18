@@ -123,7 +123,7 @@ struct ClientTests {
         }
         #expect(StubProtocol.requests.first?.method == "DELETE")
         #expect(FlockError.server(status: 409, message: "PHP 8.5 is the default version").localizedDescription == "PHP 8.5 is the default version")
-        #expect(FlockError.server(status: 502, message: "").localizedDescription == "Flock answered with HTTP 502")
+        #expect(FlockError.server(status: 502, message: "").localizedDescription == "app.http_status 502")
     }
 
     @Test func isNotRunningWithoutAPIJSONOrListener() async throws {
@@ -213,6 +213,23 @@ struct ClientTests {
         #expect(requests.map(\.method) == ["PATCH", "POST", "POST"])
         #expect(requests.map { URL(string: $0.url)?.path ?? "" } == ["/v1/sites/web", "/v1/sites/web/restart", "/v1/sites/web/stop"])
         #expect(requests[0].body == #"{"type":"node"}"#)
+    }
+
+    @Test func talksToTheReverbEndpoints() async throws {
+        StubProtocol.reset { _ in (200, #"{"version":"dev","pid":1,"started_at":"2026-10-13T14:10:01Z"}"#) }
+        let client = client(try apiJSON(token: "t"))
+
+        _ = try await client.updateSite("chat", SiteChange(reverb: true))
+        _ = try await client.updateSite("chat", SiteChange(reverb: false))
+        _ = try await client.restartReverb("chat")
+
+        let requests = StubProtocol.requests
+        #expect(requests.map(\.method) == ["PATCH", "PATCH", "POST"])
+        #expect(requests.map { URL(string: $0.url)?.path ?? "" } == ["/v1/sites/chat", "/v1/sites/chat", "/v1/sites/chat/reverb/restart"])
+        #expect(requests[0].body == #"{"reverb":true}"#)
+        #expect(requests[1].body == #"{"reverb":false}"#)
+        // Restarting waits for the server to come back.
+        #expect(requests[2].timeout == 60)
     }
 
     @Test func givesSlowEndpointsLongerThanTheDefault() async throws {

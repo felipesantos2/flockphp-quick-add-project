@@ -1,7 +1,7 @@
 VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS := -s -w -X flock/internal/cli.Version=$(VERSION)
 
-.PHONY: build build-all test lint notices app dmg windows windows-test
+.PHONY: build build-all test lint notices i18n i18n-status i18n-missing app dmg windows windows-test
 
 build:
 	go build -ldflags "$(LDFLAGS)" -o bin/flock ./cmd/flock
@@ -20,6 +20,19 @@ lint:
 # THIRD_PARTY_NOTICES, after changing dependencies (CI fails while it's out of date).
 notices:
 	go run ./tools/notices
+
+# The apps' translation files, from lang/ and the keys the apps use (CI fails while they're out of
+# date). lang/README.md describes how translations work.
+i18n:
+	go run ./tools/i18n
+
+# How much of each language is translated.
+i18n-status:
+	go run ./tools/i18n -status
+
+# The texts a language lacks, with their English and notes: make i18n-missing lang=de
+i18n-missing:
+	go run ./tools/i18n -missing $(lang)
 
 # build/macos/Flock.app (with the flock CLI inside) and build/macos/Flock.dmg.
 app:

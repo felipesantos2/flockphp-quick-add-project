@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Flock.Kit;
@@ -27,8 +28,8 @@ public sealed class PhpPaneViewModel : ObservableObject, IDisposable
     public PhpCatalog? Current => service.Current;
     public string? Error => service.Error;
     public bool IsChecking => service.IsChecking;
-    public string CheckedText => Current?.CheckedAt is { } checkedAt ? $"Last checked {Ui.Relative(checkedAt)}" : "Not checked yet";
-    public string CheckErrorText => Current?.CheckError is { Length: > 0 } error ? $"Couldn't check for updates: {error}" : "";
+    public string CheckedText => Current?.CheckedAt is { } checkedAt ? Localization.Format(Strings.Versions_LastChecked, Ui.Relative(checkedAt)) : Strings.Versions_NotChecked;
+    public string CheckErrorText => Current?.CheckError is { Length: > 0 } error ? Localization.Format(Strings.Versions_CouldNotCheckUpdates, error) : "";
     public IAsyncRelayCommand CheckCommand { get; }
 
     public Task RefreshAsync(CancellationToken token = default) => service.RefreshAsync(token);
@@ -74,24 +75,24 @@ public sealed class PhpVersionViewModel : ObservableObject
     public bool HasUpdate => value.Update;
     public string StatusText => value.Status switch
     {
-        PhpStatus.Installed => "Up to date",
-        PhpStatus.Update => value.Latest == value.Installed ? "A new build is available" : "Update available",
-        PhpStatus.Available => "Not installed",
+        PhpStatus.Installed => Strings.Versions_UpToDate,
+        PhpStatus.Update => value.Latest == value.Installed ? Strings.Versions_NewBuild : Strings.Versions_UpdateAvailable,
+        PhpStatus.Available => Strings.Common_NotInstalled,
         _ => "",
     };
     public bool IsPrerelease => value.Prerelease;
     public bool HasXdebug => IsInstalled && value.Xdebug;
     public bool IsWithdrawn => value.Yanked.Length > 0;
-    public string WithdrawnText => value.Update ? $"Withdrawn: {value.Yanked} — update to replace it" : $"Withdrawn: {value.Yanked}";
+    public string WithdrawnText => Localization.Format(value.Update ? Strings.Services_WithdrawnUpdate : Strings.Services_Withdrawn, value.Yanked);
     public ComponentJob? Job => value.Job;
     public bool HasJob => Job is not null;
     public bool HasRunningJob => Job?.IsRunning == true;
     public bool HasFailedJob => Job?.IsFailed == true;
-    public string JobErrorText => Job?.IsFailed == true ? Job.Error.Length > 0 ? Job.Error : "The download failed." : "";
+    public string JobErrorText => Job?.IsFailed == true ? Job.Error.Length > 0 ? Job.Error : Strings.Versions_DownloadFailed : "";
     public double JobProgress => Job?.HasProgress == true ? Job.Progress : 0;
     public bool IsJobProgressIndeterminate => Job?.HasProgress != true;
     public string JobProgressText => Job is { } job
-        ? job.PhaseText + (job.HasProgress ? $" {Math.Round(job.Progress * 100)}%" : "")
+        ? job.PhaseText + (job.HasProgress ? " " + job.Progress.ToString("P0", CultureInfo.CurrentCulture) : "")
         : "";
     public bool CanInstall => !IsInstalled && !HasJob;
     public bool CanUpdate => IsInstalled && HasUpdate && !HasJob;
@@ -171,8 +172,8 @@ public sealed class FrankenPhpPaneViewModel : ObservableObject, IDisposable
     public FrankenPhpState? Current => service.Current;
     public string? Error => service.Error;
     public bool IsChecking => service.IsChecking;
-    public string CheckedText => Current?.CheckedAt is { } checkedAt ? $"Last checked {Ui.Relative(checkedAt)}" : "Not checked yet";
-    public string CheckErrorText => Current?.CheckError is { Length: > 0 } error ? $"Couldn't check for updates: {error}" : "";
+    public string CheckedText => Current?.CheckedAt is { } checkedAt ? Localization.Format(Strings.Versions_LastChecked, Ui.Relative(checkedAt)) : Strings.Versions_NotChecked;
+    public string CheckErrorText => Current?.CheckError is { Length: > 0 } error ? Localization.Format(Strings.Versions_CouldNotCheckUpdates, error) : "";
     public IAsyncRelayCommand CheckCommand { get; }
 
     public Task RefreshAsync(CancellationToken token = default) => service.RefreshAsync(token);
@@ -213,7 +214,7 @@ public sealed class FrankenPhpVersionViewModel : ObservableObject
     public string DisplayName => $"PHP {Php}";
     public string Latest => value.Latest;
     public string Installed => value.Installed;
-    public string DetailText => IsInstalled ? $"FrankenPHP {Installed} (PHP {value.PhpVersion})" : "Not installed · downloads by itself when a site uses it";
+    public string DetailText => IsInstalled ? $"FrankenPHP {Installed} (PHP {value.PhpVersion})" : Strings.Versions_FrankenNotInstalled;
     public bool ShowDetail => !HasRunningJob && !HasFailedJob;
     public bool IsInstalled => value.IsInstalled;
     public bool HasUpdate => value.Update;
@@ -224,7 +225,7 @@ public sealed class FrankenPhpVersionViewModel : ObservableObject
     public double JobProgress => Job?.HasProgress == true ? Job.Progress : 0;
     public bool IsJobProgressIndeterminate => Job?.HasProgress != true;
     public string JobProgressText => Job is { } job
-        ? job.PhaseText + (job.HasProgress ? $" {Math.Round(job.Progress * 100)}%" : "")
+        ? job.PhaseText + (job.HasProgress ? " " + job.Progress.ToString("P0", CultureInfo.CurrentCulture) : "")
         : "";
     public bool CanInstall => !IsInstalled && !HasJob;
     public bool CanUpdate => IsInstalled && HasUpdate && !HasJob;
@@ -303,8 +304,8 @@ public sealed class NodePaneViewModel : ObservableObject, IDisposable
     public bool IsChecking => service.IsChecking;
     public bool IsEmpty => Current?.Versions.Count == 0;
     public IAsyncRelayCommand CheckCommand { get; }
-    public string CheckedText => Current?.CheckedAt is { } checkedAt ? $"Last checked {Ui.Relative(checkedAt)}" : "Not checked yet";
-    public string CheckErrorText => Current?.CheckError is { Length: > 0 } error ? $"Couldn't check for updates: {error}" : "";
+    public string CheckedText => Current?.CheckedAt is { } checkedAt ? Localization.Format(Strings.Versions_LastChecked, Ui.Relative(checkedAt)) : Strings.Versions_NotChecked;
+    public string CheckErrorText => Current?.CheckError is { Length: > 0 } error ? Localization.Format(Strings.Versions_CouldNotCheckUpdates, error) : "";
 
     public Task RefreshAsync(CancellationToken token = default) => service.RefreshAsync(token);
     public Task<OperationOutcome> CheckAsync(CancellationToken token = default) => service.CheckAsync(token);
@@ -365,9 +366,9 @@ public sealed class NodeVersionViewModel : ObservableObject
     public string Npm => value.Npm;
     public string NpmLatest => value.NpmLatest;
     public string VersionText => value.Update ? $"{value.Installed} → {value.Latest}" : value.IsInstalled ? value.Installed : value.Latest;
-    public string StatusText => value.Update ? "Update available" : value.IsInstalled ? "Up to date" : "Not installed";
+    public string StatusText => value.Update ? Strings.Versions_UpdateAvailable : value.IsInstalled ? Strings.Versions_UpToDate : Strings.Common_NotInstalled;
     public string NpmText => value.Npm.Length > 0 ? $"npm {value.Npm}" : "";
-    public string NpmLatestText => value.NpmLatest.Length > 0 ? $"npm {value.NpmLatest} available" : "";
+    public string NpmLatestText => value.NpmLatest.Length > 0 ? Localization.Format(Strings.Versions_NpmAvailable, value.NpmLatest) : "";
     public bool IsDefault => value.IsDefault;
     public bool IsInstalled => value.IsInstalled;
     public bool HasUpdate => value.Update;
@@ -375,7 +376,7 @@ public sealed class NodeVersionViewModel : ObservableObject
     public bool IsWorking => service.IsRunning(Major) || IsDefaultInstalling;
     public bool HasRunningJob => IsWorking;
     public bool IsJobProgressIndeterminate => true;
-    public string JobProgressText => service.RunningAction(Major) ?? (IsDefaultInstalling ? $"Downloading Node.js {Latest}…" : "Working…");
+    public string JobProgressText => service.RunningAction(Major) ?? (IsDefaultInstalling ? Localization.Format(Strings.Versions_DownloadingNode, Latest) : Strings.Common_Working);
     public bool CanInstall => !IsInstalled && !IsWorking;
     public bool CanUpdate => IsInstalled && HasUpdate && !IsWorking;
     public bool CanMakeDefault => IsInstalled && !IsDefault && !IsWorking;

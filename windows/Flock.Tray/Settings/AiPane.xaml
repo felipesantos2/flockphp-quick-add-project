@@ -2,6 +2,7 @@
     x:Class="Flock.Tray.Settings.AiPane"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray"
     xmlns:settings="using:Flock.Tray.Settings">
     <UserControl.Resources>
         <settings:BooleanVisibilityConverter x:Key="BooleanVisibilityConverter" />
@@ -9,7 +10,7 @@
     </UserControl.Resources>
     <StackPanel Spacing="0">
         <StackPanel Spacing="4" Margin="0,0,0,24">
-            <TextBlock Text="AI clients" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
+            <TextBlock Text="{l:Loc Key=Ai_Clients}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
             <ItemsControl ItemsSource="{Binding Clients}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -24,9 +25,9 @@
                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                                    <Button Content="Add" Command="{Binding RegisterCommand}"
+                                    <Button Content="{l:Loc Key=Common_Add}" Command="{Binding RegisterCommand}"
                                             Visibility="{Binding IsAvailable, Converter={StaticResource BooleanVisibilityConverter}}" />
-                                    <Button Content="Remove" Command="{Binding UnregisterCommand}"
+                                    <Button Content="{l:Loc Key=Common_Remove}" Command="{Binding UnregisterCommand}"
                                             Visibility="{Binding IsRegistered, Converter={StaticResource BooleanVisibilityConverter}}" />
                                 </StackPanel>
                             </Grid>
@@ -34,21 +35,21 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <TextBlock Text="Added once, Flock works in every project. Restart the client, or reload its MCP servers, after adding Flock."
+            <TextBlock Text="{l:Loc Key=Ai_AddedOnce}"
                        Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="2,6,0,0" TextWrapping="Wrap" />
         </StackPanel>
         <StackPanel Spacing="4" Margin="0,0,0,24">
-            <TextBlock Text="Other clients" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
+            <TextBlock Text="{l:Loc Key=Ai_OtherClients}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
             <Border Style="{StaticResource CardStyle}" Padding="16,12,16,12">
                 <Grid>
                     <Border Style="{StaticResource CodeBlockStyle}">
                         <TextBlock Text="{Binding Snippet}" FontFamily="{StaticResource MonoFont}" FontSize="12" IsTextSelectionEnabled="True" TextWrapping="NoWrap" />
                     </Border>
-                    <Button Content="Copy" Click="CopySnippet" HorizontalAlignment="Right" VerticalAlignment="Top" Padding="8,4"
+                    <Button Content="{l:Loc Key=Common_Copy}" Click="CopySnippet" HorizontalAlignment="Right" VerticalAlignment="Top" Padding="8,4"
                             Visibility="{Binding Snippet, Converter={StaticResource StringVisibilityConverter}}" />
                 </Grid>
             </Border>
-            <TextBlock Text="Add this to the client's MCP settings." Style="{StaticResource CaptionTextBlockStyle}"
+            <TextBlock Text="{l:Loc Key=Ai_AddToSettings}" Style="{StaticResource CaptionTextBlockStyle}"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="2,6,0,0" TextWrapping="Wrap" />
         </StackPanel>
     </StackPanel>

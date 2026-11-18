@@ -1,0 +1,25 @@
+<UserControl
+    x:Class="Flock.Tray.Settings.OutputPanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray">
+    <!-- The output of a server Flock runs (see OutputViewModel), with Clear and Open Log. -->
+    <StackPanel Spacing="6">
+        <Grid ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{l:Loc Key=Sites_Output}" Style="{StaticResource BodyStrongTextBlockStyle}" TextWrapping="Wrap" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Content="{l:Loc Key=Logs_Clear}" Command="{Binding ClearCommand}" VerticalAlignment="Center" />
+            <Button Grid.Column="2" Content="{l:Loc Key=Sites_OpenLog}" Command="{Binding OpenLogCommand}" VerticalAlignment="Center" />
+        </Grid>
+        <Border Background="{ThemeResource ControlFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1" CornerRadius="4">
+            <ScrollViewer x:Name="Scroller" Height="220" Padding="10,8,10,8" HorizontalScrollBarVisibility="Disabled"
+                          VerticalScrollBarVisibility="Auto" ViewChanged="ScrollerViewChanged">
+                <TextBlock Text="{Binding Text}" FontFamily="{StaticResource MonoFont}" FontSize="12" IsTextSelectionEnabled="True"
+                           TextWrapping="Wrap" />
+            </ScrollViewer>
+        </Border>
+    </StackPanel>
+</UserControl>

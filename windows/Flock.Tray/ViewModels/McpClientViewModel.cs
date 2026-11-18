@@ -27,9 +27,9 @@ public sealed class McpClientViewModel : ObservableObject
     public bool IsAvailable => State == McpClientState.Available;
     public string Description => State switch
     {
-        McpClientState.Registered => "Flock is added",
-        McpClientState.Available => "Installed",
-        _ => "Not installed",
+        McpClientState.Registered => Strings.Ai_FlockAdded,
+        McpClientState.Available => Strings.Common_Installed,
+        _ => Strings.Common_NotInstalled,
     } + (Problem.Length > 0 ? " — " + Problem : "");
     public IAsyncRelayCommand RegisterCommand { get; }
     public IAsyncRelayCommand UnregisterCommand { get; }

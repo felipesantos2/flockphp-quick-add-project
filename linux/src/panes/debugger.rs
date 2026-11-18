@@ -9,6 +9,7 @@ use gtk::glib;
 use super::common::{PaneView, group, info_row, report, switch_row};
 use super::{Data, Pane};
 use crate::api::SettingsChange;
+use crate::i18n::tr;
 use crate::model::AppModel;
 
 pub struct DebuggerPane {
@@ -20,7 +21,7 @@ pub struct DebuggerPane {
 
 impl DebuggerPane {
     pub fn new(model: Rc<AppModel>, banner: adw::Banner) -> Self {
-        Self { view: PaneView::new("Step through requests and commands with Xdebug."), model, banner, shown: RefCell::default() }
+        Self { view: PaneView::new(tr!("debugger.subtitle")), model, banner, shown: RefCell::default() }
     }
 
     fn toggle(&self, title: &str, active: bool, change: fn(bool) -> SettingsChange) -> adw::SwitchRow {
@@ -44,12 +45,11 @@ impl Pane for DebuggerPane {
         }
         self.shown.replace(Some(data.clone()));
 
-        let detect = group(
-            "",
-            "Xdebug loads only for requests that ask for it, so everything else stays fast. While a project has breakpoints in PhpStorm, every request to its site is debugged.",
+        let detect = group("", tr!("debugger.xdebug_loads_only_for_requests"));
+        detect.add(
+            &self.toggle(tr!("debugger.detect_requests"), status.xdebug, |on| SettingsChange { xdebug: Some(on), ..Default::default() }),
         );
-        detect.add(&self.toggle("Detect Xdebug requests", status.xdebug, |on| SettingsChange { xdebug: Some(on), ..Default::default() }));
-        let breakpoints = self.toggle("Detect PhpStorm breakpoints", status.xdebug_breakpoints, |on| SettingsChange {
+        let breakpoints = self.toggle(tr!("debugger.detect_breakpoints"), status.xdebug_breakpoints, |on| SettingsChange {
             xdebug_breakpoints: Some(on),
             ..Default::default()
         });
@@ -59,7 +59,7 @@ impl Pane for DebuggerPane {
 
         let debugging: Vec<_> = status.sites.iter().filter(|s| s.debugging).collect();
         if status.xdebug && status.xdebug_breakpoints && !debugging.is_empty() {
-            let now = group("Debugging now", "");
+            let now = group(tr!("debugger.debugging_now"), "");
             for site in debugging {
                 let row = adw::ActionRow::builder().title(glib::markup_escape_text(&site.domain)).css_classes(["warning"]).build();
                 row.add_prefix(&gtk::Image::from_icon_name("applications-engineering-symbolic"));
@@ -68,20 +68,23 @@ impl Pane for DebuggerPane {
             groups.push(now.upcast());
         }
 
-        let ide = group("Connect your IDE", "");
-        ide.add(&info_row("Client port", "9003"));
-        ide.add(&info_row("Mode", "debug, develop"));
+        let ide = group(tr!("debugger.connect_ide"), "");
+        ide.add(&info_row(tr!("debugger.client_port"), "9003"));
+        ide.add(&info_row(tr!("debugger.mode"), "debug, develop"));
         let start = adw::ActionRow::builder()
-            .title("Start a session")
-            .subtitle("Set a breakpoint in PhpStorm and listen for debug connections, use the Xdebug browser extension, or add ?XDEBUG_TRIGGER=1 to the URL. On the command line, run `flock debug artisan …`.")
+            .title(tr!("debugger.start_session"))
+            .subtitle(tr!("debugger.start_session_description"))
             .subtitle_selectable(true)
             .build();
         ide.add(&start);
         groups.push(ide.upcast());
 
-        let availability = group("Availability", "");
+        let availability = group(tr!("debugger.availability"), "");
         for php in data.config.as_ref().and_then(|c| c.php.clone()).unwrap_or_default() {
-            let row = info_row(&format!("PHP {}", php.version), if php.xdebug_available { "Available" } else { "Not in this build" });
+            let row = info_row(
+                &format!("PHP {}", php.version),
+                if php.xdebug_available { tr!("debugger.available") } else { tr!("debugger.not_in_build") },
+            );
             availability.add(&row);
         }
         groups.push(availability.upcast());

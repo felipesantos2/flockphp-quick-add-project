@@ -2,6 +2,7 @@
     x:Class="Flock.Tray.MailWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray"
     xmlns:local="using:Flock.Tray">
     <Grid x:Name="WindowRoot">
         <Grid.RowDefinitions>
@@ -18,8 +19,8 @@
                 <RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <CommandBar DefaultLabelPosition="Right" HorizontalAlignment="Right">
-                <AppBarButton Icon="Refresh" Label="Refresh" Command="{Binding RefreshCommand}" />
-                <AppBarButton x:Name="ClearButton" Icon="Delete" Label="Clear All" Click="ClearClicked" />
+                <AppBarButton Icon="Refresh" Label="{l:Loc Key=Mail_Refresh}" Command="{Binding RefreshCommand}" />
+                <AppBarButton x:Name="ClearButton" Icon="Delete" Label="{l:Loc Key=Mail_ClearAll}" Click="ClearClicked" />
             </CommandBar>
             <Grid Grid.Row="1" ColumnSpacing="0">
                 <Grid.ColumnDefinitions>

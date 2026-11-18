@@ -4,7 +4,7 @@
 #   .\windows\build-installer.ps1
 #
 # Only x64 is built for now; Windows on ARM installs and runs it under emulation.
-# Needs Go, the .NET 10 SDK and Inno Setup 6 (winget install GoLang.Go Microsoft.DotNet.SDK.10 JRSoftware.InnoSetup).
+# Needs Go, the .NET 10 SDK and Inno Setup 6.3 or newer (winget install GoLang.Go Microsoft.DotNet.SDK.10 JRSoftware.InnoSetup).
 $ErrorActionPreference = "Stop"
 
 $Arch = "x64"

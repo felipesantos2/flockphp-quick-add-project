@@ -2,6 +2,7 @@
     x:Class="Flock.Tray.Settings.ServicesPane"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray"
     xmlns:settings="using:Flock.Tray.Settings">
     <UserControl.Resources>
         <settings:InverseBooleanVisibilityConverter x:Key="InverseBooleanVisibilityConverter" />
@@ -16,10 +17,10 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" /><RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <SelectorBar x:Name="Filter" SelectionChanged="FilterChanged" ToolTipService.ToolTip="Show only installed services, or every service Flock offers"
+            <SelectorBar x:Name="Filter" SelectionChanged="FilterChanged" ToolTipService.ToolTip="{l:Loc Key=Services_FilterTooltip}"
                          Margin="-4,-8,0,4">
-                <SelectorBarItem Text="Installed" />
-                <SelectorBarItem Text="All" />
+                <SelectorBarItem Text="{l:Loc Key=Services_Installed}" />
+                <SelectorBarItem Text="{l:Loc Key=Services_All}" />
             </SelectorBar>
             <ScrollViewer Grid.Row="1" x:Name="ListScroller" VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding VisibleServiceGroups}">
@@ -44,7 +45,7 @@
                                                                    Style="{StaticResource CaptionTextBlockStyle}"
                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                                                     </StackPanel>
-                                                    <TextBlock Grid.Column="2" Text="Install…" VerticalAlignment="Center"
+                                                    <TextBlock Grid.Column="2" Text="{l:Loc Key=Services_InstallEllipsis}" VerticalAlignment="Center"
                                                                Visibility="{Binding Installed, Converter={StaticResource InverseBooleanVisibilityConverter}}"
                                                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
                                                 </Grid>

@@ -1,0 +1,15 @@
+<UserControl
+    x:Class="Flock.Tray.Settings.DetailWarning"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- A caution-coloured note with an icon, which wraps: a problem (selectable), or a hint (Glyph info). -->
+    <Grid ColumnSpacing="6">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <FontIcon x:Name="Icon" Glyph="&#xE7BA;" FontFamily="{StaticResource SymbolsFont}" FontSize="12" VerticalAlignment="Top" Margin="0,3,0,0"
+                  Foreground="{ThemeResource SystemFillColorCautionBrush}" />
+        <TextBlock x:Name="Label" Grid.Column="1" Style="{StaticResource CaptionTextBlockStyle}" TextWrapping="Wrap" TextTrimming="None"
+                   Foreground="{ThemeResource SystemFillColorCautionBrush}" IsTextSelectionEnabled="True" />
+    </Grid>
+</UserControl>

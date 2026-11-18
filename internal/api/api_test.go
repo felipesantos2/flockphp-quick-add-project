@@ -59,6 +59,7 @@ func (f *fakeBackend) Catalog() *catalog.Manager               { return f.catalo
 func (f *fakeBackend) FrankenPHP() *frankenphp.Manager         { return f.frankenphp }
 func (f *fakeBackend) Binaries() *binaries.Catalog             { return f.binaries }
 func (f *fakeBackend) RestartSite(string) error                { return nil }
+func (f *fakeBackend) RestartReverb(string) error              { return nil }
 func (f *fakeBackend) StopSite(string) error                   { return nil }
 func (f *fakeBackend) Shares() *share.Manager                  { return nil }
 func (f *fakeBackend) StartShare(string, []string, bool) error { return nil }
@@ -454,6 +455,43 @@ func TestSitesSwitchToFrankenPHPAndBack(t *testing.T) {
 	}
 	if resp, body := call(t, "PATCH", srv.URL+"/v1/sites/app", "", `{"server":"swoole"}`); resp.StatusCode != http.StatusBadRequest {
 		t.Fatalf("unknown server: %d %s", resp.StatusCode, body)
+	}
+}
+
+func TestSitesTurnReverbOnAndOff(t *testing.T) {
+	root := t.TempDir()
+	b := &fakeBackend{root: root}
+	srv := serve(t, b, "")
+	app, plain := t.TempDir(), t.TempDir()
+	for _, file := range []string{filepath.Join(app, "artisan"), filepath.Join(app, "vendor", "laravel", "reverb", "composer.json")} {
+		if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(file, []byte("{}"), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	cfg := b.config(t)
+	cfg.Upsert(config.Site{Name: "app", Path: app})
+	cfg.Upsert(config.Site{Name: "plain", Path: plain})
+	if err := cfg.Save(root); err != nil {
+		t.Fatal(err)
+	}
+
+	if resp, body := call(t, "PATCH", srv.URL+"/v1/sites/app", "", `{"reverb":true}`); resp.StatusCode != http.StatusOK {
+		t.Fatalf("on: %d %s", resp.StatusCode, body)
+	}
+	if site, _ := b.config(t).FindSite("app"); !site.Reverb || site.ReverbPort != config.FirstSitePort {
+		t.Fatalf("site: %+v", site)
+	}
+	if resp, body := call(t, "PATCH", srv.URL+"/v1/sites/app", "", `{"reverb":false}`); resp.StatusCode != http.StatusOK {
+		t.Fatalf("off: %d %s", resp.StatusCode, body)
+	}
+	if site, _ := b.config(t).FindSite("app"); site.Reverb || site.ReverbPort != config.FirstSitePort {
+		t.Fatalf("site: %+v", site)
+	}
+	if resp, body := call(t, "PATCH", srv.URL+"/v1/sites/plain", "", `{"reverb":true}`); resp.StatusCode != http.StatusBadRequest || !strings.Contains(body, "install:broadcasting --reverb") {
+		t.Fatalf("without Reverb: %d %s", resp.StatusCode, body)
 	}
 }
 

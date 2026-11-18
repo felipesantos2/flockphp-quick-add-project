@@ -72,7 +72,7 @@ public struct Installation: Sendable {
     /// Runs `flock install` from the bundled CLI, passing each output line to onLine.
     public func install(onLine: (@Sendable (String) -> Void)? = nil) async -> Result {
         guard let bundledFlock else {
-            return Result(ok: false, output: "This build of Flock has no bundled CLI — run `flock install` in a terminal.")
+            return Result(ok: false, output: String(localized: "setup.no_bundled_cli"))
         }
         return await Self.run(bundledFlock, ["install"], onLine: onLine)
     }
@@ -113,23 +113,26 @@ public struct Installation: Sendable {
 
         /// "Quit Herd", "Run `brew services stop nginx`".
         public var title: String {
-            guard let hint, let first = hint.first else { return "Quit \(app)" }
+            guard let hint, let first = hint.first else { return String(localized: "app.conflict.quit \(app)") }
             return first.uppercased() + hint.dropFirst()
         }
 
         /// "It uses port 80 (HTTP) and port 443 (HTTPS), and answers for *.test."
         public var detail: String {
-            var uses = conflicts.compactMap { c in c.port.map { "port \($0) (\(c.service))" } }
-            uses = uses.isEmpty ? [] : ["uses " + Self.joined(uses)]
-            if let dns = conflicts.first(where: { $0.file != nil }) {
-                uses.append("answers for \(dns.service.replacingOccurrences(of: " DNS", with: "")) (\(dns.file!))")
+            let holder = conflicts.first?.holder ?? app
+            let ports = Self.joined(conflicts.compactMap { c in c.port.map { String(localized: "app.conflict.port \(String($0)) \(c.service)") } })
+            let dns = conflicts.first(where: { $0.file != nil }).map { "\($0.service.replacingOccurrences(of: " DNS", with: "")) (\($0.file!))" }
+            let text = switch (ports.isEmpty, dns) {
+            case (false, let dns?): String(localized: "app.uses_and_answers_for \(holder) \(ports) \(dns)")
+            case (false, nil): String(localized: "app.program_uses_ports \(holder) \(ports)")
+            case (true, let dns?): String(localized: "app.answers_for \(holder) \(dns)")
+            case (true, nil): "\(holder)."
             }
-            let text = "\(conflicts.first?.holder ?? app) " + uses.joined(separator: ", and ") + "."
             return text.prefix(1).uppercased() + text.dropFirst()
         }
 
         private static func joined(_ items: [String]) -> String {
-            items.count < 2 ? items.joined() : items.dropLast().joined(separator: ", ") + " and " + items.last!
+            items.count < 2 ? items.joined() : String(localized: "common.list.and \(items.dropLast().joined(separator: ", ")) \(items.last!)")
         }
     }
 
@@ -194,7 +197,7 @@ public struct Installation: Sendable {
                 try process.run()
             } catch {
                 pipe.fileHandleForReading.readabilityHandler = nil
-                continuation.resume(returning: Result(ok: false, output: "Could not run \(binary.path): \(error.localizedDescription)"))
+                continuation.resume(returning: Result(ok: false, output: String(localized: "app.could_not_run \(binary.path) \(error.localizedDescription)")))
             }
         }
     }

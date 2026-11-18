@@ -1,0 +1,19 @@
+<UserControl
+    x:Class="Flock.Tray.Settings.AddProxyForm"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray"
+    xmlns:settings="using:Flock.Tray.Settings">
+    <!-- A proxy's name and upstream. The placeholders say what the fields take, so the form fits the smallest window
+         (with the commands open, it scrolls there). -->
+    <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="12">
+            <TextBox x:Name="NameBox" Header="{l:Loc Key=Sites_ProxyName}" />
+            <TextBox x:Name="UpstreamBox" Header="{l:Loc Key=Sites_Upstream}" PlaceholderText="{l:Loc Key=Sites_UpstreamPlaceholderShort}" ToolTipService.ToolTip="{l:Loc Key=Sites_UpstreamPortMeans}" />
+            <!-- Optional, so collapsed: most proxies point at a server that runs anyway. -->
+            <Expander Header="{l:Loc Key=Sites_Proxy_CommandsOptional}" IsExpanded="False" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
+                <settings:ProxyCommandsForm x:Name="Commands" />
+            </Expander>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

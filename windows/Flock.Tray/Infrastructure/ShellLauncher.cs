@@ -27,19 +27,19 @@ public sealed class ShellLauncher : IShellLauncher
         this.startProcess = startProcess ?? Process.Start;
     }
 
-    public ShellLaunchResult Open(string target) => Start("open", new ProcessStartInfo(target) { UseShellExecute = true }, "Could not open this item.");
+    public ShellLaunchResult Open(string target) => Start("open", new ProcessStartInfo(target) { UseShellExecute = true }, Strings.App_CouldNotOpen);
 
     public ShellLaunchResult Reveal(string path)
     {
         var arguments = Directory.Exists(path) && !File.Exists(path) ? $"\"{path}\"" : $"/select,\"{path}\"";
-        return Start("reveal", new ProcessStartInfo("explorer.exe", arguments) { UseShellExecute = true }, "Could not show this item in Explorer.");
+        return Start("reveal", new ProcessStartInfo("explorer.exe", arguments) { UseShellExecute = true }, Strings.App_CouldNotReveal);
     }
 
     public ShellLaunchResult OpenConnection(string executable, string connection)
     {
         var start = new ProcessStartInfo(executable) { UseShellExecute = false };
         start.ArgumentList.Add(connection);
-        return Start("connection", start, "Could not open this database connection.");
+        return Start("connection", start, Strings.App_CouldNotOpenConnection);
     }
 
     private ShellLaunchResult Start(string operation, ProcessStartInfo start, string message)

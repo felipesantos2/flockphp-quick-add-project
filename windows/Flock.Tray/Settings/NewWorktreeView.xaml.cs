@@ -1,5 +1,6 @@
 using Flock.Kit;
 using Flock.Tray.Features.Sites;
+using Flock.Tray.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 namespace Flock.Tray.Settings;
@@ -20,8 +21,8 @@ internal sealed partial class NewWorktreeView : UserControl
     {
         this.site = site;
         InitializeComponent();
-        DatabaseBox.Items.Add("Project default");
-        foreach (var item in SitesPane.DatabaseChoices)
+        DatabaseBox.Items.Add(Strings.Worktrees_ProjectDefault);
+        foreach (var item in WorktreeDetailViewModel.DatabaseChoices)
         {
             DatabaseBox.Items.Add(item);
         }
@@ -36,7 +37,7 @@ internal sealed partial class NewWorktreeView : UserControl
     public string? Start => !Exists && FromBox.SelectedIndex >= 0 && values[FromBox.SelectedIndex] is { Length: > 0 } start ? start : null;
 
     /// <summary>The database mode, or null for the project's.</summary>
-    public string? Database => DatabaseBox.SelectedIndex > 0 ? SitesPane.DatabaseModes[DatabaseBox.SelectedIndex - 1] : null;
+    public string? Database => DatabaseBox.SelectedIndex > 0 ? WorktreeDetailViewModel.DatabaseModes[DatabaseBox.SelectedIndex - 1] : null;
 
     private bool Exists => branches.Local.Contains(Branch);
 
@@ -59,12 +60,13 @@ internal sealed partial class NewWorktreeView : UserControl
         values.Clear();
         if (branches.Current.Length == 0)
         {
-            FromBox.Items.Add("The current commit");
+            FromBox.Items.Add(Strings.Worktrees_New_CurrentCommit);
             values.Add("");
         }
         foreach (var name in branches.Ordered())
         {
-            FromBox.Items.Add(name == branches.Current ? $"{name} (current)" : name == branches.Default ? $"{name} (default)" : name);
+            FromBox.Items.Add(name == branches.Current ? Localization.Format(Strings.Worktrees_New_CurrentBranch, name)
+                : name == branches.Default ? Localization.Format(Strings.Worktrees_New_DefaultBranch, name) : name);
             values.Add(name);
         }
         if (branches.Remote.Count > 0)
@@ -91,9 +93,9 @@ internal sealed partial class NewWorktreeView : UserControl
     {
         FromBox.IsEnabled = loaded && !Exists;
         var typed = Branch;
-        var address = typed.Length == 0 ? "its own address" : $"{SiteBranches.Slug(typed)}.{site.Domain}";
-        ExplanationText.Text = Exists
-            ? $"{typed} exists, so the worktree checks it out. Flock creates it next to {site.Name}, sets it up and serves it at {address}."
-            : $"Flock creates the worktree next to {site.Name} on {(typed.Length == 0 ? "a new branch with a name of its own" : $"the new branch {typed}")}, sets it up and serves it at {address}.";
+        var address = $"{SiteBranches.Slug(typed)}.{site.Domain}";
+        ExplanationText.Text = typed.Length == 0 ? Localization.Format(Strings.Worktrees_New_ExplainUnnamed, site.Name)
+            : Exists ? Localization.Format(Strings.Worktrees_New_ExplainExisting, typed, site.Name, address)
+            : Localization.Format(Strings.Worktrees_New_ExplainNew, site.Name, typed, address);
     }
 }

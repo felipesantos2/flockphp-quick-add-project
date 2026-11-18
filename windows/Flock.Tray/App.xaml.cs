@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Globalization;
 using Flock.Kit;
 using Flock.Tray.Infrastructure;
 using Flock.Tray.Settings;
@@ -32,6 +34,7 @@ public sealed partial class App : Application
     private IUiDispatcher? uiDispatcher;
     private Task? updateTask;
     private bool updatingTray;
+    private bool relaunching;
     private WindowManager? windowManager;
 
     /// <summary>Notifies of worktree setups that fail while no progress dialog follows them.</summary>
@@ -58,7 +61,7 @@ public sealed partial class App : Application
             }
             else
             {
-                Native.ShowError("Flock could not start", $"{args.Exception.Message}\n\nDetails are in %LocalAppData%\\Flock\\tray.log.");
+                Native.ShowError(Strings.App_CouldNotStart, Localization.Format(Strings.App_CouldNotStartDetails, args.Exception.Message));
             }
             // An unowned WinUI exception is fatal. Do not mark it handled just to keep the tray alive.
             args.Handled = false;
@@ -139,6 +142,11 @@ public sealed partial class App : Application
             {
                 OpenLink(link);
             }
+            else if (arguments.Any(argument => argument.StartsWith(Program.RelaunchArgument, StringComparison.Ordinal)))
+            {
+                // Back where the restart was asked for (Settings → General, or the setup before Flock is set up).
+                Open(WindowKind.Settings, SettingsPane.General);
+            }
             else if (!arguments.Contains(BackgroundArgument))
             {
                 ShowMain();
@@ -147,7 +155,7 @@ public sealed partial class App : Application
         catch (Exception error)
         {
             Log(error);
-            Native.ShowError("Flock could not start", $"{error.Message}\n\nDetails are in %LocalAppData%\\Flock\\tray.log.");
+            Native.ShowError(Strings.App_CouldNotStart, Localization.Format(Strings.App_CouldNotStartDetails, error.Message));
             await QuitAsync();
         }
     }
@@ -280,11 +288,13 @@ public sealed partial class App : Application
             return;
         }
         // While an update is available it follows the first item; the rest keep their order.
-        var update = State.UpdateService.Available is { } available && !State.UpdateService.IsBusy ? $"Update to {available.Version}…" : null;
+        var update = State.UpdateService.Available is { } available && !State.UpdateService.IsBusy
+            ? Localization.Format(Strings.Menu_UpdateTo, available.Version) : null;
         // Before the setup there is nothing to open yet: Mail, Dumps, Logs and Settings all need the daemon.
         List<string?> items = State.NeedsSetup
-            ? ["Set Up Flock…", null, "Quit Flock"]
-            : ["Open Flock", null, "Mail", "Dumps", "Logs", "Settings…", null, State.IsRunning ? "Restart Flock" : "Start Flock", "Quit Flock"];
+            ? [Strings.Menu_SetUpFlock, null, Strings.Menu_QuitFlock]
+            : [Strings.Menu_OpenFlock, null, Strings.Menu_Mail, Strings.Menu_Dumps, Strings.Menu_Logs, Strings.Menu_Settings, null,
+                State.IsRunning ? Strings.Menu_RestartFlock : Strings.Menu_StartFlock, Strings.Menu_QuitFlock];
         if (update is not null)
         {
             items.Insert(1, update);
@@ -431,6 +441,38 @@ public sealed partial class App : Application
     public void Quit()
     {
         _ = QuitAsync();
+    }
+
+    /// <summary>
+    /// Quits and starts again (a new language applies only to a new process), false when the new
+    /// process couldn't start. The new process waits for this one to exit, however long quitting takes,
+    /// before it takes the single-instance mutex; the daemon keeps running throughout.
+    /// </summary>
+    public bool Relaunch()
+    {
+        if (relaunching)
+        {
+            return true;
+        }
+        var start = new ProcessStartInfo(Environment.ProcessPath!) { UseShellExecute = false };
+        start.ArgumentList.Add(Program.RelaunchArgument + Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
+        if (Environment.GetCommandLineArgs().Contains("--dev"))
+        {
+            start.ArgumentList.Add("--dev");
+        }
+        try
+        {
+            using var process = Process.Start(start);
+        }
+        catch (Exception error) when (error is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            Log(error);
+            State.ShowRuntimeError(Localization.Format(Strings.App_CouldNotRelaunch, error.Message));
+            return false;
+        }
+        relaunching = true;
+        Quit();
+        return true;
     }
 
     public Task QuitAsync()

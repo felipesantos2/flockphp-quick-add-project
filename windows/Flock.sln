@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Flock.Tray.Tests", "Flock.T
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Flock.Screenshots", "Flock.Screenshots\Flock.Screenshots.csproj", "{DAA41B26-1D63-491D-B86F-1F9AB4D15149}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IconGen", "..\design\icongen\IconGen.csproj", "{DD6092A0-3432-4D62-9B3C-E6561A3040AA}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{812E01AD-D00A-4E31-AB4C-FC9EF9B136D6}"
 EndProject
 Global
@@ -85,6 +87,18 @@ Global
 		{DAA41B26-1D63-491D-B86F-1F9AB4D15149}.Release|x64.Build.0 = Release|x64
 		{DAA41B26-1D63-491D-B86F-1F9AB4D15149}.Release|x86.ActiveCfg = Release|x64
 		{DAA41B26-1D63-491D-B86F-1F9AB4D15149}.Release|x86.Build.0 = Release|x64
+		{DD6092A0-3432-4D62-9B3C-E6561A3040AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD6092A0-3432-4D62-9B3C-E6561A3040AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD6092A0-3432-4D62-9B3C-E6561A3040AA}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DD6092A0-3432-4D62-9B3C-E6561A3040AA}.Debug|x64.Build.0 = Debug|Any CPU
+		{DD6092A0-3432-4D62-9B3C-E6561A3040AA}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DD6092A0-3432-4D62-9B3C-E6561A3040AA}.Debug|x86.Build.0 = Debug|Any CPU
+		{DD6092A0-3432-4D62-9B3C-E6561A3040AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD6092A0-3432-4D62-9B3C-E6561A3040AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD6092A0-3432-4D62-9B3C-E6561A3040AA}.Release|x64.ActiveCfg = Release|Any CPU
+		{DD6092A0-3432-4D62-9B3C-E6561A3040AA}.Release|x64.Build.0 = Release|Any CPU
+		{DD6092A0-3432-4D62-9B3C-E6561A3040AA}.Release|x86.ActiveCfg = Release|Any CPU
+		{DD6092A0-3432-4D62-9B3C-E6561A3040AA}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

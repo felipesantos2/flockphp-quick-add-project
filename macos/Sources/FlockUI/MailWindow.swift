@@ -26,7 +26,7 @@ struct MailWindow: View {
             }
             .overlay {
                 if store.messages.isEmpty {
-                    ContentUnavailableView("No mail", systemImage: "envelope.open")
+                    ContentUnavailableView("mail.no_mail", systemImage: "envelope.open")
                 }
             }
             .frame(minWidth: 260, idealWidth: 320, maxWidth: 340)
@@ -35,7 +35,7 @@ struct MailWindow: View {
                     MailDetailView(id: selection)
                         .id(selection)
                 } else if store.env.isEmpty {
-                    ContentUnavailableView("No message selected", systemImage: "envelope")
+                    ContentUnavailableView("mail.no_message_selected", systemImage: "envelope")
                 } else {
                     MailSetupView(env: store.env)
                 }
@@ -44,17 +44,17 @@ struct MailWindow: View {
         }
         .toolbar {
             ToolbarItemGroup {
-                Button("Refresh", systemImage: "arrow.clockwise") {
+                Button("mail.refresh", systemImage: "arrow.clockwise") {
                     Task { await store.refresh() }
                 }
-                Button("Clear All", systemImage: "trash") {
+                Button("mail.clear_all", systemImage: "trash") {
                     confirmClear = true
                 }
                 .disabled(store.messages.isEmpty)
             }
         }
-        .confirmationDialog("Delete all caught mail?", isPresented: confirmClearState.projectedValue) {
-            Button("Delete All", role: .destructive) {
+        .confirmationDialog("mail.delete_all_question", isPresented: confirmClearState.projectedValue) {
+            Button("mail.delete_all", role: .destructive) {
                 selection = nil
                 Task { await store.clear() }
             }
@@ -86,11 +86,11 @@ private struct MailSetupView: View {
             Image(systemName: "envelope")
                 .font(.system(size: 40))
                 .foregroundStyle(.secondary)
-            Text("Catch your app's mail").font(.title2.weight(.semibold))
-            Text("Add these lines to your project's .env:")
+            Text("mail.catch_title").font(.title2.weight(.semibold))
+            Text("mail.catch_description")
                 .foregroundStyle(.secondary)
             CodeBlock(text: env)
-            Text("MAIL_USERNAME picks the inbox, so every project gets its own.")
+            Text("mail.username_inbox")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
@@ -112,7 +112,7 @@ private struct MailRow: View {
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            Text(message.subject.isEmpty ? "(no subject)" : message.subject).lineLimit(1)
+            Text(message.subject.isEmpty ? String(localized: "mail.no_subject") : message.subject).lineLimit(1)
             HStack(spacing: 4) {
                 Text(message.inbox)
                     .font(.caption2)
@@ -132,6 +132,15 @@ private struct MailDetailView: View {
     enum Mode: String, CaseIterable, Identifiable {
         case html = "HTML", text = "Text", raw = "Raw", headers = "Headers"
         var id: Self { self }
+
+        var title: String {
+            switch self {
+            case .html: "HTML"
+            case .text: String(localized: "mail.detail.text")
+            case .raw: String(localized: "mail.detail.raw")
+            case .headers: String(localized: "mail.detail.headers")
+            }
+        }
     }
 
     let id: String
@@ -171,7 +180,7 @@ private struct MailDetailView: View {
                     content(detail)
                 }
             } else if let error {
-                ContentUnavailableView("Could not load message", systemImage: "exclamationmark.triangle", description: Text(error))
+                ContentUnavailableView("mail.could_not_load", systemImage: "exclamationmark.triangle", description: Text(error))
             } else {
                 ProgressView()
             }
@@ -201,15 +210,15 @@ private struct MailDetailView: View {
 
     private func header(_ detail: MailDetail) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(detail.subject.isEmpty ? "(no subject)" : detail.subject).font(.title3.weight(.semibold))
+            Text(detail.subject.isEmpty ? String(localized: "mail.no_subject") : detail.subject).font(.title3.weight(.semibold))
             Grid(alignment: .leading, horizontalSpacing: 8, verticalSpacing: 2) {
-                field("From", detail.from)
-                field("To", detail.to.joined(separator: ", "))
+                field("mail.detail.from", detail.from)
+                field("mail.detail.to", detail.to.joined(separator: ", "))
                 if !detail.cc.isEmpty {
-                    field("Cc", detail.cc.joined(separator: ", "))
+                    field("mail.detail.cc", detail.cc.joined(separator: ", "))
                 }
-                field("Date", detail.date.formatted(date: .abbreviated, time: .standard))
-                field("Inbox", detail.inbox)
+                field("mail.detail.date", detail.date.formatted(Date.FormatStyle(date: .abbreviated, time: .standard).locale(AppLanguage.locale)))
+                field("mail.detail.inbox", detail.inbox)
             }
             .font(.callout)
 
@@ -220,9 +229,9 @@ private struct MailDetailView: View {
                             Button {
                                 Task { await model.mail.save(attachment, of: detail.id) }
                             } label: {
-                                Label("\(attachment.filename) (\(attachment.size.formatted(.byteCount(style: .file))))", systemImage: "paperclip")
+                                Label("common.name_with_detail \(attachment.filename) \(Formats.bytes(Int64(attachment.size)))", systemImage: "paperclip")
                             }
-                            .help("Save…")
+                            .help("mail.save_attachment")
                         }
                     }
                     .padding(.vertical, 2)
@@ -231,8 +240,8 @@ private struct MailDetailView: View {
                 .controlSize(.small)
             }
 
-            Picker("View", selection: modeState.projectedValue) {
-                ForEach(Mode.allCases) { Text($0.rawValue).tag($0) }
+            Picker("mail.view", selection: modeState.projectedValue) {
+                ForEach(Mode.allCases) { Text($0.title).tag($0) }
             }
             .pickerStyle(.segmented)
             .labelsHidden()
@@ -242,7 +251,7 @@ private struct MailDetailView: View {
         .textSelection(.enabled)
     }
 
-    private func field(_ name: String, _ value: String) -> some View {
+    private func field(_ name: LocalizedStringKey, _ value: String) -> some View {
         GridRow {
             Text(name).foregroundStyle(.secondary)
             Text(value)
@@ -254,26 +263,26 @@ private struct MailDetailView: View {
         switch mode {
         case .html:
             if detail.html.isEmpty {
-                ContentUnavailableView("No HTML part", systemImage: "doc.richtext")
+                ContentUnavailableView("mail.no_html_part", systemImage: "doc.richtext")
             } else {
                 WebView(html: detail.html)
                     .background(Color.white)
             }
         case .text:
-            MonospacedText(detail.text.isEmpty ? "(no text part)" : detail.text)
+            MonospacedText(detail.text.isEmpty ? String(localized: "mail.no_text_part") : detail.text)
         case .raw:
             switch raw {
             case let .success(text):
                 MonospacedText(text)
             case let .failure(error):
-                ContentUnavailableView("Could not load the raw message", systemImage: "exclamationmark.triangle", description: Text(error.message))
+                ContentUnavailableView("mail.could_not_load_the_raw_message", systemImage: "exclamationmark.triangle", description: Text(error.message))
             case nil:
                 ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         case .headers:
             Table(detail.headers) {
-                TableColumn("Name", value: \.name).width(min: 120, ideal: 180, max: 260)
-                TableColumn("Value", value: \.value)
+                TableColumn("sites.proxy_name", value: \.name).width(min: 120, ideal: 180, max: 260)
+                TableColumn("mail.value", value: \.value)
             }
         }
     }

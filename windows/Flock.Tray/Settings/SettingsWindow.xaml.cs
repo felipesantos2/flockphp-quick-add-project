@@ -33,7 +33,7 @@ internal sealed partial class SettingsWindow : FlockWindow
     private SettingsPane? failedPane;
     private bool unsubscribed;
 
-    public SettingsWindow(RuntimeService model, DeepLinkCoordinator? deepLinks = null) : base("Flock Settings", 980, 680, 820, 520)
+    public SettingsWindow(RuntimeService model, DeepLinkCoordinator? deepLinks = null) : base(Strings.Settings_WindowTitle, 980, 680, 820, 520)
     {
         this.model = model;
         InitializeComponent();
@@ -154,11 +154,12 @@ internal sealed partial class SettingsWindow : FlockWindow
         var fills = pane.ScrollsItself && model.Status is not null;
         Scroller.VerticalScrollMode = fills ? ScrollMode.Disabled : ScrollMode.Auto;
         Scroller.VerticalScrollBarVisibility = fills ? ScrollBarVisibility.Disabled : ScrollBarVisibility.Auto;
-        if (model.Status is null && current != SettingsPane.About)
+        // About and General (the app's own settings, such as its language) work without the daemon.
+        if (model.Status is null && current is not (SettingsPane.About or SettingsPane.General))
         {
             PaneHost.Children.Clear();
-            PaneHost.Children.Add(Ui.EmptyState(Ui.GlyphWarning, "Flock is not running", model.Error ?? "Start the daemon to change its settings.",
-                Ui.Button("Start Flock", () => _ = model.RestartAsync(), true)));
+            PaneHost.Children.Add(Ui.EmptyState(Ui.GlyphWarning, Strings.Common_FlockNotRunning, model.Error ?? Strings.Settings_StartDaemonToChange,
+                Ui.Button(Strings.Menu_StartFlock, () => _ = model.RestartAsync(), true)));
             return;
         }
         if (PaneHost.Children.Count == 1 && ReferenceEquals(PaneHost.Children[0], pane.Root))
@@ -175,8 +176,8 @@ internal sealed partial class SettingsWindow : FlockWindow
         failedPane = current;
         ErrorBar.IsOpen = false;
         PaneHost.Children.Clear();
-        PaneHost.Children.Add(Ui.EmptyState(Ui.GlyphWarning, "Settings could not be shown",
-            "Try again, or select another settings page.", Ui.Button("Try again", () => _ = viewModel.Navigation.RetryAsync(), true)));
+        PaneHost.Children.Add(Ui.EmptyState(Ui.GlyphWarning, Strings.Settings_CouldNotShow,
+            Strings.Settings_CouldNotShowDetails, Ui.Button(Strings.Common_TryAgain, () => _ = viewModel.Navigation.RetryAsync(), true)));
     }
 
     private void UpdateError()
@@ -263,7 +264,7 @@ internal sealed partial class SettingsWindow : FlockWindow
             Title = question,
             Content = content,
             PrimaryButtonText = action,
-            CloseButtonText = "Cancel",
+            CloseButtonText = Strings.Common_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Content.XamlRoot
         };

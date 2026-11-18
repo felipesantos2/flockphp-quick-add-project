@@ -9,6 +9,7 @@ use gtk::{gio, glib};
 use webkit6::prelude::*;
 
 use crate::api::{Client, EVENT_KINDS, SettingsChange};
+use crate::i18n::{self, tr, trn};
 use crate::model::AppModel;
 use crate::prefs::{self, EDITORS};
 use crate::timeline::{self, Dump, Event};
@@ -37,29 +38,30 @@ pub struct DumpsWindow {
 
 impl DumpsWindow {
     pub fn new(app: &adw::Application, model: Rc<AppModel>) -> Rc<Self> {
-        let title = adw::WindowTitle::new("Dumps", "");
+        let title = adw::WindowTitle::new(tr!("menu.dumps"), "");
         let header = adw::HeaderBar::builder().title_widget(&title).build();
         let capture = gtk::ToggleButton::builder()
             .icon_name("media-record-symbolic")
-            .tooltip_text("Capture dumps, queries, logs, views and jobs")
+            .tooltip_text(tr!("dumps.capture_dumps_queries_logs_views"))
             .build();
         let latest_only =
-            gtk::ToggleButton::builder().icon_name("document-open-recent-symbolic").tooltip_text("Latest request only").build();
+            gtk::ToggleButton::builder().icon_name("document-open-recent-symbolic").tooltip_text(tr!("dumps.latest_request_only")).build();
         latest_only.set_active(true);
-        let options = gtk::MenuButton::builder().icon_name("view-more-symbolic").tooltip_text("Capture options and editor").build();
-        let clear = gtk::Button::builder().icon_name("user-trash-symbolic").tooltip_text("Clear").build();
+        let options =
+            gtk::MenuButton::builder().icon_name("view-more-symbolic").tooltip_text(tr!("dumps.capture_options_and_editor")).build();
+        let clear = gtk::Button::builder().icon_name("user-trash-symbolic").tooltip_text(tr!("logs.clear")).build();
         header.pack_start(&capture);
         header.pack_start(&latest_only);
         header.pack_end(&options);
         header.pack_end(&clear);
-        let search = gtk::SearchEntry::builder().placeholder_text("Search dumps, queries, logs").hexpand(true).build();
+        let search = gtk::SearchEntry::builder().placeholder_text(tr!("dumps.search_dumps_queries_logs")).hexpand(true).build();
         let search_bar = gtk::SearchBar::builder()
             .child(&adw::Clamp::builder().maximum_size(520).child(&search).build())
             .search_mode_enabled(true)
             .build();
         search_bar.connect_entry(&search);
 
-        let banner = adw::Banner::builder().button_label("Dismiss").use_markup(false).build();
+        let banner = adw::Banner::builder().button_label(tr!("sites.share.dismiss")).use_markup(false).build();
         let note = gtk::Label::builder()
             .wrap(true)
             .xalign(0.0)
@@ -81,7 +83,7 @@ impl DumpsWindow {
         view.set_content(Some(&body));
         let window = adw::Window::builder()
             .application(app)
-            .title("Dumps")
+            .title(tr!("menu.dumps"))
             .default_width(980)
             .default_height(720)
             .content(&view)
@@ -155,11 +157,7 @@ impl DumpsWindow {
         let unsupported = status.as_ref().filter(|s| s.dumps).and_then(|s| s.capture_unsupported.clone()).unwrap_or_default();
         self.note.set_visible(!unsupported.is_empty());
         if !unsupported.is_empty() {
-            let (verb, builds) = if unsupported.len() == 1 { ("captures", "its build has") } else { ("capture", "their builds have") };
-            self.note.set_label(&format!(
-                "PHP {} only {verb} dumps — {builds} no agent extension yet, so queries, logs, views and jobs are missing there.",
-                unsupported.join(", ")
-            ));
+            self.note.set_label(&trn!("dumps.php_versions_only_capture_dumps", unsupported.len(), versions = unsupported.join(", ")));
         }
     }
 
@@ -184,10 +182,10 @@ impl DumpsWindow {
             .margin_start(6)
             .margin_end(6)
             .build();
-        column.append(&gtk::Label::builder().label("Capture").xalign(0.0).css_classes(["heading"]).build());
+        column.append(&gtk::Label::builder().label(tr!("dumps.capture_short")).xalign(0.0).css_classes(["heading"]).build());
         let mut checks = Vec::new();
         for (kind, title) in EVENT_KINDS {
-            let check = gtk::CheckButton::with_label(title);
+            let check = gtk::CheckButton::with_label(i18n::translate(title));
             let t = self.clone();
             check.connect_toggled(move |c| {
                 if t.syncing.get() {
@@ -203,7 +201,7 @@ impl DumpsWindow {
             column.append(&check);
             checks.push((kind, check));
         }
-        let in_page = gtk::CheckButton::with_label("Show dump() in the page too");
+        let in_page = gtk::CheckButton::with_label(tr!("dumps.show_dump_in_the_page"));
         let t = self.clone();
         in_page.connect_toggled(move |c| {
             if !t.syncing.get() {
@@ -212,8 +210,9 @@ impl DumpsWindow {
         });
         column.append(&in_page);
         column.append(&gtk::Separator::new(gtk::Orientation::Horizontal));
-        column.append(&gtk::Label::builder().label("Open sources in").xalign(0.0).css_classes(["heading"]).build());
-        let editor = gtk::DropDown::from_strings(&EDITORS.map(|(_, name)| name));
+        column
+            .append(&gtk::Label::builder().label(tr!("dumps.open_sources_in_sentence_case")).xalign(0.0).css_classes(["heading"]).build());
+        let editor = gtk::DropDown::from_strings(&EDITORS.map(|(_, name)| i18n::translate(name)));
         let current = prefs::load().editor;
         editor.set_selected(EDITORS.iter().position(|(id, _)| *id == current).unwrap_or(0) as u32);
         let t = self.clone();
@@ -277,19 +276,15 @@ impl DumpsWindow {
         let latest = if self.latest_only.is_active() { timeline::latest_group(&all) } else { all.clone() };
         let visible = timeline::filter(latest, &self.search.text());
         self.clear.set_sensitive(!all.is_empty());
-        self.title.set_subtitle(&if visible.is_empty() { String::new() } else { format!("{} entries", visible.len()) });
+        self.title.set_subtitle(&if visible.is_empty() { String::new() } else { trn!("dumps.n_entries", visible.len()) });
         if visible.is_empty() {
             self.shown_html.replace(String::new());
             self.web.replace(None);
             let capturing = self.model.status().is_some_and(|s| s.dumps);
             let page = ui::empty(
                 "applications-science-symbolic",
-                if all.is_empty() { "Nothing Captured Yet" } else { "Nothing Matches" },
-                if capturing {
-                    "dump() and dd() output, queries, logs, views and jobs from your sites and artisan commands appear here."
-                } else {
-                    "Capture is off — turn it on with the record button to collect dumps, queries, logs, views and jobs here."
-                },
+                if all.is_empty() { tr!("dumps.nothing_captured_yet") } else { tr!("dumps.nothing_matches") },
+                if capturing { tr!("dumps.empty_capturing") } else { tr!("dumps.capture_is_off_turn_it_on") },
             );
             self.content.set_child(Some(&page));
             return;
@@ -311,11 +306,8 @@ impl DumpsWindow {
     }
 
     fn confirm_clear(self: &Rc<Self>) {
-        let dialog = adw::AlertDialog::new(
-            Some("Clear everything captured?"),
-            Some("Every captured dump, query, log, view and job is deleted, from all requests and commands."),
-        );
-        dialog.add_responses(&[("cancel", "Cancel"), ("clear", "Clear")]);
+        let dialog = adw::AlertDialog::new(Some(tr!("dumps.clear_everything_captured")), Some(tr!("dumps.every_captured_dump_query_log")));
+        dialog.add_responses(&[("cancel", tr!("common.cancel")), ("clear", tr!("logs.clear"))]);
         dialog.set_response_appearance("clear", adw::ResponseAppearance::Destructive);
         let this = self.clone();
         dialog.choose(Some(&self.window), gio::Cancellable::NONE, move |response| {

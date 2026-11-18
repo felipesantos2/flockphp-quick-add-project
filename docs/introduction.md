@@ -14,7 +14,7 @@ Flock is a free, open-source local development environment for Laravel on **Wind
 
 Flock is a single `flock` binary that runs as a small background service (the *daemon*):
 
-- An embedded [Caddy](https://caddyserver.com) web server listens on ports 80 and 443 and passes PHP requests to PHP-FPM (macOS and Linux) or a pool of `php-cgi` workers (Windows). A site can also run on [FrankenPHP](php.md#frankenphp), with Laravel Octane's worker mode if you like.
+- An embedded [Caddy](https://caddyserver.com) web server listens on ports 80 and 443 and passes PHP requests to PHP-FPM (macOS and Linux) or a pool of `php-cgi` workers (Windows). A site can also run on [FrankenPHP](php.md#frankenphp), with Laravel Octane's worker mode if you like. For a Laravel app, Flock can run its [Reverb](php.md#laravel-reverb) server, reached at the site's own address.
 - An embedded DNS server answers for `*.test`, so new sites work immediately without editing your hosts file.
 - A local certificate authority issues HTTPS certificates. Its root is restricted to your local TLD, so it can't be used to impersonate real websites.
 - Small **shims** for `php`, `composer`, `node`, `npm`, `npx` and the database clients sit on your PATH and run the version that the current project uses.

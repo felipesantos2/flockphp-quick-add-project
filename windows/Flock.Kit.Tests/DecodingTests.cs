@@ -324,6 +324,36 @@ public class DecodingTests
     }
 
     [Fact]
+    public void DecodesASitesReverb()
+    {
+        var status = FlockJson.Decode<Status>("""
+            {"version":"dev","pid":1,"started_at":"2026-11-11T14:10:01Z","dns":{"tld":"test","addr":""},
+             "http_port":80,"https_port":443,"mail":"","xdebug":false,"dumps":false,"mail_count":0,"dump_count":0,"processes":[],
+             "sites":[{"name":"chat","domain":"chat.test","path":"C:\\code\\chat","php":"8.4","secured":true,"parked":false,"reverb_available":true,
+                       "reverb":{"state":"running","port":22080,"env":["REVERB_HOST=chat.test","REVERB_PORT=443","REVERB_SCHEME=https"],"log":"reverb-chat"}},
+                      {"name":"gone","domain":"gone.test","path":"C:\\code\\gone","php":"8.4","secured":false,"parked":false,"reverb_available":false,
+                       "reverb":{"state":"unavailable","port":0,"problem":"The project doesn't have Laravel Reverb","log":"reverb-gone"}},
+                      {"name":"blog","domain":"blog.test","path":"C:\\code\\blog","php":"8.4","secured":false,"parked":false,"reverb_available":true},
+                      {"name":"old","domain":"old.test","path":"C:\\code\\old","php":"8.3","secured":false,"parked":true}]}
+            """);
+
+        var chat = status.Sites[0];
+        Assert.True(chat.ReverbAvailable);
+        Assert.True(chat.Reverb!.IsRunning);
+        Assert.Equal((22080, "reverb-chat", ""), (chat.Reverb.Port, chat.Reverb.Log, chat.Reverb.Problem));
+        Assert.Equal(["REVERB_HOST=chat.test", "REVERB_PORT=443", "REVERB_SCHEME=https"], chat.Reverb.Env);
+        var gone = status.Sites[1].Reverb!;
+        Assert.Equal((Status.ReverbState.Unavailable, false), (gone.State, gone.IsRunning));
+        Assert.NotEmpty(gone.Problem);
+        Assert.Empty(gone.Env);
+        Assert.True(status.Sites[2].ReverbAvailable);
+        Assert.Null(status.Sites[2].Reverb);
+        // An older daemon sends neither.
+        Assert.False(status.Sites[3].ReverbAvailable);
+        Assert.Null(status.Sites[3].Reverb);
+    }
+
+    [Fact]
     public void DecodesASitesShare()
     {
         var status = FlockJson.Decode<Status>("""

@@ -2,6 +2,7 @@
     x:Class="Flock.Tray.Settings.PhpPane"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray"
     xmlns:automation="using:Microsoft.UI.Xaml.Automation"
     xmlns:settings="using:Flock.Tray.Settings"
     xmlns:controls="using:Flock.Tray.Controls">
@@ -19,7 +20,7 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                     <TextBlock Text="{Binding CheckedText}" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
                     <Button Command="{Binding CheckCommand}">
-                        <controls:BusyContent Text="Check now" BusyText="Checking…" IsBusy="{Binding IsChecking}" />
+                        <controls:BusyContent Text="{l:Loc Key=Versions_CheckNow}" BusyText="{l:Loc Key=Versions_Checking}" IsBusy="{Binding IsChecking}" />
                     </Button>
                 </StackPanel>
             </Grid>
@@ -29,7 +30,7 @@
                         <Border Style="{StaticResource CardStyle}">
                             <Grid ColumnSpacing="12">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" MinWidth="240" /><ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Spacing="2">
                                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -37,11 +38,11 @@
                                         <TextBlock Text="{Binding VersionText}" />
                                         <Border Style="{StaticResource BadgeStyle}"
                                                 Visibility="{Binding IsDefault, Converter={StaticResource BooleanVisibilityConverter}}">
-                                            <TextBlock Text="Default" FontSize="11" />
+                                            <TextBlock Text="{l:Loc Key=Versions_Default}" FontSize="11" />
                                         </Border>
                                         <Border Style="{StaticResource BadgeStyle}"
                                                 Visibility="{Binding IsPrerelease, Converter={StaticResource BooleanVisibilityConverter}}">
-                                            <TextBlock Text="Pre-release" FontSize="11" />
+                                            <TextBlock Text="{l:Loc Key=Versions_Prerelease}" FontSize="11" />
                                         </Border>
                                         <Border Style="{StaticResource BadgeStyle}"
                                                 Visibility="{Binding HasXdebug, Converter={StaticResource BooleanVisibilityConverter}}">
@@ -63,18 +64,18 @@
                                                                 Visibility="{Binding HasRunningJob, Converter={StaticResource BooleanVisibilityConverter}}" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                    <Button Content="Install" Command="{Binding InstallCommand}"
+                                    <Button Content="{l:Loc Key=Common_Install}" Command="{Binding InstallCommand}"
                                             Visibility="{Binding ShowPrimaryInstall, Converter={StaticResource BooleanVisibilityConverter}}" />
-                                    <Button Content="Update" Style="{StaticResource AccentButtonStyle}" Command="{Binding InstallCommand}"
+                                    <Button Content="{l:Loc Key=Common_Update}" Style="{StaticResource AccentButtonStyle}" Command="{Binding InstallCommand}"
                                             Visibility="{Binding ShowPrimaryUpdate, Converter={StaticResource BooleanVisibilityConverter}}" />
-                                    <Button Content="Uninstall…" Click="UninstallPhp"
+                                    <Button Content="{l:Loc Key=Common_UninstallEllipsis}" Click="UninstallPhp"
                                             Visibility="{Binding ShowPrimaryUninstall, Converter={StaticResource BooleanVisibilityConverter}}" />
-                                    <Button Content="Cancel" Command="{Binding CancelCommand}"
+                                    <Button Content="{l:Loc Key=Common_Cancel}" Command="{Binding CancelCommand}"
                                             Visibility="{Binding ShowPrimaryCancel, Converter={StaticResource BooleanVisibilityConverter}}" />
-                                    <Button Content="Retry" Command="{Binding InstallCommand}"
+                                    <Button Content="{l:Loc Key=Common_Retry}" Command="{Binding InstallCommand}"
                                             Visibility="{Binding ShowPrimaryRetry, Converter={StaticResource BooleanVisibilityConverter}}" />
-                                    <Button Click="OpenPhpActions" Padding="8,6" ToolTipService.ToolTip="More actions"
-                                            automation:AutomationProperties.Name="More actions"
+                                    <Button Click="OpenPhpActions" Padding="8,6" ToolTipService.ToolTip="{l:Loc Key=Common_MoreActions}"
+                                            automation:AutomationProperties.Name="{l:Loc Key=Common_MoreActions}"
                                             Visibility="{Binding HasMoreActions, Converter={StaticResource BooleanVisibilityConverter}}">
                                         <FontIcon Glyph="&#xE712;" FontFamily="{StaticResource SymbolsFont}" FontSize="14" />
                                     </Button>
@@ -96,7 +97,7 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                     <TextBlock Text="{Binding FrankenCheckedText}" Style="{StaticResource CaptionTextBlockStyle}" VerticalAlignment="Center" />
                     <Button Command="{Binding FrankenCheckCommand}">
-                        <controls:BusyContent Text="Check now" BusyText="Checking…" IsBusy="{Binding IsFrankenChecking}" />
+                        <controls:BusyContent Text="{l:Loc Key=Versions_CheckNow}" BusyText="{l:Loc Key=Versions_Checking}" IsBusy="{Binding IsFrankenChecking}" />
                     </Button>
                 </StackPanel>
             </Grid>
@@ -106,7 +107,7 @@
                         <Border Style="{StaticResource CardStyle}">
                             <Grid ColumnSpacing="12">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" MinWidth="240" /><ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <StackPanel Spacing="2">
                                     <TextBlock Text="{Binding DisplayName}" Style="{StaticResource BodyStrongTextBlockStyle}" />
@@ -118,18 +119,18 @@
                                                                 Visibility="{Binding HasRunningJob, Converter={StaticResource BooleanVisibilityConverter}}" />
                                 </StackPanel>
                                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                                    <Button Content="Install" Command="{Binding InstallCommand}"
+                                    <Button Content="{l:Loc Key=Common_Install}" Command="{Binding InstallCommand}"
                                             Visibility="{Binding ShowPrimaryInstall, Converter={StaticResource BooleanVisibilityConverter}}" />
-                                    <Button Content="Update" Style="{StaticResource AccentButtonStyle}" Command="{Binding InstallCommand}"
+                                    <Button Content="{l:Loc Key=Common_Update}" Style="{StaticResource AccentButtonStyle}" Command="{Binding InstallCommand}"
                                             Visibility="{Binding ShowPrimaryUpdate, Converter={StaticResource BooleanVisibilityConverter}}" />
-                                    <Button Content="Uninstall…" Click="UninstallFrankenPhp"
+                                    <Button Content="{l:Loc Key=Common_UninstallEllipsis}" Click="UninstallFrankenPhp"
                                             Visibility="{Binding ShowPrimaryUninstall, Converter={StaticResource BooleanVisibilityConverter}}" />
-                                    <Button Content="Cancel" Command="{Binding CancelCommand}"
+                                    <Button Content="{l:Loc Key=Common_Cancel}" Command="{Binding CancelCommand}"
                                             Visibility="{Binding ShowPrimaryCancel, Converter={StaticResource BooleanVisibilityConverter}}" />
-                                    <Button Content="Retry" Command="{Binding InstallCommand}"
+                                    <Button Content="{l:Loc Key=Common_Retry}" Command="{Binding InstallCommand}"
                                             Visibility="{Binding ShowPrimaryRetry, Converter={StaticResource BooleanVisibilityConverter}}" />
-                                    <Button Click="OpenFrankenPhpActions" Padding="8,6" ToolTipService.ToolTip="More actions"
-                                            automation:AutomationProperties.Name="More actions"
+                                    <Button Click="OpenFrankenPhpActions" Padding="8,6" ToolTipService.ToolTip="{l:Loc Key=Common_MoreActions}"
+                                            automation:AutomationProperties.Name="{l:Loc Key=Common_MoreActions}"
                                             Visibility="{Binding HasMoreActions, Converter={StaticResource BooleanVisibilityConverter}}">
                                         <FontIcon Glyph="&#xE712;" FontFamily="{StaticResource SymbolsFont}" FontSize="14" />
                                     </Button>

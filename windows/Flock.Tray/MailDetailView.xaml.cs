@@ -25,7 +25,7 @@ internal sealed partial class MailDetailView : Grid, IAsyncDisposable
         this.message = message;
         this.shell = shell;
         InitializeComponent();
-        Subject.Text = message.Subject.Length == 0 ? "(no subject)" : message.Subject;
+        Subject.Text = message.Subject.Length == 0 ? Strings.Mail_NoSubject : message.Subject;
         From.Text = message.From;
         To.Text = string.Join(", ", message.To);
         Date.Text = message.Date.ToLocalTime().ToString("f", CultureInfo.CurrentCulture);
@@ -39,7 +39,7 @@ internal sealed partial class MailDetailView : Grid, IAsyncDisposable
         foreach (var attachment in message.Attachments)
         {
             Attachments.Children.Add(Ui.AsyncButton($"{attachment.Filename} ({Ui.Bytes(attachment.Size)})", () => viewModel.SaveAttachmentAsync(attachment, owner),
-                glyph: Ui.GlyphAttach, tooltip: "Save…"));
+                glyph: Ui.GlyphAttach, tooltip: Strings.Mail_SaveAttachment));
         }
         AttachmentsScroll.Visibility = message.Attachments.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
         this.viewModel.PropertyChanged += ViewModelChanged;
@@ -93,19 +93,19 @@ internal sealed partial class MailDetailView : Grid, IAsyncDisposable
             case "HTML":
                 if (message.Html.Length == 0)
                 {
-                    ContentHost.Content = Ui.EmptyState(Ui.GlyphDocument, "No HTML part");
+                    ContentHost.Content = Ui.EmptyState(Ui.GlyphDocument, Strings.Mail_NoHtmlPart);
                     break;
                 }
                 html ??= new HtmlView(false, true, true, shell);
                 htmlLoad = html.LoadAsync(message.Html);
                 ContentHost.Content = html;
                 break;
-            case "Text": ContentHost.Content = Monospaced(message.Text.Length == 0 ? "(no text part)" : message.Text); break;
+            case "Text": ContentHost.Content = Monospaced(message.Text.Length == 0 ? Strings.Mail_NoTextPart : message.Text); break;
             case "Raw":
                 if (viewModel.IsRawLoading) ContentHost.Content = new ProgressRing { Width = 32, Height = 32 };
                 else if (viewModel.RawError is { } error)
-                    ContentHost.Content = Ui.EmptyState(Ui.GlyphWarning, "Could not load raw message", error, Ui.AsyncButton("Retry", () => SetModeAsync("Raw"), true));
-                else ContentHost.Content = Monospaced(viewModel.Raw ?? "(empty)");
+                    ContentHost.Content = Ui.EmptyState(Ui.GlyphWarning, Strings.Mail_CouldNotLoadRaw, error, Ui.AsyncButton(Strings.Common_Retry, () => SetModeAsync("Raw"), true));
+                else ContentHost.Content = Monospaced(viewModel.Raw ?? Strings.Common_EmptyParenthesized);
                 break;
             default: ContentHost.Content = Headers(); break;
         }

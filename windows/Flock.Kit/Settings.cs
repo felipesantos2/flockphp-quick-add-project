@@ -105,9 +105,10 @@ public sealed record SettingsChange(
 
 /// <summary>
 /// Body of PATCH /v1/sites/{name}; null fields are left out. An empty Php means "use the default";
-/// Server is "fastcgi" or "frankenphp", Worker "" (classic) or "octane" (see Status.SiteServer).
+/// Server is "fastcgi" or "frankenphp", Worker "" (classic) or "octane" (see Status.SiteServer);
+/// Reverb turns the site's Reverb server on or off.
 /// </summary>
-public sealed record SiteChange(bool? Secured = null, string? Php = null, string? Node = null, string? Server = null, string? Worker = null, string? Root = null, string? Type = null);
+public sealed record SiteChange(bool? Secured = null, string? Php = null, string? Node = null, string? Server = null, string? Worker = null, string? Root = null, string? Type = null, bool? Reverb = null);
 
 /// <summary>
 /// A change to a proxy (PATCH /v1/proxies/{name}); null fields stay as they are. An empty Command

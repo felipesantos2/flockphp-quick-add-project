@@ -16,11 +16,26 @@ use crate::api::{
     Catalog, CatalogEntry, CatalogLine, Client, Error, PostgresCustomExtension, PostgresExtension, PostgresExtensions, PostgresMajor,
     PostgresVersions, Service, extension_titles,
 };
+use crate::i18n::tr;
 use crate::links::{self, Link};
 use crate::model::AppModel;
 use crate::paths;
 
 const CATEGORY_ORDER: [&str; 7] = ["Core", "Database", "Cache & Queue", "Search", "Storage", "Mail", "Debugging"];
+
+/// A category's heading: the daemon's categories are English ids, these are the ones it has now.
+fn category_title(category: &str) -> &str {
+    match category {
+        "Core" => tr!("services.category.core"),
+        "Database" => tr!("services.category.database"),
+        "Cache & Queue" => tr!("services.category.cache_queue"),
+        "Search" => tr!("services.category.search"),
+        "Storage" => tr!("services.category.storage"),
+        "Mail" => tr!("services.category.mail"),
+        "Debugging" => tr!("services.category.debugging"),
+        other => other,
+    }
+}
 const ACTIVE_INTERVAL: Duration = Duration::from_secs(2);
 const IDLE_INTERVAL: Duration = Duration::from_secs(30);
 
@@ -51,7 +66,7 @@ struct Inner {
 
 impl ServicesPane {
     pub fn new(model: Rc<AppModel>, banner: adw::Banner) -> Self {
-        let list = PaneView::new("Databases, caches, search and the tools around your sites. Everything listens on 127.0.0.1 only.");
+        let list = PaneView::new(tr!("services.subtitle"));
         let detail = PaneView::new("");
         let stack = gtk::Stack::builder().transition_type(gtk::StackTransitionType::SlideLeftRight).build();
         stack.add_named(&list.scrolled, Some("list"));
@@ -156,7 +171,7 @@ impl Inner {
         let Some(resolution) = resolution else { return };
         self.model.set_link(None);
         let this = self.clone();
-        ask_link(&self.stack, resolution, "Install", move |target| {
+        ask_link(&self.stack, resolution, tr!("common.install"), move |target| {
             let (id, line) = (target.service.clone(), target.line.clone());
             if id == "postgres" {
                 this.run_postgres(move |c| c.postgres_operation(&line, "install"));
@@ -202,8 +217,8 @@ impl Inner {
             .collect();
 
         let filter = gtk::Box::builder().css_classes(["linked"]).build();
-        let installed = gtk::ToggleButton::builder().label("Installed").active(self.installed_only.get()).build();
-        let all = gtk::ToggleButton::builder().label("All").group(&installed).active(!self.installed_only.get()).build();
+        let installed = gtk::ToggleButton::builder().label(tr!("common.installed")).active(self.installed_only.get()).build();
+        let all = gtk::ToggleButton::builder().label(tr!("services.all")).group(&installed).active(!self.installed_only.get()).build();
         filter.append(&installed);
         filter.append(&all);
         let this = self.clone();
@@ -221,7 +236,7 @@ impl Inner {
 
         let mut groups: Vec<gtk::Widget> = Vec::new();
         for (i, category) in categories.iter().enumerate() {
-            let group = group(category, "");
+            let group = group(category_title(category), "");
             if i == 0 {
                 group.set_header_suffix(Some(&filter));
             }
@@ -234,8 +249,8 @@ impl Inner {
         if self.installed_only.get() && hidden > 0 {
             let more = group("", "");
             let row = adw::ActionRow::builder()
-                .title(format!("More Services ({hidden})…"))
-                .subtitle("Every service Flock offers: MySQL, Redis, Meilisearch and more")
+                .title(tr!("services.more_services_count", count = hidden))
+                .subtitle(tr!("services.every_service_flock_offers_mysql"))
                 .activatable(true)
                 .build();
             row.add_suffix(&gtk::Image::from_icon_name("go-next-symbolic"));
@@ -273,17 +288,21 @@ impl Inner {
         let mut detail = Vec::new();
         if !service.installed {
             if installable(service) {
-                detail.push(if service.available { "Not installed".to_owned() } else { "Not available on Linux".to_owned() });
+                detail.push(if service.available {
+                    tr!("common.not_installed").to_owned()
+                } else {
+                    tr!("services.not_available_on_linux").to_owned()
+                });
             }
         } else {
             if !service.version.is_empty() {
                 detail.push(service.version.clone());
             }
             if service.port > 0 {
-                detail.push(format!("Port {}", service.port));
+                detail.push(tr!("services.port_number", port = service.port));
             }
             if !service.running {
-                detail.push("Stopped".to_owned());
+                detail.push(tr!("services.postgres.stopped").to_owned());
             }
         }
         let mut subtitle = detail.join(" · ");
@@ -305,14 +324,15 @@ impl Inner {
         row.add_prefix(&status_dot(service.running));
         let activity = self.activity(service);
         match activity {
-            Activity::Update => row.add_suffix(&badge("Update", "accent")),
-            Activity::Failed => row.add_suffix(&badge("Install failed", "error")),
+            Activity::Update => row.add_suffix(&badge(tr!("services.update_noun"), "accent")),
+            Activity::Failed => row.add_suffix(&badge(tr!("services.install_failed"), "error")),
             Activity::Working => row.add_suffix(&gtk::Spinner::builder().spinning(true).build()),
             Activity::None => {}
         }
         if service.installed && service.stoppable && activity != Activity::Working {
             let (this, s) = (self.clone(), service.clone());
-            let toggle = button(if service.running { "Stop" } else { "Start" }, false, move || this.start_stop(&s));
+            let toggle =
+                button(if service.running { tr!("sites.share.stop") } else { tr!("services.start") }, false, move || this.start_stop(&s));
             row.add_suffix(&toggle);
         }
         row.add_suffix(&gtk::Image::from_icon_name("go-next-symbolic"));
@@ -331,9 +351,9 @@ impl Inner {
         let this = self.clone();
         confirm(
             &self.list.scrolled,
-            &format!("Stop {}?", service.name),
-            &format!("Your sites can't use {} until you start it again; it stays stopped after restarts.", service.name),
-            "Stop",
+            &tr!("services.stop_question", service = service.name),
+            &tr!("services.your_sites_cant_use_service", service = service.name),
+            tr!("sites.share.stop"),
             move || {
                 let id2 = id.clone();
                 this.run_services(&id, move |c| c.stop_service(&id2));
@@ -419,7 +439,7 @@ impl Inner {
             return;
         };
         let header = group("", "");
-        let back = adw::ActionRow::builder().title("Services").activatable(true).build();
+        let back = adw::ActionRow::builder().title(tr!("settings.pane.services")).activatable(true).build();
         back.add_prefix(&gtk::Image::from_icon_name("go-previous-symbolic"));
         let this = self.clone();
         back.connect_activated(move |_| this.back());
@@ -435,8 +455,8 @@ impl Inner {
 
         if !service.available {
             let unavailable = group(
-                "Not available on Linux",
-                if service.unavailable.is_empty() { "Flock can't run this service here." } else { &service.unavailable },
+                tr!("services.not_available_on_linux"),
+                if service.unavailable.is_empty() { tr!("services.flock_cant_run_this_service") } else { &service.unavailable },
             );
             groups.push(unavailable.upcast());
         } else if service.id == "postgres" {
@@ -451,20 +471,24 @@ impl Inner {
 
     fn status_text(&self, service: &Service) -> String {
         if !service.installed {
-            return if service.available { "Not installed".to_owned() } else { "Not available".to_owned() };
+            return if service.available {
+                tr!("common.not_installed").to_owned()
+            } else {
+                tr!("services.catalog.not_available").to_owned()
+            };
         }
         let mut parts = vec![
             (if service.running {
-                "Running"
+                tr!("sites.proxy.running")
             } else if service.enabled {
-                "Not running"
+                tr!("sites.proxy.not_running")
             } else {
-                "Stopped"
+                tr!("services.postgres.stopped")
             })
             .to_owned(),
         ];
         if service.port > 0 {
-            parts.push(format!("Port {}", service.port));
+            parts.push(tr!("services.port_number", port = service.port));
         }
         parts.join(" · ")
     }
@@ -475,20 +499,12 @@ impl Inner {
         let tld = self.tld.borrow().clone();
         let dns_broken = !service.running || !service.problem.is_empty();
         let explanation = match service.id.as_str() {
-            "web" if service.running => Some(format!(
-                "Caddy serves every site over HTTPS (https://app.{tld}) with certificates from Flock's local certificate authority, which `flock install` trusts."
-            )),
-            "web" => {
-                Some("Sites don't open while the web server is down. Its log may tell why; `flock restart` starts it again.".to_owned())
-            }
-            "dns" if !dns_broken => Some(format!(
-                "systemd-resolved sends every name under .{tld} here (set up by `flock install`), so any subdomain of a site works (tenant1.app.{tld}, a.b.app.{tld}) without adding it."
-            )),
+            "web" if service.running => Some(tr!("services.web_running", tld = tld)),
+            "web" => Some(tr!("services.web_down").to_owned()),
+            "dns" if !dns_broken => Some(tr!("services.systemd_resolved_sends_every_name", tld = tld)),
             "dns" => {
-                let problem = if service.problem.is_empty() { "the DNS server isn't running" } else { &service.problem };
-                Some(format!(
-                    "*.{tld} doesn't resolve: {problem}. Linux has no hosts-file fallback, so sites don't open until it does; `flock install` sets it up again."
-                ))
+                let problem = if service.problem.is_empty() { tr!("services.dns_server_isnt_running") } else { &service.problem };
+                Some(tr!("general.tld_doesnt_resolve_problem_linux", tld = tld, problem = problem))
             }
             _ => None,
         };
@@ -501,29 +517,29 @@ impl Inner {
         }
         let configurable = service.installed && service.port > 0 && service.id != "web" && service.id != "dns";
         if configurable {
-            let row = info_row("Port", &service.port.to_string());
+            let row = info_row(tr!("mail.port"), &service.port.to_string());
             let (this, s) = (self.clone(), service.clone());
-            row.add_suffix(&button("Change…", false, move || this.change_port(&s)));
+            row.add_suffix(&button(tr!("sites.change"), false, move || this.change_port(&s)));
             info.add(&row);
         } else if service.installed && service.port > 0 {
-            info.add(&info_row("Port", &format!("{} · set by `flock install`", service.port)));
+            info.add(&info_row(tr!("mail.port"), &tr!("services.port_set_by_flock_install", port = service.port)));
         }
         if !service.log.is_empty() {
-            let row = adw::ActionRow::builder().title("Log").build();
+            let row = adw::ActionRow::builder().title(tr!("services.log")).build();
             let file = paths::root().join("log").join(format!("{}.log", service.log));
-            row.add_suffix(&button("Open", false, move || {
-                gtk::FileLauncher::new(Some(&gio::File::for_path(&file))).launch(gtk::Window::NONE, gio::Cancellable::NONE, |_| {});
+            row.add_suffix(&button(tr!("common.open"), false, move || {
+                crate::ui::open_file(None, &file);
             }));
             info.add(&row);
         }
         let mut groups = vec![info.upcast()];
         if !service.env.is_empty() {
-            let env = group("Environment Variables", "");
+            let env = group(tr!("mail.environment_variables_title_case"), "");
             env.add(&code_block(&service.env));
             groups.push(env.upcast());
         }
         if !service.url.is_empty() {
-            let url = group("Connection", "");
+            let url = group(tr!("services.connection"), "");
             url.add(&code_block(&service.url));
             groups.push(url.upcast());
         }
@@ -534,11 +550,11 @@ impl Inner {
         let entry =
             gtk::Entry::builder().text(service.port.to_string()).input_purpose(gtk::InputPurpose::Digits).activates_default(true).build();
         let dialog = adw::AlertDialog::new(
-            Some(&format!("{} Port", service.name)),
-            Some("A port between 1024 and 65535 that no other program uses."),
+            Some(&tr!("services.service_port", service = service.name)),
+            Some(tr!("services.port_between_1024_and_65535")),
         );
         dialog.set_extra_child(Some(&entry));
-        dialog.add_responses(&[("cancel", "Cancel"), ("save", "Change Port")]);
+        dialog.add_responses(&[("cancel", tr!("common.cancel")), ("save", tr!("services.change_port"))]);
         dialog.set_response_appearance("save", adw::ResponseAppearance::Suggested);
         dialog.set_default_response(Some("save"));
         let (this, id) = (self.clone(), service.id.clone());
@@ -558,7 +574,7 @@ impl Inner {
             line.append(&gtk::Spinner::builder().spinning(true).build());
         } else {
             let this = self.clone();
-            let b = button("Check now", false, move || check(&this));
+            let b = button(tr!("versions.check_now"), false, move || check(&this));
             b.add_css_class("flat");
             line.append(&b);
         }
@@ -570,24 +586,25 @@ impl Inner {
     fn catalog_detail(self: &Rc<Self>, service: &Service) -> Vec<gtk::Widget> {
         let catalog = self.catalog.borrow().clone();
         let Some(entry) = catalog.as_ref().and_then(|c| c.find(&service.id)).cloned() else {
-            let loading = group(
-                "",
-                if catalog.is_some() { "This Flock daemon doesn't know this service. Update Flock, then try again." } else { "" },
+            let loading = group("", if catalog.is_some() { tr!("services.this_flock_daemon_doesnt_know") } else { "" });
+            loading.add(
+                &adw::ActionRow::builder()
+                    .title(if catalog.is_some() { tr!("services.not_offered") } else { tr!("common.loading") })
+                    .build(),
             );
-            loading.add(&adw::ActionRow::builder().title(if catalog.is_some() { "Not offered" } else { "Loading…" }).build());
             return vec![loading.upcast()];
         };
         let catalog = catalog.expect("catalog");
         let lines = entry.lines.clone().unwrap_or_default();
         let locked = self.pending.borrow().contains(&entry.id) || entry.job.as_ref().is_some_and(|j| j.job.running());
         let footer = if lines.iter().filter(|l| l.installed).count() > 1 {
-            "Installed versions stay side by side. One runs at a time; each keeps its own data, and updates within a version keep it."
+            tr!("services.side_by_side")
         } else if lines.iter().any(|l| l.installed) {
-            "Updates keep your data."
+            tr!("services.updates_keep_data")
         } else {
             entry.estimate.as_str()
         };
-        let versions = group("Versions", footer);
+        let versions = group(tr!("versions.versions"), footer);
         versions.set_header_suffix(Some(&self.check_line(catalog.checked_at.as_deref(), |this| {
             this.checking.set(true);
             this.render();
@@ -604,7 +621,7 @@ impl Inner {
         if !catalog.check_error.is_empty() {
             versions.add(
                 &adw::ActionRow::builder()
-                    .title(glib::markup_escape_text(&format!("Couldn't check for new releases: {}", catalog.check_error)))
+                    .title(glib::markup_escape_text(&tr!("services.postgres.couldnt_check_for_new_releases", error = catalog.check_error)))
                     .css_classes(["warning"])
                     .build(),
             );
@@ -632,8 +649,8 @@ impl Inner {
         };
         if job.job.running() {
             row.set_title(&glib::markup_escape_text(&match job.job.phase.as_str() {
-                "installing" => format!("Installing {target}…"),
-                _ => format!("Downloading {target}…"),
+                "installing" => tr!("services.installing_name", name = target),
+                _ => tr!("services.catalog.downloading_name", name = target),
             }));
             if (0.0..=1.0).contains(&job.job.progress) && job.job.phase != "installing" {
                 row.add_suffix(
@@ -642,24 +659,24 @@ impl Inner {
             } else {
                 row.add_suffix(&gtk::Spinner::builder().spinning(true).build());
             }
-            row.add_suffix(&button("Show Log", false, log));
+            row.add_suffix(&button(tr!("sites.show_log"), false, log));
             let (this, i) = (self.clone(), id.clone());
-            row.add_suffix(&button("Cancel", false, move || {
+            row.add_suffix(&button(tr!("common.cancel"), false, move || {
                 let i2 = i.clone();
                 this.run_catalog(&i, move |c| c.cancel_catalog(&i2));
             }));
         } else if job.job.failed() {
-            row.set_title(&glib::markup_escape_text(&format!("Installing {} failed", entry.name)));
+            row.set_title(&glib::markup_escape_text(&tr!("services.installing_failed", name = entry.name)));
             row.set_subtitle(&glib::markup_escape_text(&job.job.error));
             row.add_css_class("error");
-            row.add_suffix(&button("Show Log", false, log));
+            row.add_suffix(&button(tr!("sites.show_log"), false, log));
             let (this, i, line, port) = (self.clone(), id.clone(), job.line.clone(), entry.port);
-            row.add_suffix(&button("Retry", false, move || {
+            row.add_suffix(&button(tr!("common.retry"), false, move || {
                 let (i2, l2) = (i.clone(), line.clone());
                 this.run_catalog(&i, move |c| c.install_catalog(&i2, &l2, port));
             }));
             let (this, i) = (self.clone(), id.clone());
-            row.add_suffix(&button("Dismiss", false, move || {
+            row.add_suffix(&button(tr!("sites.share.dismiss"), false, move || {
                 let i2 = i.clone();
                 this.run_catalog(&i, move |c| c.dismiss_catalog(&i2));
             }));
@@ -678,20 +695,21 @@ impl Inner {
         }
         row.add_prefix(&icon);
         if line.active {
-            row.add_suffix(&badge("Active", "accent"));
+            row.add_suffix(&badge(tr!("services.active"), "accent"));
         }
         if line.prerelease {
-            row.add_suffix(&badge("Pre-release", "warning"));
+            row.add_suffix(&badge(tr!("versions.prerelease"), "warning"));
         }
         let detail = match (line.installed, line.update) {
-            (true, true) => format!("{} → {} available", line.version, line.latest),
+            (true, true) => tr!("services.old_to_new_available", old = line.version, new = line.latest),
             (true, false) => line.version.clone(),
-            (false, _) if line.has_data => format!("Not installed · its data is kept · {}", line.latest),
-            (false, _) => format!("Not installed · {}", line.latest),
+            (false, _) if line.has_data => tr!("services.not_installed_its_data_is", version = line.latest),
+            (false, _) => tr!("services.not_installed_version", version = line.latest),
         };
         let mut subtitle = detail;
         if !line.yanked.is_empty() {
-            subtitle.push_str(&format!("\nWithdrawn: {}", line.yanked));
+            subtitle.push('\n');
+            subtitle.push_str(&tr!("services.withdrawn", reason = line.yanked));
             row.add_css_class("warning");
         }
         row.set_subtitle(&glib::markup_escape_text(&subtitle));
@@ -706,23 +724,23 @@ impl Inner {
             }
         };
         if !line.installed {
-            actions.append(&button("Install", false, install));
+            actions.append(&button(tr!("common.install"), false, install));
         } else {
             if line.update && !line.latest.is_empty() {
-                actions.append(&button(&format!("Update to {}", line.latest), true, install.clone()));
+                actions.append(&button(&tr!("general.update_to", version = line.latest), true, install.clone()));
             }
             if !line.active {
                 let (this, e, l) = (self.clone(), entry.clone(), line.clone());
-                actions.append(&button("Switch…", false, move || this.switch_catalog(&e, &l)));
+                actions.append(&button(tr!("services.switch_ellipsis"), false, move || this.switch_catalog(&e, &l)));
             }
             let mut items: Vec<MenuItem> = Vec::new();
             if !line.update {
-                items.push((format!("Reinstall {}", line.version), true, false, Box::new(install)));
+                items.push((tr!("services.reinstall", version = line.version), true, false, Box::new(install)));
             }
             let (this, i) = (self.clone(), id.clone());
-            items.push(("Show Last Log".to_owned(), true, false, Box::new(move || this.show_catalog_log(&i))));
+            items.push((tr!("services.show_last_log").to_owned(), true, false, Box::new(move || this.show_catalog_log(&i))));
             let (this, e, l) = (self.clone(), entry.clone(), line.clone());
-            items.push(("Uninstall…".to_owned(), true, true, Box::new(move || this.uninstall_catalog(&e, &l))));
+            items.push((tr!("common.uninstall_ellipsis").to_owned(), true, true, Box::new(move || this.uninstall_catalog(&e, &l))));
             actions.append(&more_menu(items));
         }
         row.add_suffix(&actions);
@@ -732,17 +750,20 @@ impl Inner {
     fn switch_catalog(self: &Rc<Self>, entry: &CatalogEntry, target: &CatalogLine) {
         let name = &entry.name;
         let own = if target.has_data {
-            format!("{name} {} uses its own data.", target.label)
+            tr!("services.catalog.name_version_uses_its_own", name = name, version = target.label)
         } else {
-            format!("{name} {} starts with empty data.", target.label)
+            tr!("services.catalog.name_version_starts_with_empty", name = name, version = target.label)
         };
         let message = if entry.line.is_empty() {
             own
         } else {
-            format!("{name} {} stops; its data stays but isn't used until you switch back. {own}", entry.line)
+            tr!("services.name_version_stops_its_data", name = name, version = entry.line, then = own)
         };
-        let dialog = adw::AlertDialog::new(Some(&format!("Switch to {name} {}?", target.label)), Some(&message));
-        dialog.add_responses(&[("cancel", "Cancel"), ("switch", "Switch")]);
+        let dialog = adw::AlertDialog::new(
+            Some(&tr!("services.catalog.switch_to_name_version", name = name, version = target.label)),
+            Some(&message),
+        );
+        dialog.add_responses(&[("cancel", tr!("common.cancel")), ("switch", tr!("worktrees.switch"))]);
         dialog.set_response_appearance("switch", adw::ResponseAppearance::Suggested);
         let (this, id, line) = (self.clone(), entry.id.clone(), target.id.clone());
         dialog.choose(Some(&self.detail.scrolled), gio::Cancellable::NONE, move |response| {
@@ -758,23 +779,25 @@ impl Inner {
         let mut message = String::new();
         if line.active {
             match entry.lines.iter().flatten().find(|l| l.installed && l.id != line.id) {
-                Some(next) => message = format!("{name} {} stops and {name} {} becomes the active version. ", line.label, next.label),
-                None => message = format!("{name} {} stops; your sites can't use {name} until you install a version again. ", line.label),
+                Some(next) => {
+                    message = tr!("services.catalog.name_version_stops_and_name", name = name, version = line.label, next = next.label)
+                }
+                None => message = tr!("services.catalog.name_version_stops_your_sites", name = name, version = line.label),
             }
         }
-        message.push_str(if line.has_data {
-            "Keep its data to pick up where you left off when you install it again."
-        } else {
-            "It holds no data."
-        });
-        let dialog = adw::AlertDialog::new(Some(&format!("Uninstall {name} {}?", line.label)), Some(&message));
-        dialog.add_response("cancel", "Cancel");
+        if !message.is_empty() {
+            message.push(' ');
+        }
+        message.push_str(if line.has_data { tr!("services.keep_its_data_to_pick") } else { tr!("services.no_data") });
+        let dialog =
+            adw::AlertDialog::new(Some(&tr!("services.catalog.uninstall_name_version", name = name, version = line.label)), Some(&message));
+        dialog.add_response("cancel", tr!("common.cancel"));
         if line.has_data {
-            dialog.add_response("keep", "Uninstall, Keep Data");
-            dialog.add_response("delete", "Uninstall and Delete Data");
+            dialog.add_response("keep", tr!("services.catalog.uninstall_keep_data"));
+            dialog.add_response("delete", tr!("services.catalog.uninstall_and_delete_data"));
             dialog.set_response_appearance("delete", adw::ResponseAppearance::Destructive);
         } else {
-            dialog.add_response("keep", "Uninstall");
+            dialog.add_response("keep", tr!("common.uninstall"));
             dialog.set_response_appearance("keep", adw::ResponseAppearance::Destructive);
         }
         let (this, id, line_id) = (self.clone(), entry.id.clone(), line.id.clone());
@@ -791,7 +814,7 @@ impl Inner {
         let (i, this, i2) = (id.to_owned(), self.clone(), id.to_owned());
         let running =
             move || this.catalog.borrow().as_ref().and_then(|c| c.find(&i2).and_then(|e| e.job.clone())).is_some_and(|j| j.job.running());
-        show_log(&self.detail.scrolled, &format!("{name} install log"), move || Client.catalog_log(&i), running);
+        show_log(&self.detail.scrolled, &tr!("services.install_log", name = name), move || Client.catalog_log(&i), running);
     }
 
     // MARK: PostgreSQL
@@ -799,15 +822,12 @@ impl Inner {
     fn postgres_detail(self: &Rc<Self>, service: &Service) -> Vec<gtk::Widget> {
         let Some(versions) = self.postgres.borrow().clone() else {
             let loading = group("", "");
-            loading.add(&adw::ActionRow::builder().title("Loading…").build());
+            loading.add(&adw::ActionRow::builder().title(tr!("common.loading")).build());
             return vec![loading.upcast()];
         };
         let majors = versions.majors.clone().unwrap_or_default();
         let working = self.pending.borrow().contains(&"postgres".to_owned()) || majors.iter().any(|m| !m.busy.is_empty());
-        let group_ = group(
-            "Versions",
-            "Installed versions stay side by side. One runs at a time; each keeps its own databases, and updates within a version keep them.",
-        );
+        let group_ = group(tr!("versions.versions"), tr!("services.postgres.side_by_side"));
         group_.set_header_suffix(Some(&self.check_line(versions.checked_at.as_deref(), |this| {
             this.checking.set(true);
             this.render();
@@ -824,7 +844,7 @@ impl Inner {
         if !versions.check_error.is_empty() {
             group_.add(
                 &adw::ActionRow::builder()
-                    .title(glib::markup_escape_text(&format!("Couldn't check for new releases: {}", versions.check_error)))
+                    .title(glib::markup_escape_text(&tr!("services.postgres.couldnt_check_for_new_releases", error = versions.check_error)))
                     .css_classes(["warning"])
                     .build(),
             );
@@ -850,23 +870,23 @@ impl Inner {
         }
         row.add_prefix(&icon);
         if major.active {
-            row.add_suffix(&badge("Active", "accent"));
+            row.add_suffix(&badge(tr!("services.active"), "accent"));
         }
         if major.prerelease {
-            row.add_suffix(&badge("Pre-release", "warning"));
+            row.add_suffix(&badge(tr!("versions.prerelease"), "warning"));
         }
         let subtitle = match major.busy.as_str() {
-            "installing" => format!("Installing PostgreSQL {}…", major.major),
-            "updating" => format!("Updating PostgreSQL {}…", major.major),
-            "switching" => format!("Switching to PostgreSQL {}…", major.major),
-            "uninstalling" => format!("Uninstalling PostgreSQL {}…", major.major),
-            _ if installed && major.update => format!("{} → {} available", major.installed, major.latest),
+            "installing" => tr!("services.postgres.installing_postgresql_version", version = major.major),
+            "updating" => tr!("services.postgres.updating_postgresql_version", version = major.major),
+            "switching" => tr!("services.postgres.switching_to_postgresql_version", version = major.major),
+            "uninstalling" => tr!("services.postgres.uninstalling_postgresql_version", version = major.major),
+            _ if installed && major.update => tr!("services.old_to_new_available", old = major.installed, new = major.latest),
             _ if installed && !major.extensions.as_deref().unwrap_or_default().is_empty() => {
                 format!("{} · {}", major.installed, extension_titles(major.extensions.as_deref().unwrap_or_default()))
             }
             _ if installed => major.installed.clone(),
-            _ if major.has_data => format!("Not installed · {} of databases kept", bytes(major.data_size)),
-            _ => "Not installed".to_owned(),
+            _ if major.has_data => tr!("services.not_installed_size_of_databases", size = bytes(major.data_size)),
+            _ => tr!("common.not_installed").to_owned(),
         };
         row.set_subtitle(&glib::markup_escape_text(&subtitle));
         if !major.busy.is_empty() {
@@ -884,20 +904,20 @@ impl Inner {
         };
         if !installed {
             let (this, v, target) = (self.clone(), versions.clone(), major.major.clone());
-            actions.append(&button("Install", false, move || this.install_postgres(&v, &target)));
+            actions.append(&button(tr!("common.install"), false, move || this.install_postgres(&v, &target)));
         } else {
             if major.update {
                 // "Update": the subtitle shows the version it goes to ("17.10 → 17.11 available").
-                actions.append(&operation("Update", true, "update"));
+                actions.append(&operation(tr!("common.update"), true, "update"));
             }
             if !major.active {
                 let (this, v, target) = (self.clone(), versions.clone(), major.clone());
-                actions.append(&button("Switch…", false, move || this.switch_postgres(&v, &target)));
+                actions.append(&button(tr!("services.switch_ellipsis"), false, move || this.switch_postgres(&v, &target)));
             }
             // An icon, like ⋯: with Update and Switch, a third labelled button doesn't fit.
             let extensions = gtk::Button::builder()
                 .icon_name("application-x-addon-symbolic")
-                .tooltip_text(format!("Extensions of PostgreSQL {}: PostGIS, pgRouting, pgvector, TimescaleDB and your own", major.major))
+                .tooltip_text(tr!("services.postgres.extensions_of_postgresql_version_postgis", version = major.major))
                 .valign(gtk::Align::Center)
                 .css_classes(["flat"])
                 .build();
@@ -905,7 +925,12 @@ impl Inner {
             extensions.connect_clicked(move |_| this.postgres_extensions(&target));
             actions.append(&extensions);
             let (this, v, target) = (self.clone(), versions.clone(), major.clone());
-            actions.append(&more_menu(vec![("Uninstall…".to_owned(), true, true, Box::new(move || this.uninstall_postgres(&v, &target)))]));
+            actions.append(&more_menu(vec![(
+                tr!("common.uninstall_ellipsis").to_owned(),
+                true,
+                true,
+                Box::new(move || this.uninstall_postgres(&v, &target)),
+            )]));
         }
         row.add_suffix(&actions);
         row
@@ -921,13 +946,18 @@ impl Inner {
             return;
         }
         let dialog = adw::AlertDialog::new(
-            Some(&format!("Also install the extensions of PostgreSQL {}?", versions.active)),
-            Some(&format!(
-                "{} for PostgreSQL {major}, where they're available for it. You can change this later under Extensions….",
-                extension_titles(&extensions)
+            Some(&tr!("services.postgres.also_install_the_extensions_of", version = versions.active)),
+            Some(&tr!(
+                "services.postgres.extensions_for_postgresql_version_where",
+                extensions = extension_titles(&extensions),
+                version = major
             )),
         );
-        dialog.add_responses(&[("cancel", "Cancel"), ("only", "PostgreSQL Only"), ("with", "Install with Extensions")]);
+        dialog.add_responses(&[
+            ("cancel", tr!("common.cancel")),
+            ("only", tr!("services.postgres.postgresql_only")),
+            ("with", tr!("services.postgres.install_with_extensions")),
+        ]);
         dialog.set_response_appearance("with", adw::ResponseAppearance::Suggested);
         dialog.set_default_response(Some("with"));
         let this = self.clone();
@@ -947,13 +977,13 @@ impl Inner {
     /// The extensions of one major: Flock's own (each a download of its own) and the folder for yours.
     fn postgres_extensions(self: &Rc<Self>, major: &str) {
         let status = gtk::Label::builder()
-            .label("After installing one, run CREATE EXTENSION in each database that uses it.")
+            .label(tr!("services.postgres.after_installing_one_run_create"))
             .wrap(true)
             .xalign(0.0)
             .css_classes(["dim-label"])
             .build();
         let list = adw::PreferencesGroup::new();
-        let folder = group("Your own extensions", "");
+        let folder = group(tr!("services.your_own_extensions"), "");
         let column = gtk::Box::builder()
             .orientation(gtk::Orientation::Vertical)
             .spacing(18)
@@ -969,7 +999,7 @@ impl Inner {
         view.add_top_bar(&adw::HeaderBar::new());
         view.set_content(Some(&gtk::ScrolledWindow::builder().child(&column).vexpand(true).build()));
         let dialog = adw::Dialog::builder()
-            .title(format!("PostgreSQL {major} Extensions"))
+            .title(tr!("services.postgres.postgresql_version_extensions", version = major))
             .content_width(560)
             .content_height(520)
             .child(&view)
@@ -996,17 +1026,18 @@ impl Inner {
 
     fn switch_postgres(self: &Rc<Self>, versions: &PostgresVersions, target: &PostgresMajor) {
         let own = if target.has_data {
-            format!("PostgreSQL {} uses its own databases.", target.major)
+            tr!("services.postgres.postgresql_version_uses_its_own", version = target.major)
         } else {
-            format!("PostgreSQL {} starts with a new, empty set of databases.", target.major)
+            tr!("services.postgres.postgresql_version_starts_with_a", version = target.major)
         };
         let message = if versions.active.is_empty() {
             own
         } else {
-            format!("PostgreSQL {} stops; its databases stay but aren't available until you switch back. {own}", versions.active)
+            tr!("services.postgresql_version_stops_its_databases", version = versions.active, then = own)
         };
-        let dialog = adw::AlertDialog::new(Some(&format!("Switch to PostgreSQL {}?", target.major)), Some(&message));
-        dialog.add_responses(&[("cancel", "Cancel"), ("switch", "Switch")]);
+        let dialog =
+            adw::AlertDialog::new(Some(&tr!("services.postgres.switch_to_postgresql_version", version = target.major)), Some(&message));
+        dialog.add_responses(&[("cancel", tr!("common.cancel")), ("switch", tr!("worktrees.switch"))]);
         dialog.set_response_appearance("switch", adw::ResponseAppearance::Suggested);
         let (this, m) = (self.clone(), target.major.clone());
         dialog.choose(Some(&self.detail.scrolled), gio::Cancellable::NONE, move |response| {
@@ -1020,19 +1051,18 @@ impl Inner {
     fn uninstall_postgres(self: &Rc<Self>, versions: &PostgresVersions, major: &PostgresMajor) {
         let next = versions.majors.iter().flatten().find(|m| !m.installed.is_empty() && m.major != major.major);
         let message = match (major.active, next) {
-            (false, _) => format!("Removes the PostgreSQL {} server.", major.installed),
-            (true, Some(next)) => {
-                format!("PostgreSQL {} stops and Flock switches to PostgreSQL {} with its own databases.", major.major, next.major)
-            }
+            (false, _) => tr!("services.postgres.removes_the_postgresql_version_server", version = major.installed),
+            (true, Some(next)) => tr!("services.postgres.postgresql_version_stops_and_flock", version = major.major, next = next.major),
             (true, None) => {
-                format!("PostgreSQL {} stops, and your sites can't use PostgreSQL until you install a version again.", major.major)
+                tr!("services.postgres.postgresql_version_stops_and_your", version = major.major)
             }
         };
-        let dialog = adw::AlertDialog::new(Some(&format!("Uninstall PostgreSQL {}?", major.major)), Some(&message));
-        dialog.add_response("cancel", "Cancel");
-        dialog.add_response("keep", "Uninstall, Keep Databases");
+        let dialog =
+            adw::AlertDialog::new(Some(&tr!("services.postgres.uninstall_postgresql_version", version = major.major)), Some(&message));
+        dialog.add_response("cancel", tr!("common.cancel"));
+        dialog.add_response("keep", tr!("services.uninstall_keep_databases"));
         if major.has_data {
-            dialog.add_response("delete", &format!("Uninstall and Delete Databases ({})", bytes(major.data_size)));
+            dialog.add_response("delete", &tr!("services.uninstall_and_delete_databases_size", size = bytes(major.data_size)));
             dialog.set_response_appearance("delete", adw::ResponseAppearance::Destructive);
         }
         let (this, m) = (self.clone(), major.major.clone());
@@ -1054,7 +1084,7 @@ fn custom_row(ext: &PostgresCustomExtension) -> adw::ActionRow {
         .subtitle(glib::markup_escape_text(&detail))
         .subtitle_selectable(ext.linked)
         .build();
-    row.add_suffix(&badge("Yours", ""));
+    row.add_suffix(&badge(tr!("services.postgres.yours"), ""));
     if !ext.linked {
         row.add_prefix(&gtk::Image::builder().icon_name("dialog-warning-symbolic").css_classes(["warning"]).build());
     }
@@ -1097,7 +1127,7 @@ impl ExtensionsDialog {
             }
         };
         self.status.remove_css_class("error");
-        self.status.set_label("After installing one, run CREATE EXTENSION in each database that uses it.");
+        self.status.set_label(tr!("services.postgres.after_installing_one_run_create"));
         let extensions = state.extensions.clone().unwrap_or_default();
         let busy = extensions.iter().any(|e| !e.busy.is_empty());
         let mut rows = vec![];
@@ -1112,15 +1142,12 @@ impl ExtensionsDialog {
             rows.push(row.upcast());
         }
         let open = adw::ActionRow::builder()
-            .title("Extensions folder")
-            .subtitle(glib::markup_escape_text(&format!(
-                "Put a library in lib/ and its .control and .sql files in extension/. Flock keeps them across updates of PostgreSQL {}.",
-                self.major
-            )))
+            .title(tr!("services.extensions_folder"))
+            .subtitle(glib::markup_escape_text(&tr!("services.put_a_library_in_lib", version = self.major)))
             .build();
         let dir = state.custom_dir.clone();
-        open.add_suffix(&button("Open", false, move || {
-            gtk::FileLauncher::new(Some(&gio::File::for_path(&dir))).launch(gtk::Window::NONE, gio::Cancellable::NONE, |_| {});
+        open.add_suffix(&button(tr!("common.open"), false, move || {
+            crate::ui::open_file(None, &dir);
         }));
         self.folder.add(&open);
         rows.push(open.upcast());
@@ -1145,14 +1172,14 @@ impl ExtensionsDialog {
     fn row(self: &Rc<Self>, ext: &PostgresExtension) -> adw::ActionRow {
         let mut caption = vec![ext.description.clone()];
         if !ext.supported {
-            caption = vec![format!("Not available for PostgreSQL {}", self.major)];
+            caption = vec![tr!("services.postgres.not_available_for_postgresql_version", version = self.major)];
         } else if ext.discontinued {
-            caption.push(format!("No longer updated for PostgreSQL {}", self.major));
+            caption.push(tr!("services.postgres.no_longer_updated_for_postgresql", version = self.major));
         }
         if ext.supported && !ext.installed.is_empty() {
             caption.push(format!("CREATE EXTENSION {};", ext.creates));
         } else if ext.supported && ext.preload {
-            caption.push(format!("PostgreSQL {} restarts to load it", self.major));
+            caption.push(tr!("services.postgres.postgresql_version_restarts_to_load", version = self.major));
         }
         let title = match (ext.installed.is_empty(), ext.update) {
             (true, _) => ext.title.clone(),
@@ -1165,15 +1192,24 @@ impl ExtensionsDialog {
             .sensitive(ext.supported || !ext.installed.is_empty())
             .build();
         if !ext.license.is_empty() {
-            row.set_tooltip_text(Some(&format!("License: {}", ext.license)));
+            row.set_tooltip_text(Some(&tr!("services.postgres.license_license", license = ext.license)));
         }
         if ext.prerelease {
-            row.add_suffix(&badge("Pre-release", "warning"));
+            row.add_suffix(&badge(tr!("versions.prerelease"), "warning"));
         }
         if !ext.busy.is_empty() {
-            let mut busy = ext.busy.clone();
-            busy[..1].make_ascii_uppercase();
-            row.add_suffix(&gtk::Label::builder().label(format!("{busy}…")).css_classes(["dim-label"]).build());
+            let busy = match ext.busy.as_str() {
+                "installing" => tr!("common.installing").to_owned(),
+                "updating" => tr!("common.updating").to_owned(),
+                "uninstalling" => tr!("common.uninstalling").to_owned(),
+                "waiting" => tr!("services.postgres.waiting").to_owned(),
+                other => {
+                    let mut busy = other.to_owned();
+                    busy[..1].make_ascii_uppercase();
+                    format!("{busy}…")
+                }
+            };
+            row.add_suffix(&gtk::Label::builder().label(busy).css_classes(["dim-label"]).build());
             row.add_suffix(&gtk::Spinner::builder().spinning(true).build());
             return row;
         }
@@ -1183,14 +1219,18 @@ impl ExtensionsDialog {
             button(label, suggested, move || this.run(&name, op))
         };
         if ext.installed.is_empty() {
-            actions.append(&operation("Install", false, "install"));
+            actions.append(&operation(tr!("common.install"), false, "install"));
         } else {
             if ext.update {
-                actions.append(&operation("Update", true, "update"));
+                actions.append(&operation(tr!("common.update"), true, "update"));
             }
             let (this, name) = (self.clone(), ext.name.clone());
-            let items: Vec<MenuItem> =
-                vec![(format!("Uninstall {}", ext.title), true, true, Box::new(move || this.run(&name, "uninstall")))];
+            let items: Vec<MenuItem> = vec![(
+                tr!("services.postgres.uninstall_name", name = ext.title),
+                true,
+                true,
+                Box::new(move || this.run(&name, "uninstall")),
+            )];
             actions.append(&more_menu(items));
         }
         row.add_suffix(&actions);

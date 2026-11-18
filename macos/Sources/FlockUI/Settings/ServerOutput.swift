@@ -22,15 +22,15 @@ struct ServerOutput: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
-                Text("Output").foregroundStyle(.secondary)
+                Text("sites.output").foregroundStyle(.secondary)
                 Spacer()
-                Button("Clear") {
+                Button("logs.clear") {
                     Task {
                         try? await model.client.clearServiceLog(log)
                         textState.wrappedValue = ""
                     }
                 }
-                Button("Open Log") {
+                Button("sites.open_log") {
                     model.logs.requested = .service(log)
                     openWindow.activating(WindowID.logs)
                 }
@@ -79,10 +79,10 @@ struct NodeDevServerSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Dev server").font(.subheadline.weight(.semibold))
+                Text("sites.dev_server").font(.subheadline.weight(.semibold))
                 if let server = site.nodeServer {
                     let state = Self.state(server)
-                    row("Status") {
+                    row("general.status") {
                         VStack(alignment: .leading, spacing: 4) {
                             HStack(spacing: 6) {
                                 StateDot(color: state.color)
@@ -98,12 +98,12 @@ struct NodeDevServerSection: View {
                     HStack(spacing: 8) {
                         switch server.state {
                         case .sleeping, .failed:
-                            Button("Start") { run(stop: false) }
+                            Button("services.start") { run(stop: false) }
                         case .starting:
-                            Button("Stop") { run(stop: true) }
+                            Button("sites.share.stop") { run(stop: true) }
                         case .running:
-                            Button("Stop") { run(stop: true) }
-                            Button("Restart") { run(stop: false) }
+                            Button("sites.share.stop") { run(stop: true) }
+                            Button("menu.restart") { run(stop: false) }
                         }
                         if busyState.wrappedValue {
                             ProgressView().controlSize(.mini)
@@ -111,12 +111,12 @@ struct NodeDevServerSection: View {
                     }
                     .disabled(busyState.wrappedValue)
                     .controlSize(.small)
-                    row("Command") {
+                    row("sites.command") {
                         Text(server.command).font(.callout.monospaced()).foregroundStyle(.secondary)
                             .textSelection(.enabled)
                     }
                 }
-                Text("Flock starts the dev server when the site is first visited, and stops it after 30 minutes without requests. An open tab with hot reload keeps it running.")
+                Text("sites.server.flock_starts_the_dev_server")
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -127,7 +127,7 @@ struct NodeDevServerSection: View {
     }
 
     /// A labelled row, lined up like the panes' other settings.
-    private func row<Content: View>(_ label: String, @ViewBuilder content: () -> Content) -> some View {
+    private func row<Content: View>(_ label: LocalizedStringKey, @ViewBuilder content: () -> Content) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             Text(label).foregroundStyle(.secondary)
                 .frame(width: 80, alignment: .leading)
@@ -139,10 +139,10 @@ struct NodeDevServerSection: View {
     /// The dot and text of a dev server's state.
     static func state(_ server: Status.SiteNodeServer) -> (color: Color, text: String) {
         switch server.state {
-        case .sleeping: (StateDot.stopped, "Sleeping · starts on the next visit")
-        case .starting: (StateDot.busy, "Starting…")
-        case .running: (StateDot.running, "Running on port \(server.port)")
-        case .failed: (StateDot.failed, server.problem.map { "Stopped: \($0)" } ?? "Stopped")
+        case .sleeping: (StateDot.stopped, String(localized: "sites.server.sleeping"))
+        case .starting: (StateDot.busy, String(localized: "worktrees.job.starting"))
+        case .running: (StateDot.running, String(localized: "sites.server.running_on_port \(String(server.port))"))
+        case .failed: (StateDot.failed, server.problem.map { String(localized: "sites.server.stopped_because \($0)") } ?? String(localized: "services.postgres.stopped"))
         }
     }
 
@@ -183,13 +183,13 @@ extension Status.Proxy {
     var stateDot: (color: Color, help: String) {
         if let command {
             switch command.state {
-            case .failed: return (StateDot.failed, command.problem.map { "Failed: \($0)" } ?? "Failed")
-            case .starting: return (StateDot.busy, "Starting…")
-            case .stopping: return (StateDot.busy, "Stopping…")
+            case .failed: return (StateDot.failed, command.problem.map { String(localized: "sites.server.failed_because \($0)") } ?? String(localized: "sites.server.failed"))
+            case .starting: return (StateDot.busy, String(localized: "worktrees.job.starting"))
+            case .stopping: return (StateDot.busy, String(localized: "sites.server.stopping"))
             case .running, .stopped: break
             }
         }
-        return running ? (StateDot.running, server ?? "Running") : (StateDot.stopped, "Not running")
+        return running ? (StateDot.running, server ?? String(localized: "sites.proxy.running")) : (StateDot.stopped, String(localized: "sites.proxy.not_running"))
     }
 }
 
@@ -218,7 +218,7 @@ struct StateDot: View {
 }
 
 /// The help text under a proxy's command fields.
-let proxyCommandsHelp = "Flock runs the start command when you click Start and shows its output. For a command that starts the server in the background, like docker compose up -d, add the command that stops it."
+let proxyCommandsHelp = String(localized: "sites.proxy.command_help")
 
 /// The Start, Stop and Folder fields of a proxy's commands, in a Form.
 struct ProxyCommandsFields: View {
@@ -228,29 +228,29 @@ struct ProxyCommandsFields: View {
 
     // The labels are in the UI font like the form's other fields; only what's typed is monospaced.
     var body: some View {
-        LabeledContent("Start") {
-            TextField("Start", text: start, prompt: Text("npm run dev"))
+        LabeledContent("services.start") {
+            TextField("services.start", text: start, prompt: Text(verbatim: "npm run dev"))
                 .labelsHidden()
                 .font(.body.monospaced())
         }
-        LabeledContent("Stop") {
+        LabeledContent("sites.share.stop") {
             VStack(alignment: .leading, spacing: 3) {
-                TextField("Stop", text: stop, prompt: Text("docker compose stop"))
+                TextField("sites.share.stop", text: stop, prompt: Text(verbatim: "docker compose stop"))
                     .labelsHidden()
                     .font(.body.monospaced())
-                Text("Only for a server that runs in the background, like docker compose up -d.")
+                Text("sites.proxy.stop_command_hint")
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-        LabeledContent("Folder") {
+        LabeledContent("general.folder") {
             HStack(spacing: 8) {
-                TextField("Folder", text: dir)
+                TextField("general.folder", text: dir)
                     .labelsHidden()
                     .font(.body.monospaced())
-                Button("Choose…") {
+                Button("common.choose") {
                     let from = URL(fileURLWithPath: dir.wrappedValue)
-                    if let url = SettingsStore.chooseDirectories(prompt: "Choose", multiple: false, in: from).first {
+                    if let url = SettingsStore.chooseDirectories(prompt: String(localized: "sites.server.choose"), multiple: false, in: from).first {
                         dir.wrappedValue = url.path
                     }
                 }
@@ -304,19 +304,19 @@ struct ProxyCommandSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Commands of \(proxy.name)").font(.headline)
+            Text("sites.proxy.commands_title \(proxy.name)").font(.headline)
             ScrollingForm {
                 ProxyCommandsFields(start: commandState.projectedValue, stop: stopState.projectedValue, dir: dirState.projectedValue)
             }
             HStack {
                 if proxy.command != nil {
                     // An empty start command removes the commands and their folder.
-                    Button("Remove Commands", role: .destructive) { save(ProxyChange(command: "")) }
+                    Button("sites.proxy.remove_commands", role: .destructive) { save(ProxyChange(command: "")) }
                 }
                 Spacer()
-                Button("Cancel", role: .cancel) { cancel() }
+                Button("common.cancel", role: .cancel) { cancel() }
                     .keyboardShortcut(.cancelAction)
-                Button("Save") {
+                Button("common.save") {
                     let command = commandState.wrappedValue.trimmingCharacters(in: .whitespaces)
                     save(command.isEmpty
                          ? ProxyChange(command: "")
@@ -349,16 +349,16 @@ struct AddProxySheet: View {
         let name = nameState.wrappedValue.trimmingCharacters(in: .whitespaces)
         let upstream = upstreamState.wrappedValue.trimmingCharacters(in: .whitespaces)
         VStack(alignment: .leading, spacing: 12) {
-            Text("Add a proxy").font(.headline)
+            Text("sites.add_proxy_title").font(.headline)
             ScrollingForm {
-                TextField("Name", text: nameState.projectedValue, prompt: Text("my-app → my-app.\(tld)"))
-                TextField("Upstream", text: upstreamState.projectedValue, prompt: Text("3000, host:port or URL"))
-                    .help("A port means 127.0.0.1.")
+                TextField("sites.proxy_name", text: nameState.projectedValue, prompt: Text(verbatim: "my-app → my-app.\(tld)"))
+                TextField("sites.upstream", text: upstreamState.projectedValue, prompt: Text("sites.upstream_placeholder_short"))
+                    .help("sites.upstream_port_means")
                 DisclosureGroup(isExpanded: commandsShownState.projectedValue) {
                     ProxyCommandsFields(start: commandState.projectedValue, stop: stopState.projectedValue, dir: dirState.projectedValue)
                 } label: {
                     // The whole row opens it, not only the disclosure arrow.
-                    Text("Commands (optional)")
+                    Text("sites.proxy.commands_optional")
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())
                         .onTapGesture {
@@ -368,9 +368,9 @@ struct AddProxySheet: View {
             }
             HStack {
                 Spacer()
-                Button("Cancel", role: .cancel) { cancel() }
+                Button("common.cancel", role: .cancel) { cancel() }
                     .keyboardShortcut(.cancelAction)
-                Button("Add") {
+                Button("common.add") {
                     let command = commandState.wrappedValue.trimmingCharacters(in: .whitespaces)
                     if command.isEmpty {
                         add(name, upstream, nil, nil, nil)

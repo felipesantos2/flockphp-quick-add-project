@@ -1,14 +1,15 @@
 <UserControl
     x:Class="Flock.Tray.Settings.NewWorktreeView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray">
     <StackPanel Spacing="12">
-        <TextBox x:Name="BranchBox" Header="Branch" PlaceholderText="a name like brave-otter" TextChanged="BranchChanged" />
+        <TextBox x:Name="BranchBox" Header="{l:Loc Key=Worktrees_New_Branch}" PlaceholderText="{l:Loc Key=Worktrees_New_BranchPlaceholder}" TextChanged="BranchChanged" />
         <!-- Disabled until the branches are loaded. -->
-        <ComboBox x:Name="FromBox" Header="Start from" MinWidth="260" IsEnabled="False" />
+        <ComboBox x:Name="FromBox" Header="{l:Loc Key=Worktrees_New_StartFrom}" MinWidth="260" IsEnabled="False" />
         <StackPanel Spacing="4">
-            <ComboBox x:Name="DatabaseBox" Header="Database" MinWidth="200" />
-            <TextBlock Text="A database of its own gets the migrations run. Project default is what flock.yml says, else the site's."
+            <ComboBox x:Name="DatabaseBox" Header="{l:Loc Key=Worktrees_New_Database}" MinWidth="200" />
+            <TextBlock Text="{l:Loc Key=Worktrees_New_DatabaseNote}"
                        Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
         </StackPanel>
         <TextBlock x:Name="ExplanationText" Style="{StaticResource CaptionTextBlockStyle}"

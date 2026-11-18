@@ -1,7 +1,8 @@
 <UserControl
     x:Class="Flock.Tray.Settings.DumpsPane"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray">
     <StackPanel Spacing="0">
         <StackPanel Spacing="4" Margin="0,0,0,24">
             <Border Style="{StaticResource CardStyle}">
@@ -10,8 +11,8 @@
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Spacing="1">
-                        <TextBlock Text="Capture dumps" />
-                        <TextBlock Text="Turn it off to see dumps in the page again." Style="{StaticResource CaptionTextBlockStyle}"
+                        <TextBlock Text="{l:Loc Key=Dumps_Capture}" />
+                        <TextBlock Text="{l:Loc Key=Dumps_CaptureDescription}" Style="{StaticResource CaptionTextBlockStyle}"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                     </StackPanel>
                     <ToggleSwitch Grid.Column="1" MinWidth="0" IsOn="{Binding Capturing, Mode=TwoWay}" OnContent="" OffContent="" />
@@ -22,18 +23,18 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Captured" /><Button Grid.Column="1" Content="Open Dumps" Click="OpenDumps" />
+                    <TextBlock Text="{l:Loc Key=Dumps_Captured}" /><Button Grid.Column="1" Content="{l:Loc Key=Dumps_Open}" Click="OpenDumps" />
                 </Grid>
             </Border>
         </StackPanel>
         <StackPanel Spacing="4" Margin="0,0,0,24">
-            <TextBlock Text="Sources" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
+            <TextBlock Text="{l:Loc Key=Dumps_Sources}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
             <Border Style="{StaticResource CardStyle}">
                 <Grid Style="{StaticResource SettingRowStyle}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBlock Text="Open files in" /><ComboBox x:Name="Editor" Grid.Column="1" MinWidth="160" SelectionChanged="EditorChanged" />
+                    <TextBlock Text="{l:Loc Key=Dumps_OpenFilesIn}" /><ComboBox x:Name="Editor" Grid.Column="1" MinWidth="160" SelectionChanged="EditorChanged" />
                 </Grid>
             </Border>
         </StackPanel>

@@ -1,9 +1,11 @@
 using System.Security;
+using System.Text.RegularExpressions;
 using Flock.Kit;
 using Flock.Tray.Infrastructure;
 using Flock.Tray.Settings;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
 namespace Flock.Tray;
 
 /// <summary>First-run setup and installation progress.</summary>
@@ -18,15 +20,36 @@ internal sealed partial class SetupWindow : FlockWindow
     private Stage stage;
     private string? startupProblem;
 
-    public SetupWindow(RuntimeService model) : base("Set up Flock", 620, 600, 480, 480)
+    public SetupWindow(RuntimeService model) : base(Strings.Setup_SetUpFlock, 620, 600, 480, 480)
     {
         this.model = model;
         InitializeComponent();
         InitializeChrome(WindowRoot, WindowTitleBar, WindowCaption, WindowIcon);
+        LanguageHost.Children.Add(Settings.LanguageSetting.Create(model.Preferences));
+        ShowLinks(StarText, Strings.Setup_Star);
         model.Changed += ShowDefaults;
         Closed += (_, _) => model.Changed -= ShowDefaults;
         Render(Stage.Intro);
     }
+
+    /// <summary>A text with Markdown links, [label](url), as the translations write them (the macOS
+    /// and Linux apps share the text).</summary>
+    private static void ShowLinks(TextBlock block, string text)
+    {
+        var start = 0;
+        foreach (Match link in MarkdownLink().Matches(text))
+        {
+            block.Inlines.Add(new Run { Text = text[start..link.Index] });
+            var hyperlink = new Hyperlink { NavigateUri = new Uri(link.Groups[2].Value) };
+            hyperlink.Inlines.Add(new Run { Text = link.Groups[1].Value });
+            block.Inlines.Add(hyperlink);
+            start = link.Index + link.Length;
+        }
+        block.Inlines.Add(new Run { Text = text[start..] });
+    }
+
+    [GeneratedRegex(@"\[([^\]]+)\]\(([^)]+)\)")]
+    private static partial Regex MarkdownLink();
 
     private void Render(Stage value)
     {
@@ -45,8 +68,8 @@ internal sealed partial class SetupWindow : FlockWindow
         {
             var declined = output.Contains("administrator permission was declined", StringComparison.Ordinal);
             FailedMessage.Text = declined
-                ? "Windows' permission prompt was declined. Flock runs, but *.test sites won't resolve and HTTPS isn't trusted until you allow it."
-                : "Something went wrong. The output below says what; you can try again.";
+                ? Strings.Setup_Declined
+                : Strings.Setup_Failed;
             FailedLogText.Text = output;
         }
         if (value == Stage.Done)
@@ -87,7 +110,7 @@ internal sealed partial class SetupWindow : FlockWindow
             }
             catch (Exception e) when (e is UnauthorizedAccessException or SecurityException or IOException)
             {
-                startupProblem = $"Could not change the startup setting: {e.Message}. Settings → General has it too.";
+                startupProblem = Localization.Format(Strings.Setup_CouldNotChangeStartup, e.Message);
             }
         }
         model.NotifyChanged();
@@ -112,22 +135,25 @@ internal sealed partial class SetupWindow : FlockWindow
             var pending = new[] { (Name: php, Install: state.Php), (Name: node, Install: state.Node) }.Where(d => d.Install.IsPending).ToList();
             if (pending.Count > 0)
             {
-                var names = string.Join(" and ", pending.Select(d => d.Name));
+                var both = pending.Count > 1;
+                var names = both ? Localization.Format(Strings.Setup_TwoNames, pending[0].Name, pending[1].Name) : pending[0].Name;
                 var waiting = pending.All(d => !d.Install.IsInstalling);
                 var detail = waiting
-                    ? $"{names} {(pending.Count > 1 ? "are" : "is")} installed as soon as Flock can download {(pending.Count > 1 ? "them" : "it")}."
-                    : $"Your sites and terminals use {(pending.Count > 1 ? "them as the defaults" : "it as the default")}.";
-                Defaults.Children.Add(Ui.Card(Ui.Column(8, Ui.Text($"Installing {names}…"), new ProgressBar { IsIndeterminate = true }, Ui.Caption(detail))));
+                    ? Localization.Format(both ? Strings.Setup_InstalledWhenDownloadableBoth : Strings.Setup_InstalledWhenDownloadable, names)
+                    : both ? Strings.Setup_UsedAsDefaultsBoth : Strings.Setup_UsedAsDefault;
+                Defaults.Children.Add(Ui.Card(Ui.Column(8, Ui.Text(Localization.Format(Strings.Setup_Installing, names)), new ProgressBar { IsIndeterminate = true },
+                    Ui.Caption(detail))));
             }
             foreach (var (name, install, pane) in new[] { (php, state.Php, "PHP"), (node, state.Node, "Node") })
             {
                 if (install.IsFailed)
                 {
-                    var reason = install.Error.Length > 0 ? $": {install.Error.TrimEnd('.')}" : "";
                     var icon = Ui.Icon(Ui.GlyphWarning, 14, Ui.Critical);
                     icon.VerticalAlignment = VerticalAlignment.Top;
                     icon.Margin = new Thickness(0, 2, 0, 0);
-                    var text = Ui.Caption($"{name} couldn't be installed{reason}. Try again in Settings → {pane}.");
+                    var text = Ui.Caption(install.Error.Length > 0
+                        ? Localization.Format(Strings.Setup_CouldNotInstallBecause, name, install.Error.TrimEnd('.'), pane)
+                        : Localization.Format(Strings.Setup_CouldNotInstall, name, pane));
                     text.IsTextSelectionEnabled = true;
                     var row = new Grid { ColumnSpacing = 10 };
                     row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -142,7 +168,7 @@ internal sealed partial class SetupWindow : FlockWindow
         if (Defaults.Children.Count == 0 && sawDefaults)
         {
             Defaults.Children.Add(Ui.Card(Ui.Row(10, Ui.Icon(Ui.GlyphCheck, 14, Ui.Success),
-                Ui.Text($"{Named("PHP", defaultPhp)} and {Named("Node.js", defaultNode)} are installed"))));
+                Ui.Text(Localization.Format(Strings.Setup_BothInstalled, Named("PHP", defaultPhp), Named("Node.js", defaultNode))))));
         }
         Defaults.Visibility = Defaults.Children.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 

@@ -33,12 +33,12 @@ struct LogsWindow: View {
         // detail column's toolbar background bleed under its edge on current macOS.
         HSplitView {
             List(selection: selectionState.projectedValue) {
-                Section("Sites") {
+                Section("settings.pane.sites") {
                     ForEach(store.index.sites, id: \.self) { site in
                         Label(site, systemImage: "globe").tag(LogStore.Source.site(site))
                     }
                 }
-                Section("Services") {
+                Section("settings.pane.services") {
                     ForEach(store.index.services, id: \.self) { service in
                         Label(service, systemImage: "gearshape").tag(LogStore.Source.service(service))
                     }
@@ -47,59 +47,59 @@ struct LogsWindow: View {
             .frame(minWidth: 200, idealWidth: 240, maxWidth: 340)
             Group {
                 if let selection, store.loaded != selection {
-                    ProgressView("Loading…").frame(maxWidth: .infinity, maxHeight: .infinity)
+                    ProgressView("common.loading").frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     switch selection {
                     case let .site(name):
                         SiteLogView(entries: LogFilter.entries(store.entries, level: level, query: query),
                                     filtered: !store.entries.isEmpty, site: name)
                     case .service:
-                        ServiceLogView(text: store.serviceText.isEmpty ? "(empty)" : LogFilter.lines(store.serviceText, query: query))
+                        ServiceLogView(text: store.serviceText.isEmpty ? String(localized: "common.empty_parenthesized") : LogFilter.lines(store.serviceText, query: query))
                     case nil:
-                        ContentUnavailableView("Pick a log", systemImage: "doc.text.magnifyingglass")
+                        ContentUnavailableView("logs.pick_log", systemImage: "doc.text.magnifyingglass")
                     }
                 }
             }
             .frame(minWidth: 420, maxWidth: .infinity, maxHeight: .infinity)
         }
-        .searchable(text: queryState.projectedValue, placement: .toolbar, prompt: "Search logs")
+        .searchable(text: queryState.projectedValue, placement: .toolbar, prompt: "logs.search_logs")
         .toolbar {
             ToolbarItemGroup {
-                Picker("Level", selection: levelState.projectedValue) {
+                Picker("logs.level", selection: levelState.projectedValue) {
                     ForEach(LogLevelFilter.allCases) { Text($0.title).tag($0) }
                 }
                 .pickerStyle(.menu)
                 .fixedSize()
-                .help("Show only entries of this level and above (site logs)")
+                .help("logs.show_only_entries_of_this")
                 .disabled({ if case .site = selection { false } else { true } }())
 
                 Toggle(isOn: $autoRefresh) {
-                    Label("Auto-refresh", systemImage: "arrow.triangle.2.circlepath")
+                    Label("logs.auto_refresh", systemImage: "arrow.triangle.2.circlepath")
                 }
-                .help(autoRefresh ? "Reloading the log every 2 seconds — click to stop" : "Reload the log every 2 seconds while this window is visible")
+                .help(autoRefresh ? "logs.reloading_the_log_every_2" : "logs.reload_the_log_every_2_seconds")
 
-                Button("Refresh", systemImage: "arrow.clockwise") {
+                Button("mail.refresh", systemImage: "arrow.clockwise") {
                     Task {
                         await store.loadIndex()
                         await reload()
                     }
                 }
                 if case let .site(name) = selection {
-                    Button("Clear", systemImage: "trash") {
+                    Button("logs.clear", systemImage: "trash") {
                         confirmClear = name
                     }
                     .disabled(store.entries.isEmpty)
                 }
             }
         }
-        .confirmationDialog("Clear the log of \(confirmClear ?? "")?", isPresented: Binding(get: { confirmClear != nil }, set: { if !$0 { confirmClear = nil } }),
+        .confirmationDialog("logs.clear_question \(confirmClear ?? "")", isPresented: Binding(get: { confirmClear != nil }, set: { if !$0 { confirmClear = nil } }),
                             presenting: confirmClear) { site in
-            Button("Clear", role: .destructive) {
+            Button("logs.clear", role: .destructive) {
                 Task { await store.clear(site: site) }
             }
-            Button("Cancel", role: .cancel) {}
+            Button("common.cancel", role: .cancel) {}
         } message: { site in
-            Text("Deletes the Laravel log files in storage/logs of \(site). This can't be undone.")
+            Text("logs.deletes_the_laravel_log_files \(site)")
         }
         .safeAreaInset(edge: .bottom) {
             ErrorBanner(message: store.error)
@@ -156,8 +156,8 @@ private struct SiteLogView: View {
             if filtered {
                 ContentUnavailableView.search
             } else {
-                ContentUnavailableView("No log entries", systemImage: "checkmark.circle",
-                                       description: Text("storage/logs of \(site) is empty."))
+                ContentUnavailableView("logs.no_entries", systemImage: "checkmark.circle",
+                                       description: Text("logs.storage_logs_of_site_is \(site)"))
             }
         } else {
             List(entries) { entry in
@@ -218,7 +218,7 @@ private struct LogEntryRow: View {
                 .lineLimit(expanded ? nil : 3)
                 .textSelection(.enabled)
             if !entry.details.isEmpty {
-                DisclosureGroup("Details", isExpanded: expandedState.projectedValue) {
+                DisclosureGroup("logs.details", isExpanded: expandedState.projectedValue) {
                     let details = Text(entry.details)
                         .font(.system(.caption, design: .monospaced))
                         .textSelection(.enabled)

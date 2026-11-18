@@ -7,7 +7,7 @@ public sealed partial class OperationProgress : UserControl
 {
 
     public static readonly DependencyProperty TextProperty = DependencyProperty.Register(
-        nameof(Text), typeof(string), typeof(OperationProgress), new PropertyMetadata("Working…"));
+        nameof(Text), typeof(string), typeof(OperationProgress), new PropertyMetadata(Strings.Common_Working));
 
     public static readonly DependencyProperty ValueProperty = DependencyProperty.Register(
         nameof(Value), typeof(double), typeof(OperationProgress), new PropertyMetadata(0d));

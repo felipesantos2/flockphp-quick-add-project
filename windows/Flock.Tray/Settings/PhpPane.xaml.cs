@@ -31,7 +31,7 @@ internal sealed partial class PhpPane : UserControl, ISettingsPane
     }
 
     public string Title => "PHP";
-    public string Subtitle => "Every installed version runs its own pool of PHP workers. Sites use the default unless pinned to a version.";
+    public string Subtitle => Strings.Php_Subtitle;
     public UIElement Root => this;
     public bool ScrollsItself => false;
 
@@ -113,7 +113,7 @@ internal sealed partial class PhpPane : UserControl, ISettingsPane
                         completion.TrySetResult();
                         return;
                     }
-                    if (token.IsCancellationRequested || !await window.Confirm(request.Title, request.Message, "Install") || token.IsCancellationRequested)
+                    if (token.IsCancellationRequested || !await window.Confirm(request.Title, request.Message, Strings.Common_Install) || token.IsCancellationRequested)
                     {
                         completion.TrySetResult();
                         return;
@@ -150,28 +150,28 @@ internal sealed partial class PhpPane : UserControl, ISettingsPane
             var ini = model.Configuration.Current?.Php.FirstOrDefault(version => version.Version == row.Minor)?.Ini;
             if (ini is { Length: > 0 })
             {
-                menu.Items.Add(Item("Open php.ini", () => model.Open(ini)));
-                menu.Items.Add(Item("Show php.ini in Explorer", () => model.Reveal(ini)));
+                menu.Items.Add(Item(Strings.Php_OpenIni, () => model.Open(ini)));
+                menu.Items.Add(Item(Strings.Php_RevealIni, () => model.Reveal(ini)));
             }
             if (row.HasRunningJob)
             {
-                menu.Items.Add(Item("Show log", () => ShowPhpLog(row)));
-                menu.Items.Add(Item("Cancel", () => _ = row.CancelCommand.ExecuteAsync(null)));
+                menu.Items.Add(Item(Strings.Versions_ShowLog, () => ShowPhpLog(row)));
+                menu.Items.Add(Item(Strings.Common_Cancel, () => _ = row.CancelCommand.ExecuteAsync(null)));
             }
             else if (row.HasFailedJob)
             {
-                menu.Items.Add(Item("Show log", () => ShowPhpLog(row)));
-                menu.Items.Add(Item("Dismiss", () => _ = row.DismissCommand.ExecuteAsync(null)));
+                menu.Items.Add(Item(Strings.Versions_ShowLog, () => ShowPhpLog(row)));
+                menu.Items.Add(Item(Strings.Sites_Share_Dismiss, () => _ = row.DismissCommand.ExecuteAsync(null)));
             }
             else if (row.HasJob)
             {
-                menu.Items.Add(Item("Show log", () => ShowPhpLog(row)));
+                menu.Items.Add(Item(Strings.Versions_ShowLog, () => ShowPhpLog(row)));
             }
             else
             {
-                if (row.CanMakeDefault) menu.Items.Add(Item("Make default", () => MakePhpDefault(row)));
-                if (row.IsInstalled) menu.Items.Add(Item("Show Last Install Log", () => ShowPhpLog(row)));
-                if (row.CanUninstall && row.HasUpdate) menu.Items.Add(Item("Uninstall…", () => _ = UninstallPhpAsync(row)));
+                if (row.CanMakeDefault) menu.Items.Add(Item(Strings.Versions_MakeDefault, () => MakePhpDefault(row)));
+                if (row.IsInstalled) menu.Items.Add(Item(Strings.Versions_ShowLastInstallLog, () => ShowPhpLog(row)));
+                if (row.CanUninstall && row.HasUpdate) menu.Items.Add(Item(Strings.Common_UninstallEllipsis, () => _ = UninstallPhpAsync(row)));
             }
             button.Flyout = menu;
             menu.ShowAt(button);
@@ -199,8 +199,8 @@ internal sealed partial class PhpPane : UserControl, ISettingsPane
 
     private async Task UninstallPhpAsync(PhpVersionViewModel row)
     {
-        if (!await window.Confirm($"Uninstall PHP {row.Minor}?",
-                $"Its php.ini is removed too. Sites pinned to PHP {row.Minor} stop working until you pick another version.", "Uninstall"))
+        if (!await window.Confirm(Localization.Format(Strings.Services_UninstallQuestion, $"PHP {row.Minor}"),
+                Localization.Format(Strings.Php_UninstallDetails, row.Minor), Strings.Common_Uninstall))
         {
             return;
         }
@@ -209,7 +209,7 @@ internal sealed partial class PhpPane : UserControl, ISettingsPane
 
     private void ShowPhpLog(PhpVersionViewModel row)
     {
-        _ = JobLogDialog.ShowAsync(window, $"PHP {row.Minor} log", token => model.Php.ReadLogAsync(row.Minor, token),
+        _ = JobLogDialog.ShowAsync(window, Localization.Format(Strings.Versions_LogTitle, $"PHP {row.Minor}"), token => model.Php.ReadLogAsync(row.Minor, token),
             () => model.Php.Current?.Versions.FirstOrDefault(v => v.Minor == row.Minor)?.Job?.IsRunning == true, 400);
     }
 
@@ -220,18 +220,18 @@ internal sealed partial class PhpPane : UserControl, ISettingsPane
             var menu = new MenuFlyout();
             if (row.HasRunningJob)
             {
-                menu.Items.Add(Item("Show log", () => ShowFrankenLog(row)));
-                menu.Items.Add(Item("Cancel", () => _ = row.CancelCommand.ExecuteAsync(null)));
+                menu.Items.Add(Item(Strings.Versions_ShowLog, () => ShowFrankenLog(row)));
+                menu.Items.Add(Item(Strings.Common_Cancel, () => _ = row.CancelCommand.ExecuteAsync(null)));
             }
             else if (row.HasFailedJob)
             {
-                menu.Items.Add(Item("Show log", () => ShowFrankenLog(row)));
-                menu.Items.Add(Item("Dismiss", () => _ = row.DismissCommand.ExecuteAsync(null)));
+                menu.Items.Add(Item(Strings.Versions_ShowLog, () => ShowFrankenLog(row)));
+                menu.Items.Add(Item(Strings.Sites_Share_Dismiss, () => _ = row.DismissCommand.ExecuteAsync(null)));
             }
             else
             {
-                menu.Items.Add(Item("Show log", () => ShowFrankenLog(row)));
-                if (row.CanUninstall && row.HasUpdate) menu.Items.Add(Item("Uninstall…", () => _ = UninstallFrankenPhpAsync(row)));
+                menu.Items.Add(Item(Strings.Versions_ShowLog, () => ShowFrankenLog(row)));
+                if (row.CanUninstall && row.HasUpdate) menu.Items.Add(Item(Strings.Common_UninstallEllipsis, () => _ = UninstallFrankenPhpAsync(row)));
             }
             button.Flyout = menu;
             menu.ShowAt(button);
@@ -248,8 +248,7 @@ internal sealed partial class PhpPane : UserControl, ISettingsPane
 
     private async Task UninstallFrankenPhpAsync(FrankenPhpVersionViewModel row)
     {
-        if (!await window.Confirm($"Uninstall FrankenPHP for PHP {row.Php}?",
-                "Sites that run on FrankenPHP with this version are served by PHP-CGI until it has downloaded again by itself.", "Uninstall"))
+        if (!await window.Confirm(Localization.Format(Strings.Php_UninstallFrankenQuestion, row.Php), Strings.Php_UninstallFrankenDetails, Strings.Common_Uninstall))
         {
             return;
         }
@@ -258,7 +257,7 @@ internal sealed partial class PhpPane : UserControl, ISettingsPane
 
     private void ShowFrankenLog(FrankenPhpVersionViewModel row)
     {
-        _ = JobLogDialog.ShowAsync(window, $"FrankenPHP {row.Php} log", token => model.FrankenPhp.ReadLogAsync(row.Php, token),
+        _ = JobLogDialog.ShowAsync(window, Localization.Format(Strings.Versions_LogTitle, $"FrankenPHP {row.Php}"), token => model.FrankenPhp.ReadLogAsync(row.Php, token),
             () => model.FrankenPhp.Current?.Builds.FirstOrDefault(v => v.Php == row.Php)?.Job?.IsRunning == true);
     }
 

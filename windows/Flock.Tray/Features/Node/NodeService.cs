@@ -40,13 +40,13 @@ public sealed class NodeService : IAsyncDisposable
         request.JoinReadAsync(client.NodeVersionsAsync, Apply, error => catalogErrors.SetRefresh(error), observerToken, lifetimeToken: lifetimeToken);
 
     public Task<OperationOutcome> InstallAsync(string major, CancellationToken token = default) =>
-        MutateAsync(major, "Downloading and installing…", cancellation => client.InstallNodeMajorAsync(major, cancellation), token);
+        MutateAsync(major, Strings.Node_DownloadingAndInstalling, cancellation => client.InstallNodeMajorAsync(major, cancellation), token);
 
     public Task<OperationOutcome> UpdateNpmAsync(string major, CancellationToken token = default) =>
-        MutateAsync(major, "Updating npm…", cancellation => client.UpdateNpmAsync(major, cancellation), token);
+        MutateAsync(major, Strings.Node_UpdatingNpm, cancellation => client.UpdateNpmAsync(major, cancellation), token);
 
     public Task<OperationOutcome> UninstallAsync(string major, CancellationToken token = default) =>
-        MutateAsync(major, "Uninstalling…", cancellation => client.UninstallNodeAsync(major, cancellation), token);
+        MutateAsync(major, Strings.Node_Uninstalling, cancellation => client.UninstallNodeAsync(major, cancellation), token);
 
     public Task<OperationOutcome> CheckAsync(CancellationToken token = default) =>
         MutateCatalogAsync(cancellation => client.CheckNodeReleasesAsync(cancellation), token);

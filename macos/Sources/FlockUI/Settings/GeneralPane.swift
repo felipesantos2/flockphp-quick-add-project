@@ -29,62 +29,68 @@ struct GeneralPane: View {
         let store = model.settings
 
         VStack(spacing: 0) {
-            PaneHeader(title: "General", subtitle: "The Flock daemon runs your sites, PHP and services in the background.")
+            PaneHeader(title: "general.title", subtitle: "general.subtitle")
             Form {
-                Section("Daemon") {
+                Section("general.daemon") {
                     if let status = model.status {
-                        LabeledContent("Status") {
+                        LabeledContent("general.status") {
                             HStack(spacing: 6) {
                                 StatusDot(on: !status.isDegraded)
-                                Text(status.isDegraded ? "Needs attention" : "Running")
+                                Text(status.isDegraded ? "menu.status.needs_attention" : "sites.proxy.running")
                             }
                         }
-                        LabeledContent("Version", value: status.version)
-                        LabeledContent("Process", value: "pid \(status.pid)")
+                        LabeledContent("general.version", value: status.version)
+                        LabeledContent("general.process", value: "pid \(status.pid)")
                     }
-                    LabeledContent("") {
+                    LabeledContent {
                         Button {
                             Task { await model.restart() }
                         } label: {
-                            BusyLabel(title: "Restart Daemon", busyTitle: "Restarting…", isBusy: model.isRestarting)
+                            BusyLabel(title: "general.restart_daemon", busyTitle: "general.restarting", isBusy: model.isRestarting)
                         }
                         .disabled(model.isRestarting)
+                    } label: {
+                        Text(verbatim: "")
                     }
                 }
 
                 if let config = store.config {
                     Section {
                         LabeledContent {
-                            Text("*.\(config.tld)")
+                            Text("common.wildcard_domain \(config.tld)")
                         } label: {
-                            Text("Domain")
+                            Text("general.domain")
                             Text(domainExplanation(config.tld))
                         }
                     } header: {
-                        Text("Network")
+                        Text("general.network")
                     } footer: {
                         // Sites are served on 80 and 443; other ports are only set by editing config.json.
                         if config.ports.http != 80 || config.ports.https != 443 {
-                            Text("Sites use ports \(String(config.ports.http)) (HTTP) and \(String(config.ports.https)) (HTTPS), set in config.json, so their addresses include the port.")
+                            Text("general.ports \(String(config.ports.http)) \(String(config.ports.https))")
                                 .font(.caption).foregroundStyle(.secondary)
                         }
                     }
 
-                    Section("Data") {
-                        LabeledContent("Folder") {
+                    Section("general.data") {
+                        LabeledContent("general.folder") {
                             HStack {
                                 Text(config.root).lineLimit(1).truncationMode(.middle).foregroundStyle(.secondary)
-                                Button("Show in Finder") { reveal(config.root) }
+                                Button("general.show_in_finder") { reveal(config.root) }
                             }
                         }
                     }
                 }
 
-                Section("Startup") {
-                    Toggle("Open Flock’s menu bar app at login", isOn: Binding(get: { launchAtLogin }, set: { setLaunchAtLogin($0) }))
+                Section("general.startup") {
+                    Toggle("general.open_flocks_menu_bar_app", isOn: Binding(get: { launchAtLogin }, set: { setLaunchAtLogin($0) }))
                     if let loginError {
                         Text(loginError).font(.caption).foregroundStyle(.orange)
                     }
+                }
+
+                Section {
+                    LanguagePicker()
                 }
 
                 Section {
@@ -94,17 +100,17 @@ struct GeneralPane: View {
                             get: { config.channel == "beta" },
                             set: { on in Task { await store.perform { _ = try await $0.updateSettings(SettingsChange(channel: on ? "beta" : "stable")) } } }
                         )) {
-                            Text("Beta versions")
-                            Text("Get new versions of Flock, PHP and services earlier, including pre-releases. They may not work yet.")
+                            Text("general.beta")
+                            Text("general.beta_description")
                         }
                         .disabled(config.channel == "experimental")
                         if config.channel == "experimental" {
-                            Label("Experimental channel: packages that aren’t released yet are offered. `flock channel stable` switches back.", systemImage: "flask.fill")
+                            Label("general.experimental_channel_packages_that_arent", systemImage: "flask.fill")
                                 .font(.caption).foregroundStyle(.orange)
                         }
                     }
                 } header: {
-                    Text("Updates")
+                    Text("general.updates")
                 }
 
                 if let config = store.config {
@@ -117,12 +123,12 @@ struct GeneralPane: View {
                         .frame(minHeight: 80)
                         .overlay {
                             if config.parked.isEmpty {
-                                Text("No project folders").foregroundStyle(.secondary)
+                                Text("general.no_project_folders").foregroundStyle(.secondary)
                             }
                         }
                         HStack(spacing: 0) {
                             Button {
-                                for url in SettingsStore.chooseDirectories(prompt: "Add", multiple: true) {
+                                for url in SettingsStore.chooseDirectories(prompt: String(localized: "common.add"), multiple: true) {
                                     Task { await store.perform { _ = try await $0.park(url.path) } }
                                 }
                             } label: { Image(systemName: "plus").frame(width: 22, height: 18) }
@@ -134,9 +140,9 @@ struct GeneralPane: View {
                         }
                         .buttonStyle(.borderless)
                     } header: {
-                        Text("Project folders")
+                        Text("general.project_folders")
                     } footer: {
-                        Text("Every folder inside a project folder is served as <folder>.\(config.tld) — the same as `flock park`.")
+                        Text("general.project_folders_description \(config.tld)")
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 }
@@ -144,18 +150,18 @@ struct GeneralPane: View {
             .formStyle(.grouped)
             .scrollContentBackground(.hidden)
         }
-        .confirmationDialog("Remove \(confirmUnpark.map { URL(fileURLWithPath: $0).lastPathComponent } ?? "") from project folders?",
+        .confirmationDialog("general.remove_project_folder_question \(confirmUnpark.map { URL(fileURLWithPath: $0).lastPathComponent } ?? "")",
                             isPresented: Binding(get: { confirmUnpark != nil }, set: { if !$0 { confirmUnpark = nil } }),
                             presenting: confirmUnpark) { path in
-            Button("Remove", role: .destructive) {
+            Button("common.remove", role: .destructive) {
                 if selectedParked == path {
                     selectedParked = nil
                 }
                 Task { await store.perform { _ = try await $0.unpark(path) } }
             }
-            Button("Cancel", role: .cancel) {}
+            Button("common.cancel", role: .cancel) {}
         } message: { path in
-            Text("The sites in \(path) are no longer served. The folder and its projects are not touched.")
+            Text("general.sites_in_path_are_no \(path)")
         }
     }
 
@@ -166,29 +172,29 @@ struct GeneralPane: View {
             HStack(spacing: 8) {
                 Text(updateState(updater)).foregroundStyle(.secondary)
                 if updater.isEnabled {
-                    Button(updater.availableVersion.map { "Update to \($0)" } ?? "Check for Updates") {
+                    Button(updater.availableVersion.map { String(localized: "general.update_to \($0)") } ?? String(localized: "general.check_for_updates")) {
                         updater.checkForUpdates()
                     }
                     .disabled(updater.isChecking)
                 }
             }
         } label: {
-            Text("Flock")
-            Text("Version \(Updater.appVersion)")
+            Text("common.flock")
+            Text("general.version_number \(Updater.appVersion)")
         }
     }
 
     private func updateState(_ updater: Updater) -> String {
         if !updater.isEnabled {
-            return "Updates are off in development builds"
+            return String(localized: "general.updates_are_off_in_development")
         }
         if updater.isChecking {
-            return "Checking…"
+            return String(localized: "versions.checking")
         }
         if let version = updater.availableVersion {
-            return "\(version) is available"
+            return String(localized: "services.version_available \(version)")
         }
-        return updater.upToDate ? "Up to date" : ""
+        return updater.upToDate ? String(localized: "versions.up_to_date") : ""
     }
 
     /// How names under the TLD resolve: Flock's DNS server through /etc/resolver, which has no
@@ -196,10 +202,10 @@ struct GeneralPane: View {
     private func domainExplanation(_ tld: String) -> String {
         guard let dns = model.status?.dns else { return "" }
         if dns.wildcard {
-            return "Every name, any subdomain included, is resolved by Flock's DNS server (/etc/resolver/\(tld))."
+            return String(localized: "general.every_name_any_subdomain_included \(tld)")
         }
-        let problem = dns.wildcardProblem.isEmpty ? "Flock's DNS server isn't running" : dns.wildcardProblem
-        return "*.\(tld) doesn't resolve: \(problem). macOS has no hosts-file fallback, so sites don't open until it does; `flock install` sets /etc/resolver/\(tld) up again."
+        let problem = dns.wildcardProblem.isEmpty ? String(localized: "general.flocks_dns_server_isnt_running") : dns.wildcardProblem
+        return String(localized: "general.doesnt_resolve_macos_has_no \(tld) \(problem) \(tld)")
     }
 
     private func setLaunchAtLogin(_ on: Bool) {

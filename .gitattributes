@@ -1,0 +1,16 @@
+# Generated from lang/ by tools/i18n (lang/README.md): collapsed in diffs.
+macos/Resources/Localizable.xcstrings linguist-generated
+macos/Sources/FlockUI/Languages.swift linguist-generated
+windows/Flock.Kit/Strings*.resx linguist-generated
+windows/Flock.Kit/Languages.g.cs linguist-generated
+windows/installer/Strings.iss linguist-generated
+linux/po/*.po linguist-generated
+
+# tools/i18n writes and compares LF, so a Windows checkout keeps the catalogs and generated files LF.
+lang/**/*.json text eol=lf
+macos/Resources/Localizable.xcstrings text eol=lf
+macos/Sources/FlockUI/Languages.swift text eol=lf
+windows/Flock.Kit/Strings*.resx text eol=lf
+windows/Flock.Kit/Languages.g.cs text eol=lf
+windows/installer/Strings.iss text eol=lf
+linux/po/*.po text eol=lf

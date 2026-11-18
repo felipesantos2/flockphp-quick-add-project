@@ -23,8 +23,8 @@ internal sealed partial class DumpsPane : UserControl, ISettingsPane
         loaded = true;
     }
 
-    public string Title => "Dumps";
-    public string Subtitle => "Send dump() and dd() output to Flock instead of the page or terminal — no changes to your projects.";
+    public string Title => Strings.Settings_Pane_Dumps;
+    public string Subtitle => Strings.Dumps_Subtitle;
     public UIElement Root => this;
     public bool ScrollsItself => false;
     public Task ActivateAsync(CancellationToken hidden)

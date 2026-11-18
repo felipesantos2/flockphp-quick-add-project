@@ -86,8 +86,8 @@ internal sealed class WorktreeNotifier
     {
         try
         {
-            tray?.ShowNotification($"Setting up {worktree.WorktreeLabel} failed",
-                $"{worktree.Parent}: {(setup.Error.Length > 0 ? setup.Error : "see its log")}");
+            tray?.ShowNotification(Localization.Format(Strings.Worktrees_SetupFailedTitle, worktree.WorktreeLabel),
+                $"{worktree.Parent}: {(setup.Error.Length > 0 ? setup.Error : Strings.Worktrees_SeeLog)}");
             shown = worktree.Name;
         }
         catch (Exception error)

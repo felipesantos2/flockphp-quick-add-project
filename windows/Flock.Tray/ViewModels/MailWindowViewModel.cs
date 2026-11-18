@@ -158,7 +158,7 @@ public sealed class MailViewModel : ObservableObject, IAsyncDisposable
         public DateTimeOffset Date => summary.Date;
         public int Size => summary.Size;
         public string DateLabel => Ui.Relative(summary.Date);
-        public string SubjectLabel => summary.Subject.Length == 0 ? "(no subject)" : summary.Subject;
+        public string SubjectLabel => summary.Subject.Length == 0 ? Strings.Mail_NoSubject : summary.Subject;
         public string Recipients => string.Join(", ", summary.To);
 
         internal void Update(MailSummary value)

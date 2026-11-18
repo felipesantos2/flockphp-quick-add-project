@@ -46,7 +46,7 @@ These tools only read, so most clients run them without asking:
 | Tool | What it does |
 | --- | --- |
 | `status` | Whether Flock runs, the default PHP and Node.js versions, and any problems |
-| `site_info` | A site's URLs, folder, HTTPS, PHP and Node.js versions (and where they come from), and its server |
+| `site_info` | A site's URLs, folder, HTTPS, PHP and Node.js versions (and where they come from), its server, and its Reverb server with the `.env` lines it needs |
 | `php_extensions` | The PHP extensions a site requires or uses, and whether Flock's PHP has each |
 | `list_sites` | Every site with its URL, folder and PHP version |
 | `list_worktrees` | The [git worktrees](worktrees.md) Flock serves: their branch, URL, folder, setup and database |
@@ -69,7 +69,7 @@ These tools change things, so clients ask you first:
 | `link_site` | Serve a project as a new site |
 | `proxy_site` | Proxy `<name>.test` to a local service, e.g. a dashboard or a Docker container, optionally with the command that starts its server |
 | `proxy_server` | Start or stop the server of a proxy that has a command |
-| `update_site` | Turn HTTPS on or off, isolate, unisolate, pin or unpin a version, add a domain, switch between FrankenPHP (with or without Octane) and PHP-FPM, serve it as a PHP site or a Node.js app, or restart or stop it |
+| `update_site` | Turn HTTPS on or off, isolate, unisolate, pin or unpin a version, add a domain, switch between FrankenPHP (with or without Octane) and PHP-FPM, serve it as a PHP site or a Node.js app, run, stop or restart its Reverb server, or restart or stop it |
 | `set_debugging` | Turn Xdebug or dump capture on or off |
 | `create_database` | Create a database in PostgreSQL, MySQL or MariaDB |
 | `create_worktree` | Create a [git worktree](worktrees.md) of a site on a branch (or one Flock names), at its own URL, and wait while Flock sets it up |

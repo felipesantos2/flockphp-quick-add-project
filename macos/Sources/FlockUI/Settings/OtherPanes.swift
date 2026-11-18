@@ -11,31 +11,31 @@ struct MailPane: View {
         let mail = store.services.first { $0.id == "mail" }
 
         VStack(spacing: 0) {
-            PaneHeader(title: "Mail", subtitle: "Flock catches every email your apps send — nothing leaves your Mac.")
+            PaneHeader(title: "services.category.mail", subtitle: "mail.flock_catches_every_email_your")
             Form {
-                Section("SMTP server") {
-                    LabeledContent("Host", value: "127.0.0.1")
-                    LabeledContent("Port", value: String(store.config?.ports.smtp ?? mail?.port ?? 0))
-                    LabeledContent("Status") {
+                Section("mail.smtp_server") {
+                    LabeledContent("mail.host", value: "127.0.0.1")
+                    LabeledContent("mail.port", value: String(store.config?.ports.smtp ?? mail?.port ?? 0))
+                    LabeledContent("general.status") {
                         HStack(spacing: 6) {
                             StatusDot(on: mail?.running ?? false)
-                            Text(mail?.running == true ? "Running" : "Stopped")
+                            Text(mail?.running == true ? "sites.proxy.running" : "services.postgres.stopped")
                         }
                     }
                 }
                 Section {
                     CodeBlock(text: mail?.env ?? "")
                 } header: {
-                    Text("Environment Variables")
+                    Text("mail.environment_variables_title_case")
                 } footer: {
-                    Text("MAIL_USERNAME picks the inbox, so every project gets its own.")
+                    Text("mail.username_inbox")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Section {
-                    LabeledContent("Caught emails") {
+                    LabeledContent("mail.caught") {
                         HStack {
                             Text(String(model.status?.mailCount ?? 0))
-                            Button("Open Mail") { openWindow.activating(WindowID.mail) }
+                            Button("mail.open") { openWindow.activating(WindowID.mail) }
                         }
                     }
                 }
@@ -57,18 +57,18 @@ struct DumpsPane: View {
         let unsupported = model.status?.captureUnsupported ?? []
 
         VStack(spacing: 0) {
-            PaneHeader(title: "Dumps", subtitle: "Send dump() and dd() output, queries, logs, views and jobs to Flock instead of the page or terminal — no changes to your projects.")
+            PaneHeader(title: "menu.dumps", subtitle: "dumps.send_dump_and_dd_output")
             Form {
                 Section {
-                    Toggle("Capture", isOn: Binding(get: { capturing }, set: { on in Task { await model.setDumps(on, from: .settings) } }))
-                    LabeledContent("Captured") {
+                    Toggle("dumps.capture_short", isOn: Binding(get: { capturing }, set: { on in Task { await model.setDumps(on, from: .settings) } }))
+                    LabeledContent("dumps.captured") {
                         HStack {
-                            Text("\(model.status?.dumpCount ?? 0) dumps, \(model.status?.eventCount ?? 0) events")
-                            Button("Open Dumps") { openWindow.activating(WindowID.dumps) }
+                            Text(verbatim: "\(Self.dumps(model.status?.dumpCount ?? 0)), \(Self.events(model.status?.eventCount ?? 0))")
+                            Button("dumps.open") { openWindow.activating(WindowID.dumps) }
                         }
                     }
                 } footer: {
-                    Text("Turn it off to see dumps in the page again.")
+                    Text("dumps.capture_description")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Section {
@@ -76,19 +76,23 @@ struct DumpsPane: View {
                         Toggle(kind.title, isOn: Binding(get: { !off.contains(kind.rawValue) },
                                                          set: { on in Task { await model.setCapture(kind, on, from: .settings) } }))
                     }
-                    Toggle("Show dump() output in the page too", isOn: Binding(get: { model.status?.dumpsInPage == true },
+                    Toggle("dumps.show_dump_output_in_the", isOn: Binding(get: { model.status?.dumpsInPage == true },
                                                                              set: { on in Task { await model.setDumpsInPage(on, from: .settings) } }))
                 } header: {
-                    Text("While capturing")
+                    Text("dumps.while_capturing")
                 } footer: {
+                    let list = unsupported.formatted(.list(type: .and).locale(AppLanguage.locale))
+                    // The subject is a list, not a count: one version or several.
                     Text(unsupported.isEmpty
-                        ? "dd() always shows in the page too, as it ends the request."
-                        : "dd() always shows in the page too, as it ends the request. PHP \(ListFormatter.localizedString(byJoining: unsupported)) only \(unsupported.count == 1 ? "captures" : "capture") dumps: \(unsupported.count == 1 ? "its build has" : "their builds have") no agent extension yet.")
+                        ? "dumps.dd_always_shows_in_the"
+                        : unsupported.count == 1
+                        ? "dumps.dd_always_shows_in_the_page_too \(list)"
+                        : "dumps.dd_always_shows_in_the_page \(list)")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 .disabled(!capturing)
-                Section("Sources") {
-                    Picker("Open files in", selection: $editorID) {
+                Section("dumps.sources") {
+                    Picker("dumps.open_files_in", selection: $editorID) {
                         ForEach(Editor.allCases) { Text($0.name).tag($0.rawValue) }
                     }
                 }
@@ -96,6 +100,17 @@ struct DumpsPane: View {
             .formStyle(.grouped)
             .scrollContentBackground(.hidden)
         }
+    }
+}
+
+extension DumpsPane {
+    // One apart in code as well: builds without the compiled catalog (swift run) have no plural rules.
+    static func dumps(_ count: Int) -> String {
+        count == 1 ? String(localized: "dumps.n1_dump") : String(localized: "dumps.n_dumps \(count)")
+    }
+
+    static func events(_ count: Int) -> String {
+        count == 1 ? String(localized: "dumps.n1_event") : String(localized: "app.n_events \(count)")
     }
 }
 
@@ -109,41 +124,41 @@ struct DebuggerPane: View {
         let versions = model.settings.config?.php ?? []
 
         VStack(spacing: 0) {
-            PaneHeader(title: "Debugger", subtitle: "Step through requests and commands with Xdebug.")
+            PaneHeader(title: "settings.pane.debugger", subtitle: "debugger.subtitle")
             Form {
                 Section {
-                    Toggle("Detect Xdebug requests", isOn: Binding(get: { enabled }, set: { on in Task { await model.setXdebug(on, from: .settings) } }))
-                    Toggle("Detect PhpStorm breakpoints", isOn: Binding(get: { breakpoints }, set: { on in Task { await model.setXdebugBreakpoints(on) } }))
+                    Toggle("debugger.detect_requests", isOn: Binding(get: { enabled }, set: { on in Task { await model.setXdebug(on, from: .settings) } }))
+                    Toggle("debugger.detect_breakpoints", isOn: Binding(get: { breakpoints }, set: { on in Task { await model.setXdebugBreakpoints(on) } }))
                         .disabled(!enabled)
                 } footer: {
-                    Text("Xdebug loads only for requests that ask for it, so everything else stays fast. While a project has breakpoints in PhpStorm, every request to its site is debugged.")
+                    Text("debugger.xdebug_loads_only_for_requests")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 if enabled && breakpoints && !debugging.isEmpty {
-                    Section("Debugging now") {
+                    Section("debugger.debugging_now") {
                         ForEach(debugging, id: \.self) { domain in
                             Label(domain, systemImage: "ladybug.fill").foregroundStyle(.orange)
                         }
                     }
                 }
-                Section("Connect your IDE") {
-                    LabeledContent("Client port", value: "9003")
-                    LabeledContent("Mode", value: "debug, develop")
+                Section("debugger.connect_ide") {
+                    LabeledContent("debugger.client_port", value: "9003")
+                    LabeledContent("debugger.mode", value: "debug, develop")
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Start a session")
-                        Text("Set a breakpoint in PhpStorm and listen for debug connections, use the Xdebug browser extension, or add `?XDEBUG_TRIGGER=1` to the URL. On the command line, run `flock debug artisan …`.")
+                        Text("debugger.start_session")
+                        Text("debugger.set_a_breakpoint_in_phpstorm")
                             .font(.callout)
                             .foregroundStyle(.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
-                Section("Availability") {
+                Section("debugger.availability") {
                     ForEach(versions) { php in
-                        LabeledContent("PHP \(php.version)") {
+                        LabeledContent("common.php_version \(php.version)") {
                             if php.xdebugAvailable {
-                                Label("Available", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
+                                Label("debugger.available", systemImage: "checkmark.circle.fill").foregroundStyle(.green)
                             } else {
-                                Label("Not in this build", systemImage: "xmark.circle").foregroundStyle(.secondary)
+                                Label("debugger.not_in_build", systemImage: "xmark.circle").foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -163,45 +178,45 @@ struct AboutPane: View {
         VStack(spacing: 14) {
             Spacer()
             AppIconView(size: 88)
-            Text("Flock").font(.largeTitle.weight(.semibold))
-            Text("A native local development environment for Laravel.")
+            Text("common.flock").font(.largeTitle.weight(.semibold))
+            Text("about.tagline")
                 .foregroundStyle(.secondary)
             Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 6) {
                 GridRow {
-                    Text("App").foregroundStyle(.secondary)
+                    Text("about.app").foregroundStyle(.secondary)
                     Text(Updater.appVersion)
                 }
                 GridRow {
-                    Text("Daemon").foregroundStyle(.secondary)
-                    Text(model.status?.version ?? "not running")
+                    Text("general.daemon").foregroundStyle(.secondary)
+                    Text(model.status?.version ?? String(localized: "about.daemon_not_running"))
                 }
             }
             .font(.callout)
             HStack {
-                Button("Data Folder") { reveal(FlockPaths.root.path) }
-                Button("Flock Docs") { NSWorkspace.shared.open(URL(string: "https://flockphp.com/docs")!) }
-                Button("Discord") { NSWorkspace.shared.open(URL(string: "https://discord.flockphp.com")!) }
-                Button("License") { NSWorkspace.shared.open(URL(string: "https://github.com/flock-php/flock/blob/main/LICENSE")!) }
+                Button("about.data_folder_title_case") { reveal(FlockPaths.root.path) }
+                Button("about.flock_docs") { NSWorkspace.shared.open(URL(string: "https://flockphp.com/docs")!) }
+                Button("common.discord") { NSWorkspace.shared.open(URL(string: "https://discord.flockphp.com")!) }
+                Button("about.license") { NSWorkspace.shared.open(URL(string: "https://github.com/flock-php/flock/blob/main/LICENSE")!) }
             }
             VStack(spacing: 8) {
-                Text("Flock is free and open source, forever. Sponsoring helps keep it maintained.")
+                Text("about.support_description")
                     .font(.callout).foregroundStyle(.secondary)
                 HStack {
-                    Button("Star on GitHub", systemImage: "star") { NSWorkspace.shared.open(URL(string: "https://github.com/flock-php/flock")!) }
-                    Button("Sponsor", systemImage: "heart") { NSWorkspace.shared.open(URL(string: "https://github.com/sponsors/flock-php")!) }
+                    Button("about.star_on_github", systemImage: "star") { NSWorkspace.shared.open(URL(string: "https://github.com/flock-php/flock")!) }
+                    Button("about.sponsor", systemImage: "heart") { NSWorkspace.shared.open(URL(string: "https://github.com/sponsors/flock-php")!) }
                 }
             }
             .padding(.top, 6)
-            Button("Found a bug? Report an issue") { NSWorkspace.shared.open(issueURL) }
+            Button("about.found_a_bug_report_an") { NSWorkspace.shared.open(issueURL) }
                 .buttonStyle(.link)
                 .font(.callout)
-            Text("Copyright © Guava s.r.o. Licensed under the AGPL-3.0.")
+            Text("about.license_description")
                 .font(.caption).foregroundStyle(.secondary)
             Spacer()
             VStack(spacing: 6) {
-                Button("Uninstall Flock…") { uninstallingState.wrappedValue = true }
+                Button("about.uninstall_flock_ellipsis") { uninstallingState.wrappedValue = true }
                     .disabled(model.installation.uninstaller == nil)
-                Text("Stops Flock and removes it from this Mac. Your sites, databases and settings are kept.")
+                Text("about.stops_flock_and_removes_it")
                     .font(.caption).foregroundStyle(.secondary)
             }
             .padding(.bottom, 20)
@@ -245,53 +260,53 @@ private struct UninstallSheet: View {
         VStack(alignment: .leading, spacing: 12) {
             switch stage {
             case .confirm:
-                Text("Uninstall Flock?").font(.headline)
-                Text("Flock stops and is removed from your PATH, together with its PHP and Node.js versions, certificates, logs and caches. macOS asks for your password to remove the *.test DNS setup and Flock's trusted certificate. Then this app moves itself to the Trash.")
+                Text("about.uninstall_question").font(.headline)
+                Text("about.flock_stops_and_is_removed")
                     .fixedSize(horizontal: false, vertical: true)
-                Text("Your sites' settings and your PostgreSQL and Redis databases stay in \(FlockPaths.root.path), so reinstalling picks up where you left off — unless you also delete them:")
+                Text("about.uninstall_keeps \(FlockPaths.root.path)")
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                Toggle("Also delete my sites' settings and databases", isOn: purgeState.projectedValue)
+                Toggle("about.also_delete_data", isOn: purgeState.projectedValue)
                     .toggleStyle(.checkbox)
                 HStack {
                     Spacer()
-                    Button("Cancel", role: .cancel) { dismiss() }
+                    Button("common.cancel", role: .cancel) { dismiss() }
                         .keyboardShortcut(.cancelAction)
-                    Button("Uninstall", role: .destructive) { Task { await run() } }
+                    Button("common.uninstall", role: .destructive) { Task { await run() } }
                 }
 
             case .running:
                 HStack(spacing: 8) {
                     ProgressView().controlSize(.small)
-                    Text("Uninstalling Flock…").font(.headline)
+                    Text("about.uninstalling_flock").font(.headline)
                 }
                 log
 
             case .done:
-                Text("Flock was uninstalled").font(.headline)
+                Text("about.flock_was_uninstalled").font(.headline)
                 Text(model.installedAppURL == nil
-                    ? "This copy of the app isn't in an Applications folder, so it stays where it is; delete it yourself. Open a new terminal: Flock is no longer on its PATH."
-                    : "Quitting moves Flock.app to the Trash. Open a new terminal: Flock is no longer on its PATH.")
+                    ? "about.this_copy_of_the_app"
+                    : "about.quitting_moves_flock_app_to")
                     .fixedSize(horizontal: false, vertical: true)
                 log
                 HStack {
                     Spacer()
-                    Button("Quit Flock") { model.removeAppAndQuit() }
+                    Button("menu.quit_flock") { model.removeAppAndQuit() }
                         .keyboardShortcut(.defaultAction)
                 }
 
             case .failed:
-                Text("Uninstalling didn't finish").font(.headline)
+                Text("about.uninstalling_didnt_finish").font(.headline)
                 Text(output.contains("administrator permission was declined")
-                    ? "The password prompt was cancelled, so the DNS setup and the certificate are still in place."
-                    : "Something went wrong. The output below says what; you can try again.")
+                    ? "about.password_prompt_was_cancelled_so"
+                    : "setup.failed")
                     .fixedSize(horizontal: false, vertical: true)
                 log
                 HStack {
                     Spacer()
-                    Button("Close") { dismiss() }
+                    Button("common.close") { dismiss() }
                         .keyboardShortcut(.cancelAction)
-                    Button("Try Again") { Task { await run() } }
+                    Button("setup.try_again") { Task { await run() } }
                         .keyboardShortcut(.defaultAction)
                 }
             }
@@ -317,7 +332,7 @@ private struct UninstallSheet: View {
 
     private var log: some View {
         ScrollView([.vertical, .horizontal]) {
-            Text(output.isEmpty ? " " : output)
+            Text(verbatim: output.isEmpty ? " " : output)
                 .font(.system(.caption, design: .monospaced))
                 .textSelection(.enabled)
                 .frame(maxWidth: .infinity, alignment: .leading)

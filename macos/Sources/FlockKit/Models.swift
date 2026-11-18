@@ -220,6 +220,10 @@ public struct Status: Decodable, Sendable, Equatable {
         public var octaneAvailable: Bool
         /// The site's FrankenPHP process, when `server` is FrankenPHP. Until it runs, PHP-FPM serves the site.
         public var frankenPHP: SiteFrankenPHP?
+        /// The project has Laravel Reverb installed, so Flock can run its WebSocket server.
+        public var reverbAvailable: Bool
+        /// The site's Reverb server, while Reverb is turned on for it.
+        public var reverb: SiteReverb?
         /// Whether the project uses Laravel Boost and has Flock's guideline.
         public var boost: Boost
         /// The site's tunnel (`flock share`), while there is one.
@@ -275,7 +279,7 @@ public struct Status: Decodable, Sendable, Equatable {
         enum CodingKeys: String, CodingKey {
             case name, domain, path, php, phpSource, phpPinned, phpFile, node, nodeSource, nodePinned, nodeFile, nodeShadowed
             case secured, parked, url, problem, notice, root, rootSource, rootPinned, rootFile, rootState, rootSuggestions
-            case domains, debugging, server, worker, octaneAvailable, boost, share, parent, branch, worktree
+            case domains, debugging, server, worker, octaneAvailable, reverbAvailable, reverb, boost, share, parent, branch, worktree
             case type, nodeServer
             case frankenPHP = "frankenphp"
         }
@@ -311,6 +315,8 @@ public struct Status: Decodable, Sendable, Equatable {
             worker = try c.decodeIfPresent(Worker.self, forKey: .worker) ?? .classic
             octaneAvailable = try c.decodeIfPresent(Bool.self, forKey: .octaneAvailable) ?? false
             frankenPHP = try c.decodeIfPresent(SiteFrankenPHP.self, forKey: .frankenPHP)
+            reverbAvailable = try c.decodeIfPresent(Bool.self, forKey: .reverbAvailable) ?? false
+            reverb = try c.decodeIfPresent(SiteReverb.self, forKey: .reverb)
             boost = try c.decodeIfPresent(Boost.self, forKey: .boost) ?? .none
             share = try c.decodeIfPresent(ShareStatus.self, forKey: .share)
             parent = try c.decodeIfPresent(String.self, forKey: .parent).flatMap { $0.isEmpty ? nil : $0 }
@@ -416,6 +422,42 @@ public struct Status: Decodable, Sendable, Equatable {
             port = try c.decodeIfPresent(Int.self, forKey: .port) ?? 0
             let raw = try c.decodeIfPresent(Double.self, forKey: .progress) ?? -1
             progress = raw < 0 ? nil : min(raw, 1)
+            problem = try c.decodeIfPresent(String.self, forKey: .problem) ?? ""
+            log = try c.decodeIfPresent(String.self, forKey: .log) ?? ""
+        }
+    }
+
+    /// A site's Laravel Reverb server (php artisan reverb:start), reached at /app on the site's domain.
+    public struct SiteReverb: Decodable, Sendable, Equatable {
+        public var state: State
+        public var port: Int
+        /// The lines the app's .env needs, e.g. "REVERB_HOST=app.test".
+        public var env: [String]
+        /// Why it doesn't run (failed, unavailable).
+        public var problem: String
+        /// The name of its service log.
+        public var log: String
+
+        public enum State: String, Decodable, Sendable {
+            case running
+            /// See `problem`.
+            case failed
+            /// It can't run for the site; see `problem`.
+            case unavailable
+            case unknown
+
+            public init(from decoder: Decoder) throws {
+                self = State(rawValue: try decoder.singleValueContainer().decode(String.self)) ?? .unknown
+            }
+        }
+
+        enum CodingKeys: String, CodingKey { case state, port, env, problem, log }
+
+        public init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            state = try c.decodeIfPresent(State.self, forKey: .state) ?? .unknown
+            port = try c.decodeIfPresent(Int.self, forKey: .port) ?? 0
+            env = try c.decodeIfPresent([String].self, forKey: .env) ?? []
             problem = try c.decodeIfPresent(String.self, forKey: .problem) ?? ""
             log = try c.decodeIfPresent(String.self, forKey: .log) ?? ""
         }
@@ -713,11 +755,11 @@ public struct Event: Decodable, Sendable, Equatable, Identifiable, Hashable {
         /// "Queries", "Logs", ... for menus and settings.
         public var title: String {
             switch self {
-            case .query: "Queries"
-            case .log: "Logs"
-            case .view: "Views"
-            case .job: "Jobs"
-            case .request: "Requests"
+            case .query: String(localized: "dumps.event_kind.queries")
+            case .log: String(localized: "dumps.event_kind.logs")
+            case .view: String(localized: "dumps.event_kind.views")
+            case .job: String(localized: "dumps.event_kind.jobs")
+            case .request: String(localized: "dumps.event_kind.requests")
             }
         }
     }

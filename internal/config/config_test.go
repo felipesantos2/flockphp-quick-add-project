@@ -112,6 +112,33 @@ func TestSetServerAssignsStablePortsAndValidates(t *testing.T) {
 		t.Errorf("UsedPorts names b's port %q", got)
 	}
 
+	// Reverb gets a port of its own, past b's, and keeps it while off.
+	cfg.SetReverb(&a, true)
+	if !a.Reverb || a.ReverbPort != FirstSitePort+3 {
+		t.Fatalf("reverb: %+v", a)
+	}
+	cfg.Upsert(a)
+	if got := cfg.UsedPorts("")[FirstSitePort+3]; got != "reverb-a" {
+		t.Errorf("UsedPorts names a's Reverb port %q", got)
+	}
+	cfg.SetReverb(&a, false)
+	cfg.Upsert(a)
+	if _, used := cfg.UsedPorts("")[FirstSitePort+3]; used || a.ReverbPort != FirstSitePort+3 {
+		t.Errorf("Reverb off: %+v", a)
+	}
+	cfg.SetReverb(&a, true)
+	if a.ReverbPort != FirstSitePort+3 {
+		t.Errorf("Reverb on again: %+v", a)
+	}
+	cfg.Upsert(a)
+
+	// Both switched on before either is saved: the ports still differ.
+	c := Site{Name: "c", Path: "/srv/c"}
+	cfg.SetReverb(&c, true)
+	if err := cfg.SetServer(&c, ServerFrankenPHP, ""); err != nil || c.ReverbPort != FirstSitePort+4 || c.Port != FirstSitePort+5 {
+		t.Fatalf("c: %+v, %v", c, err)
+	}
+
 	if err := cfg.SetServer(&a, "swoole", ""); err == nil {
 		t.Error("unknown server accepted")
 	}

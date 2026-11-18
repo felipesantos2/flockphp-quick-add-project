@@ -20,7 +20,7 @@ struct PHPPane: View {
         let store = model.settings
 
         VStack(spacing: 0) {
-            PaneHeader(title: "PHP", subtitle: "Every installed version runs its own PHP-FPM pool. Sites use the default unless pinned to a version.")
+            PaneHeader(title: "common.php", subtitle: "php.every_installed_version_runs_its")
             Form {
                 if let catalog = store.php {
                     Section {
@@ -29,7 +29,7 @@ struct PHPPane: View {
                         }
                     } header: {
                         HStack {
-                            Text("PHP-FPM")
+                            Text("common.php_fpm")
                             Spacer()
                             checkedLine(catalog)
                         }
@@ -46,7 +46,7 @@ struct PHPPane: View {
                                 FrankenPHPBuildRow(build: build)
                             }
                         } header: {
-                            Text("FrankenPHP")
+                            Text("common.frankenphp")
                         } footer: {
                             if !frankenPHP.checkError.isEmpty {
                                 Label(frankenPHP.checkError, systemImage: "exclamationmark.triangle.fill")
@@ -57,7 +57,7 @@ struct PHPPane: View {
                 } else {
                     HStack {
                         ProgressView().controlSize(.small)
-                        Text("Loading PHP versions…").foregroundStyle(.secondary)
+                        Text("php.loading_php_versions").foregroundStyle(.secondary)
                     }
                 }
             }
@@ -71,13 +71,13 @@ struct PHPPane: View {
         .alert(linkRequest?.title ?? "", isPresented: Binding(get: { linkRequest != nil }, set: { if !$0 { model.pendingInstall = nil } }),
                presenting: linkRequest) { request in
             if let install = request.confirmation {
-                Button("Install") {
+                Button("common.install") {
                     let minor = install.line
                     Task { await store.performOnPHP { try await $0.installPHP(minor) } }
                 }
-                Button("Cancel", role: .cancel) {}
+                Button("common.cancel", role: .cancel) {}
             } else {
-                Button("OK") {}
+                Button("common.ok") {}
             }
         } message: { request in
             Text(request.message)
@@ -107,11 +107,11 @@ struct PHPPane: View {
     private func checkedLine(_ catalog: PHPCatalog) -> some View {
         HStack(spacing: 6) {
             if let checked = catalog.checkedAt {
-                Text("Checked \(checked, format: .relative(presentation: .named))")
+                Text("node.checked \(checked, format: .relative(presentation: .named))")
             } else {
-                Text("Not checked yet")
+                Text("versions.not_checked")
             }
-            Text("·")
+            Text(verbatim: "·")
             Button {
                 checking = true
                 Task {
@@ -119,7 +119,7 @@ struct PHPPane: View {
                     checking = false
                 }
             } label: {
-                BusyLabel(title: "Check now", busyTitle: "Checking…", isBusy: checking)
+                BusyLabel(title: "versions.check_now", busyTitle: "versions.checking", isBusy: checking)
             }
             .buttonStyle(.link)
             .disabled(checking)
@@ -160,13 +160,13 @@ private struct PHPReleaseRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text("PHP \(release.minor)").font(.body.weight(.semibold))
-                    Text(versionText).font(.callout.monospacedDigit()).foregroundStyle(.secondary)
-                    if release.isDefault { Badge(text: "Default") }
+                    Text("common.php_version \(release.minor)").font(.body.weight(.semibold)).fixedSize()
+                    Text(versionText).font(.callout.monospacedDigit()).foregroundStyle(.secondary).fixedSize()
+                    if release.isDefault { Badge(text: "sites.default") }
                     if release.prerelease {
-                        Badge(text: "Pre-release", color: .orange).help("PHP \(release.latest) isn’t released yet — it may not work. Offered on the beta channel.")
+                        Badge(text: "versions.prerelease", color: .orange).help("php.php_version_isnt_released_yet \(release.latest)")
                     }
-                    if release.isInstalled && release.xdebug { Badge(text: "Xdebug", color: .red) }
+                    if release.isInstalled && release.xdebug { Badge(text: "common.xdebug", color: .red) }
                 }
                 detail
             }
@@ -175,21 +175,25 @@ private struct PHPReleaseRow: View {
             if busy {
                 ProgressView().controlSize(.small)
             }
+            // The buttons keep their whole titles (longer in Czech and Spanish); the version wraps.
             actions
+                .fixedSize()
                 .disabled(busy)
         }
         .padding(.vertical, 3)
-        .confirmationDialog("Uninstall PHP \(release.minor)?", isPresented: confirmUninstallState.projectedValue) {
-            Button("Uninstall", role: .destructive) {
+        .confirmationDialog("php.uninstall_php_version \(release.minor)", isPresented: confirmUninstallState.projectedValue) {
+            Button("common.uninstall", role: .destructive) {
                 run { try await $0.uninstallPHP(release.minor) }
             }
         } message: {
-            Text("Its php.ini is removed too. Sites pinned to PHP \(release.minor) stop working until you pick another version.")
+            Text("php.uninstall_details \(release.minor)")
         }
     }
 
+    /// The installed version; with "→ newer" only while no Update to button names the newer one
+    /// (an install of it runs or failed).
     private var versionText: String {
-        if release.update && release.latest != release.installed {
+        if release.update && release.latest != release.installed, let job = release.job, job.isRunning || job.isFailed {
             return "\(release.installed) → \(release.latest)"
         }
         return release.isInstalled ? release.installed : release.latest
@@ -210,16 +214,16 @@ private struct PHPReleaseRow: View {
             }
             .font(.caption).foregroundStyle(.secondary)
         } else if let job = release.job, job.isFailed {
-            Text(job.error.isEmpty ? "The download failed." : job.error)
+            Text(job.error.isEmpty ? String(localized: "versions.download_failed") : job.error)
                 .font(.caption).foregroundStyle(.red)
                 .lineLimit(2)
                 .textSelection(.enabled)
                 .help(job.error)
         } else if !release.yanked.isEmpty {
-            Label(release.update ? "Withdrawn: \(release.yanked) — update to replace it" : "Withdrawn: \(release.yanked)", systemImage: "exclamationmark.triangle.fill")
+            Label(release.update ? "services.withdrawn_update \(release.yanked)" : "services.withdrawn \(release.yanked)", systemImage: "exclamationmark.triangle.fill")
                 .font(.caption).foregroundStyle(.orange)
                 .lineLimit(2)
-                .help("This build was withdrawn. Flock replaces it as soon as a fixed build is published.")
+                .help("services.withdrawn_tooltip")
         } else {
             Text(statusText).font(.caption).foregroundStyle(release.update ? Color.blue : Color.secondary)
         }
@@ -227,9 +231,9 @@ private struct PHPReleaseRow: View {
 
     private var statusText: String {
         switch release.status {
-        case .installed: "Up to date"
-        case .update: release.latest == release.installed ? "A new build is available" : "Update available"
-        case .available: "Not installed"
+        case .installed: String(localized: "versions.up_to_date")
+        case .update: release.latest == release.installed ? String(localized: "versions.new_build") : String(localized: "versions.update_available")
+        case .available: String(localized: "common.not_installed")
         case .unknown: ""
         }
     }
@@ -237,16 +241,16 @@ private struct PHPReleaseRow: View {
     /// "Downloading… 42%", "Downloading…" (size unknown) or "Installing…".
     private static func jobText(_ job: ComponentJob) -> String {
         if job.phase == .installing {
-            return "Installing…"
+            return String(localized: "common.installing")
         }
         if let progress = job.progress {
-            return "Downloading… \(Int((progress * 100).rounded()))%"
+            return String(localized: "php.downloading_percent \(String(Int((progress * 100).rounded())))")
         }
-        return "Downloading…"
+        return String(localized: "common.downloading")
     }
 
     private var sizeHelp: String {
-        release.size > 0 ? "Downloads PHP \(release.latest) (\(release.size / 1_000_000) MB)" : ""
+        release.size > 0 ? String(localized: "php.downloads_php_version_size_mb \(release.latest) \(String(release.size / 1_000_000))") : ""
     }
 
     @ViewBuilder
@@ -254,18 +258,18 @@ private struct PHPReleaseRow: View {
         let store = model.settings
 
         if let job = release.job, job.isRunning {
-            Button("Show Log", action: showLog).buttonStyle(.link)
-            Button("Cancel") {
+            Button("sites.show_log", action: showLog).buttonStyle(.link)
+            Button("common.cancel") {
                 run { try await $0.cancelPHPInstall(release.minor) }
             }
         } else if let job = release.job, job.isFailed {
-            Button("Show Log", action: showLog).buttonStyle(.link)
+            Button("sites.show_log", action: showLog).buttonStyle(.link)
             Button {
                 run { try await $0.installPHP(release.minor) }
             } label: {
-                Label("Retry", systemImage: "arrow.clockwise")
+                Label("common.retry", systemImage: "arrow.clockwise")
             }
-            Button("Dismiss") {
+            Button("sites.share.dismiss") {
                 run { try await $0.dismissPHPJob(release.minor) }
             }
         } else if release.isInstalled {
@@ -273,13 +277,13 @@ private struct PHPReleaseRow: View {
                 Button {
                     run { try await $0.installPHP(release.minor) }
                 } label: {
-                    Label(release.latest == release.installed ? "Update" : "Update to \(release.latest)", systemImage: "arrow.down.circle")
+                    Label(release.latest == release.installed ? "common.update" : "general.update_to \(release.latest)", systemImage: "arrow.down.circle")
                 }
                 .buttonStyle(.borderedProminent)
                 .help(sizeHelp)
             }
             if !release.isDefault {
-                Button("Make Default") {
+                Button("node.make_default") {
                     busy = true
                     Task {
                         await store.perform { _ = try await $0.updateSettings(SettingsChange(defaultPHP: release.minor)) }
@@ -290,11 +294,11 @@ private struct PHPReleaseRow: View {
             }
             Menu {
                 if let ini, !ini.isEmpty {
-                    Button("Open php.ini") { NSWorkspace.shared.open(URL(fileURLWithPath: ini)) }
+                    Button("php.open_ini") { NSWorkspace.shared.open(URL(fileURLWithPath: ini)) }
                 }
-                Button("Show Last Install Log", action: showLog)
+                Button("versions.show_last_install_log", action: showLog)
                 Divider()
-                Button("Uninstall…", role: .destructive) { confirmUninstall = true }
+                Button("common.uninstall_ellipsis", role: .destructive) { confirmUninstall = true }
                     .disabled(release.isDefault)
             } label: {
                 Image(systemName: "ellipsis.circle")
@@ -302,12 +306,12 @@ private struct PHPReleaseRow: View {
             .menuStyle(.borderlessButton)
             .menuIndicator(.hidden)
             .fixedSize()
-            .help("More")
+            .help("services.more")
         } else {
             Button {
                 run { try await $0.installPHP(release.minor) }
             } label: {
-                Label("Install", systemImage: "arrow.down.circle")
+                Label("common.install", systemImage: "arrow.down.circle")
             }
             .help(sizeHelp)
         }
@@ -349,9 +353,9 @@ private struct FrankenPHPBuildRow: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text("PHP \(build.php)").font(.body.weight(.semibold))
+                    Text("common.php_version \(build.php)").font(.body.weight(.semibold)).fixedSize()
                     if build.prerelease {
-                        Badge(text: "Pre-release", color: .orange).help("PHP \(build.latest) isn’t released yet — it may not work. Offered on the beta channel.")
+                        Badge(text: "versions.prerelease", color: .orange).help("php.php_version_isnt_released_yet \(build.latest)")
                     }
                 }
                 detail
@@ -361,21 +365,23 @@ private struct FrankenPHPBuildRow: View {
             if busy {
                 ProgressView().controlSize(.small)
             }
+            // The buttons keep their whole titles (longer in Czech and Spanish); the version wraps.
             actions
+                .fixedSize()
                 .disabled(busy)
         }
         .padding(.vertical, 3)
-        .confirmationDialog("Uninstall FrankenPHP for PHP \(build.php)?", isPresented: confirmUninstallState.projectedValue) {
-            Button("Uninstall", role: .destructive) {
+        .confirmationDialog("php.uninstall_franken_question \(build.php)", isPresented: confirmUninstallState.projectedValue) {
+            Button("common.uninstall", role: .destructive) {
                 run { try await $0.uninstallFrankenPHP(build.php) }
             }
         } message: {
-            Text("Sites that run on FrankenPHP with this version are served by PHP-FPM until it has downloaded again by itself.")
+            Text("php.sites_that_run_on_frankenphp")
         }
     }
 
     private var installedText: String {
-        guard build.isInstalled else { return "Not installed · downloads by itself when a site uses it" }
+        guard build.isInstalled else { return String(localized: "versions.franken_not_installed") }
         return build.phpVersion.isEmpty ? "FrankenPHP \(build.installed)" : "FrankenPHP \(build.installed) (PHP \(build.phpVersion))"
     }
 
@@ -393,45 +399,45 @@ private struct FrankenPHPBuildRow: View {
             }
             .font(.caption).foregroundStyle(.secondary)
         } else if let job = build.job, job.isFailed {
-            Text(job.error.isEmpty ? "The download failed." : job.error)
+            Text(job.error.isEmpty ? String(localized: "versions.download_failed") : job.error)
                 .font(.caption).foregroundStyle(.red)
                 .lineLimit(2)
                 .textSelection(.enabled)
                 .help(job.error)
         } else if !build.yanked.isEmpty {
-            Label(build.update ? "Withdrawn: \(build.yanked) — update to replace it" : "Withdrawn: \(build.yanked)", systemImage: "exclamationmark.triangle.fill")
+            Label(build.update ? "services.withdrawn_update \(build.yanked)" : "services.withdrawn \(build.yanked)", systemImage: "exclamationmark.triangle.fill")
                 .font(.caption).foregroundStyle(.orange)
                 .lineLimit(2)
-                .help("This build was withdrawn. Flock replaces it as soon as a fixed build is published.")
+                .help("services.withdrawn_tooltip")
         } else {
-            Text(installedText).font(.caption).foregroundStyle(.secondary)
+            Text(installedText).font(.caption).foregroundStyle(.secondary).fixedSize()
         }
     }
 
     /// "Downloading… 42%", "Downloading…" (size unknown) or "Installing…".
     private static func jobText(_ job: ComponentJob) -> String {
         if job.phase == .installing {
-            return "Installing…"
+            return String(localized: "common.installing")
         }
         if let progress = job.progress {
-            return "Downloading… \(Int((progress * 100).rounded()))%"
+            return String(localized: "php.downloading_percent \(String(Int((progress * 100).rounded())))")
         }
-        return "Downloading…"
+        return String(localized: "common.downloading")
     }
 
     @ViewBuilder
     private var actions: some View {
         if build.job?.isRunning == true {
-            Button("Cancel") {
+            Button("common.cancel") {
                 run { try await $0.cancelFrankenPHPJob(build.php) }
             }
         } else if build.job?.isFailed == true {
             Button {
                 run { try await $0.installFrankenPHP(build.php) }
             } label: {
-                Label("Retry", systemImage: "arrow.clockwise")
+                Label("common.retry", systemImage: "arrow.clockwise")
             }
-            Button("Dismiss") {
+            Button("sites.share.dismiss") {
                 run { try await $0.dismissFrankenPHPJob(build.php) }
             }
         } else {
@@ -440,21 +446,21 @@ private struct FrankenPHPBuildRow: View {
                 Button {
                     run { try await $0.installFrankenPHP(build.php) }
                 } label: {
-                    Label("Install", systemImage: "arrow.down.circle")
+                    Label("common.install", systemImage: "arrow.down.circle")
                 }
-                .help(build.size > 0 ? "Downloads FrankenPHP for PHP \(build.latest) (\(build.size / 1_000_000) MB)" : "Downloads FrankenPHP for PHP \(build.latest)")
+                .help(build.size > 0 ? "php.downloads_frankenphp_for_php_mb \(build.latest) \(String(build.size / 1_000_000))" : "php.downloads_frankenphp_for_php \(build.latest)")
             }
             if build.update {
                 Button {
                     run { try await $0.installFrankenPHP(build.php) }
                 } label: {
-                    Label(build.latest == build.phpVersion ? "Update" : "Update to PHP \(build.latest)", systemImage: "arrow.down.circle")
+                    Label(build.latest == build.phpVersion ? "common.update" : "php.update_to_php_version \(build.latest)", systemImage: "arrow.down.circle")
                 }
                 .buttonStyle(.borderedProminent)
-                .help(build.size > 0 ? "Downloads FrankenPHP for PHP \(build.latest) (\(build.size / 1_000_000) MB)" : "")
+                .help(build.size > 0 ? String(localized: "php.downloads_frankenphp_for_php_mb \(build.latest) \(String(build.size / 1_000_000))") : "")
             }
             if build.isInstalled {
-                Button("Uninstall…", role: .destructive) { confirmUninstall = true }
+                Button("common.uninstall_ellipsis", role: .destructive) { confirmUninstall = true }
             }
         }
     }
@@ -486,19 +492,19 @@ private struct PHPInstallLogSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Text("PHP \(minor) install log").font(.headline)
+                Text("php.php_version_install_log \(minor)").font(.headline)
                 Spacer()
-                Button("Copy") {
+                Button("common.copy") {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(text, forType: .string)
                 }
                 .disabled(text.isEmpty)
-                Button("Done") { dismiss() }.keyboardShortcut(.defaultAction)
+                Button("common.done") { dismiss() }.keyboardShortcut(.defaultAction)
             }
 
             ScrollViewReader { proxy in
                 ScrollView {
-                    Text(text.isEmpty ? "No install log yet." : text)
+                    Text(text.isEmpty ? String(localized: "php.no_install_log_yet") : text)
                         .font(.system(.caption, design: .monospaced))
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)

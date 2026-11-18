@@ -106,6 +106,13 @@ func registerFrankenPHP(mux *http.ServeMux, b Backend) {
 		}
 		writeJSON(w, http.StatusOK, b.Status())
 	})
+	mux.HandleFunc("POST /v1/sites/{name}/reverb/restart", func(w http.ResponseWriter, r *http.Request) {
+		if err := b.RestartReverb(r.PathValue("name")); err != nil {
+			writeError(w, http.StatusBadRequest, err)
+			return
+		}
+		writeJSON(w, http.StatusOK, b.Status())
+	})
 	mux.HandleFunc("POST /v1/sites/{name}/stop", func(w http.ResponseWriter, r *http.Request) {
 		if err := b.StopSite(r.PathValue("name")); err != nil {
 			writeError(w, statusFor(err), err)
@@ -154,5 +161,12 @@ func (c *Client) UninstallFrankenPHP(ctx context.Context, minor string) (Franken
 func (c *Client) RestartSite(ctx context.Context, name string) (Status, error) {
 	var out Status
 	err := c.timeout(time.Minute).do(ctx, http.MethodPost, "/v1/sites/"+name+"/restart", &out)
+	return out, err
+}
+
+// RestartReverb restarts a site's Reverb server.
+func (c *Client) RestartReverb(ctx context.Context, name string) (Status, error) {
+	var out Status
+	err := c.timeout(time.Minute).do(ctx, http.MethodPost, "/v1/sites/"+url.PathEscape(name)+"/reverb/restart", &out)
 	return out, err
 }

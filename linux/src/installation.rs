@@ -10,6 +10,7 @@ use std::time::Duration;
 use gtk::glib;
 use serde::Deserialize;
 
+use crate::i18n::{self, tr};
 use crate::paths;
 
 /// The flock the package installed (/usr/bin/flk links to it); `flock install` copies it into the
@@ -33,7 +34,7 @@ pub fn aur_package() -> Option<&'static str> {
     static PACKAGE: OnceLock<Option<String>> = OnceLock::new();
     PACKAGE
         .get_or_init(|| {
-            let out = Command::new("pacman").args(["-Qqo", PACKAGED_FLOCK]).stderr(Stdio::null()).output().ok()?;
+            let out = i18n::system_language(Command::new("pacman").args(["-Qqo", PACKAGED_FLOCK])).stderr(Stdio::null()).output().ok()?;
             let name = String::from_utf8_lossy(&out.stdout).trim().to_owned();
             (out.status.success() && !name.is_empty()).then_some(name)
         })
@@ -50,12 +51,9 @@ pub struct Output {
 pub fn run(args: &[&str]) -> Output {
     let flock = paths::flock_binary();
     if !flock.exists() {
-        return Output {
-            ok: false,
-            text: format!("Flock is not installed for this user ({} is missing) — run `flk install` once.", flock.display()),
-        };
+        return Output { ok: false, text: tr!("app.flock_is_not_installed_for_this", path = flock.display()) };
     }
-    match Command::new(&flock).args(args).output() {
+    match i18n::system_language(Command::new(&flock).args(args)).output() {
         Ok(out) => {
             let mut text = String::from_utf8_lossy(&out.stdout).into_owned();
             text.push_str(&String::from_utf8_lossy(&out.stderr));
@@ -74,12 +72,16 @@ pub fn setup_flock() -> Option<PathBuf> {
 /// calling on_line with every line it prints, then done with the outcome.
 pub fn run_streaming(args: Vec<String>, on_line: impl Fn(&str) + 'static, done: impl FnOnce(Output) + 'static) {
     let Some(flock) = setup_flock() else {
-        done(Output { ok: false, text: "Flock isn't installed: install the flockphp package first.".to_owned() });
+        done(Output { ok: false, text: tr!("app.flock_isnt_installed_install_the").to_owned() });
         return;
     };
     let (tx, rx) = mpsc::channel::<Result<String, Output>>();
     std::thread::spawn(move || {
-        let child = Command::new(&flock).args(&args).stdin(Stdio::null()).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn();
+        let child = i18n::system_language(Command::new(&flock).args(&args))
+            .stdin(Stdio::null())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn();
         let mut child = match child {
             Ok(child) => child,
             Err(e) => {
@@ -153,7 +155,9 @@ pub fn conflicts() -> Vec<(String, Option<String>, Vec<Conflict>)> {
         conflicts: Vec<Conflict>,
     }
     let Some(flock) = setup_flock() else { return Vec::new() };
-    let Ok(out) = Command::new(flock).args(["conflicts", "--json"]).stdin(Stdio::null()).output() else { return Vec::new() };
+    let Ok(out) = i18n::system_language(Command::new(flock).args(["conflicts", "--json"])).stdin(Stdio::null()).output() else {
+        return Vec::new();
+    };
     let Ok(response) = serde_json::from_slice::<Response>(&out.stdout) else { return Vec::new() };
     let mut apps: Vec<(String, Option<String>, Vec<Conflict>)> = Vec::new();
     for conflict in response.conflicts {

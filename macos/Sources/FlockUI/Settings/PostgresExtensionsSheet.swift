@@ -18,8 +18,8 @@ struct PostgresExtensionsSheet: View {
             HStack(alignment: .top, spacing: 12) {
                 SettingsIcon(symbol: "puzzlepiece.extension.fill", color: .blue, size: 40)
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("PostgreSQL \(major) Extensions").font(.headline)
-                    Text("After installing one, run CREATE EXTENSION in each database that uses it.")
+                    Text("services.postgres.postgresql_version_extensions \(major)").font(.headline)
+                    Text("services.postgres.after_installing_one_run_create")
                         .font(.callout).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -49,7 +49,7 @@ struct PostgresExtensionsSheet: View {
 
             HStack {
                 Spacer()
-                Button("Done") { dismiss() }
+                Button("common.done") { dismiss() }
                     .keyboardShortcut(.defaultAction)
             }
         }
@@ -89,15 +89,15 @@ struct PostgresExtensionsSheet: View {
                     if ext.isInstalled {
                         Text(ext.installed).monospacedDigit().foregroundStyle(.secondary)
                         if ext.update, !ext.latest.isEmpty {
-                            Text("→ \(ext.latest)").monospacedDigit().foregroundStyle(Color.accentColor)
+                            Text("common.to_version \(ext.latest)").monospacedDigit().foregroundStyle(Color.accentColor)
                         }
                         if !ext.yanked.isEmpty {
                             Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-                                .help("This build was withdrawn: \(ext.yanked). Flock replaces it as soon as a fixed build is published.")
+                                .help("services.postgres.this_build_was_withdrawn_flock \(ext.yanked)")
                         }
                     }
                     if ext.prerelease {
-                        Badge(text: "Pre-release", color: .orange)
+                        Badge(text: "versions.prerelease", color: .orange)
                     }
                 }
                 .font(.callout)
@@ -114,7 +114,7 @@ struct PostgresExtensionsSheet: View {
             if !busy.isEmpty {
                 HStack(spacing: 6) {
                     ProgressView().controlSize(.small)
-                    Text("\(busy.prefix(1).uppercased())\(busy.dropFirst())…").font(.caption).foregroundStyle(.secondary)
+                    Text(Self.describe(busy)).font(.caption).foregroundStyle(.secondary)
                 }
             } else {
                 actions(ext)
@@ -122,21 +122,32 @@ struct PostgresExtensionsSheet: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .help(ext.license.isEmpty ? "" : "License: \(ext.license)")
+        .help(ext.license.isEmpty ? "" : String(localized: "services.postgres.license_license \(ext.license)"))
+    }
+
+    /// "Installing…" for what the daemon (or this sheet) reports an extension is doing.
+    private static func describe(_ busy: String) -> String {
+        switch busy {
+        case "installing": String(localized: "common.installing")
+        case "updating": String(localized: "common.updating")
+        case "uninstalling": String(localized: "common.uninstalling")
+        case "waiting": String(localized: "services.postgres.waiting")
+        default: "\(busy.prefix(1).uppercased())\(busy.dropFirst())…"
+        }
     }
 
     private func caption(_ ext: PostgresExtension) -> String {
         if !ext.supported {
-            return "Not available for PostgreSQL \(major)"
+            return String(localized: "services.postgres.not_available_for_postgresql_version \(major)")
         }
         var parts = [ext.description]
         if ext.discontinued {
-            parts.append("No longer updated for PostgreSQL \(major)")
+            parts.append(String(localized: "services.postgres.no_longer_updated_for_postgresql \(major)"))
         }
         if ext.isInstalled {
             parts.append("CREATE EXTENSION \(ext.creates);")
         } else if ext.preload {
-            parts.append("PostgreSQL \(major) restarts to load it")
+            parts.append(String(localized: "services.postgres.postgresql_version_restarts_to_load \(major)"))
         }
         return parts.joined(separator: " · ")
     }
@@ -146,30 +157,30 @@ struct PostgresExtensionsSheet: View {
     @ViewBuilder
     private func actions(_ ext: PostgresExtension) -> some View {
         if !ext.isInstalled {
-            Button("Install") { run(ext, "installing") { try await $0.installPostgresExtension(major, ext.name) } }
+            Button("common.install") { run(ext, "installing") { try await $0.installPostgresExtension(major, ext.name) } }
                 .controlSize(.small)
                 .disabled(!ext.supported)
-                .help(ext.size > 0 ? "Downloads \(ext.title) \(ext.latest) (\(Formats.bytes(ext.size)))" : "Downloads \(ext.title)")
+                .help(ext.size > 0 ? "services.postgres.downloads_macos \(ext.title) \(ext.latest) \(Formats.bytes(ext.size))" : "services.postgres.downloads \(ext.title)")
         } else {
             HStack(spacing: 4) {
                 if ext.update {
-                    Button("Update") { run(ext, "updating") { try await $0.updatePostgresExtension(major, ext.name) } }
+                    Button("common.update") { run(ext, "updating") { try await $0.updatePostgresExtension(major, ext.name) } }
                         .buttonStyle(.borderedProminent)
                         .controlSize(.small)
-                        .help("Installs \(ext.title) \(ext.latest)")
+                        .help("services.postgres.installs \(ext.title) \(ext.latest)")
                 }
                 Menu {
-                    Button("Uninstall \(ext.title)", role: .destructive) {
+                    Button("services.postgres.uninstall_name \(ext.title)", role: .destructive) {
                         run(ext, "uninstalling") { try await $0.uninstallPostgresExtension(major, ext.name) }
                     }
-                    .help("Databases that created it can't use it until you install it again or drop it")
+                    .help("services.postgres.databases_that_created_it_cant")
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
                 .fixedSize()
-                .help("More")
+                .help("services.more")
             }
         }
     }
@@ -201,11 +212,11 @@ struct PostgresExtensionsSheet: View {
                 if !ext.version.isEmpty {
                     Text(ext.version).monospacedDigit().foregroundStyle(.secondary)
                 }
-                Badge(text: "Yours")
+                Badge(text: "services.postgres.yours")
             }
             .font(.callout)
             if ext.linked {
-                Text("CREATE EXTENSION \(ext.name);")
+                Text(verbatim: "CREATE EXTENSION \(ext.name);")
                     .font(.caption).foregroundStyle(.secondary)
                     .textSelection(.enabled)
             } else {
@@ -223,10 +234,10 @@ struct PostgresExtensionsSheet: View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: "folder").foregroundStyle(.secondary)
             VStack(alignment: .leading, spacing: 4) {
-                Text("Your own extensions for PostgreSQL \(major). Put their library in lib/ and their .control and .sql files in extension/; Flock keeps them across updates.")
+                Text("services.postgres.your_own_extensions_for_postgresql \(major)")
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                Button("Open Extensions Folder") {
+                Button("services.postgres.open_extensions_folder") {
                     NSWorkspace.shared.open(URL(fileURLWithPath: state.customDir, isDirectory: true))
                 }
                 .controlSize(.small)

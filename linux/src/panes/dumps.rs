@@ -8,6 +8,7 @@ use adw::prelude::*;
 use super::common::{PaneView, group, open_row, report, switch_row};
 use super::{Data, Pane};
 use crate::api::{EVENT_KINDS, SettingsChange, Status};
+use crate::i18n::{self, tr, trn};
 use crate::model::AppModel;
 use crate::prefs::{self, EDITORS};
 
@@ -20,9 +21,7 @@ pub struct DumpsPane {
 
 impl DumpsPane {
     pub fn new(model: Rc<AppModel>, banner: adw::Banner) -> Self {
-        let view = PaneView::new(
-            "Send dump() and dd() output, queries, logs, views and jobs to Flock instead of the page or terminal — no changes to your projects.",
-        );
+        let view = PaneView::new(tr!("dumps.send_dump_and_dd_output"));
         Self { view, model, banner, shown: RefCell::default() }
     }
 }
@@ -41,25 +40,26 @@ impl Pane for DumpsPane {
         let capturing = status.dumps;
         let off = status.capture_off.clone().unwrap_or_default();
 
-        let main = group("", "Turn it off to see dumps in the page again.");
+        let main = group("", tr!("dumps.capture_description"));
         let (model, banner) = (self.model.clone(), self.banner.clone());
-        main.add(&switch_row("Capture", "", capturing, move |on| {
+        main.add(&switch_row(tr!("dumps.capture_short"), "", capturing, move |on| {
             let banner = banner.clone();
             model.change_settings(SettingsChange { dumps: Some(on), ..Default::default() }, move |e| report(&banner, e));
         }));
-        main.add(&open_row("Captured", &format!("{} dumps, {} events", status.dump_count, status.event_count), "Open Dumps", "app.dumps"));
+        let captured = format!("{}, {}", trn!("dumps.n_dumps", status.dump_count), trn!("app.n_events", status.event_count));
+        main.add(&open_row(tr!("dumps.captured"), &captured, tr!("dumps.open"), "app.dumps"));
 
         let unsupported = status.capture_unsupported.clone().unwrap_or_default();
-        let mut footer = "dd() always shows in the page too, as it ends the request.".to_owned();
+        let mut footer = tr!("dumps.dd_always_shows_in_the").to_owned();
         if !unsupported.is_empty() {
-            let (verb, builds) = if unsupported.len() == 1 { ("captures", "its build has") } else { ("capture", "their builds have") };
-            footer.push_str(&format!(" PHP {} only {verb} dumps: {builds} no agent extension yet.", unsupported.join(", ")));
+            footer.push(' ');
+            footer.push_str(&trn!("dumps.php_versions_only_capture_dumps_their", unsupported.len(), versions = unsupported.join(", ")));
         }
-        let kinds = group("While capturing", &footer);
+        let kinds = group(tr!("dumps.while_capturing"), &footer);
         for (kind, title) in EVENT_KINDS {
             let this_off = off.clone();
             let (model, banner) = (self.model.clone(), self.banner.clone());
-            let row = switch_row(title, "", !off.iter().any(|k| k == kind), move |on| {
+            let row = switch_row(i18n::translate(title), "", !off.iter().any(|k| k == kind), move |on| {
                 let mut list: Vec<String> = this_off.iter().filter(|k| *k != kind).cloned().collect();
                 if !on {
                     list.push(kind.to_owned());
@@ -70,15 +70,15 @@ impl Pane for DumpsPane {
             kinds.add(&row);
         }
         let (model, banner) = (self.model.clone(), self.banner.clone());
-        kinds.add(&switch_row("Show dump() output in the page too", "", status.dumps_in_page, move |on| {
+        kinds.add(&switch_row(tr!("dumps.show_dump_output_in_the"), "", status.dumps_in_page, move |on| {
             let banner = banner.clone();
             model.change_settings(SettingsChange { dumps_in_page: Some(on), ..Default::default() }, move |e| report(&banner, e));
         }));
         kinds.set_sensitive(capturing);
 
-        let sources = group("Sources", "");
-        let names = gtk::StringList::new(&EDITORS.map(|(_, name)| name));
-        let editor = adw::ComboRow::builder().title("Open files in").model(&names).build();
+        let sources = group(tr!("dumps.sources"), "");
+        let names = gtk::StringList::new(&EDITORS.map(|(_, name)| i18n::translate(name)));
+        let editor = adw::ComboRow::builder().title(tr!("dumps.open_files_in")).model(&names).build();
         let current = prefs::load().editor;
         editor.set_selected(EDITORS.iter().position(|(id, _)| *id == current).unwrap_or(0) as u32);
         editor.connect_selected_notify(|row| {

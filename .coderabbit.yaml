@@ -1,0 +1,6 @@
+inheritance: true
+reviews:
+    auto_approvals:
+        max_merge_risk: moderate
+        allow_author_approval: false
+        max_security_risk: low

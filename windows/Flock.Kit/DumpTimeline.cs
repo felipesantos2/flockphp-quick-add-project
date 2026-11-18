@@ -16,7 +16,7 @@ public static class EditorInfo
         Editor.VsCode => "VS Code",
         Editor.Cursor => "Cursor",
         Editor.Zed => "Zed",
-        _ => "Don't link",
+        _ => Strings.Settings_Editor_None,
     };
 
     /// <summary>
@@ -361,7 +361,7 @@ public static partial class DumpTimeline
         switch (e.Kind)
         {
             case EventKind.Query:
-                meta.Append("<span class=\"kind\">Query</span>");
+                meta.Append($"<span class=\"kind\">{Escape(Strings.Dumps_Timeline_Query)}</span>");
                 if (e.Connection.Length > 0)
                 {
                     meta.Append($"<span class=\"note\">{Escape(e.Connection)}</span>");
@@ -382,10 +382,10 @@ public static partial class DumpTimeline
                 }
                 break;
             case EventKind.View:
-                meta.Append($"<span class=\"kind\">View</span><span class=\"what\">{Escape(e.View)}</span>");
+                meta.Append($"<span class=\"kind\">{Escape(Strings.Dumps_Timeline_View)}</span><span class=\"what\">{Escape(e.View)}</span>");
                 break;
             case EventKind.Job:
-                meta.Append($"<span class=\"kind\">Job</span><span class=\"what\">{Escape(e.Job)}</span>");
+                meta.Append($"<span class=\"kind\">{Escape(Strings.Dumps_Timeline_Job)}</span><span class=\"what\">{Escape(e.Job)}</span>");
                 if (e.State.Length > 0)
                 {
                     meta.Append($"<span class=\"state {Escape(e.State)}\">{Escape(e.State)}</span>");

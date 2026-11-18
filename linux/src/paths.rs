@@ -23,6 +23,13 @@ pub fn api_json() -> PathBuf {
     root().join("api.json")
 }
 
+/// The app's own binary. A package update that replaced it while it ran leaves /proc/self/exe
+/// naming it "<path> (deleted)"; the new binary is at the path.
+pub fn app_exe() -> std::io::Result<PathBuf> {
+    let exe = env::current_exe()?;
+    Ok(exe.to_str().and_then(|e| e.strip_suffix(" (deleted)")).map_or(exe.clone(), PathBuf::from))
+}
+
 /// The flock binary `flock install` copied into the data dir; the app runs it for restart and setup.
 pub fn flock_binary() -> PathBuf {
     root().join("bin/flock")

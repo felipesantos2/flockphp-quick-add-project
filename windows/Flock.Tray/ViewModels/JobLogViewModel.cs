@@ -15,7 +15,7 @@ public sealed class JobLogViewModel : ObservableObject, IAsyncDisposable
     private readonly CancellationTokenSource lifetime = new();
     private readonly object gate = new();
     private Task? polling;
-    private string text = "Loading…";
+    private string text = Strings.Common_Loading;
     private string? error;
     private JobLogState state = JobLogState.Loading;
 
@@ -29,10 +29,10 @@ public sealed class JobLogViewModel : ObservableObject, IAsyncDisposable
     public string Text => text;
     public string DisplayText => state switch
     {
-        JobLogState.Loading => "Loading…",
-        JobLogState.Missing => "No log yet.",
-        JobLogState.Empty => "(empty)",
-        JobLogState.Failed => "Log could not be loaded.",
+        JobLogState.Loading => Strings.Common_Loading,
+        JobLogState.Missing => Strings.Worktrees_Job_NoLogYet,
+        JobLogState.Empty => Strings.Common_EmptyParenthesized,
+        JobLogState.Failed => Strings.Worktrees_Job_CouldNotLoadShort,
         _ => text,
     };
     public string? Error => error;

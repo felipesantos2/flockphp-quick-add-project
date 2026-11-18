@@ -354,13 +354,17 @@ public class ClientTests : IDisposable
         await client.UpdateSiteAsync("shop", new SiteChange(Worker: ""));
         await client.UpdateSiteAsync("shop", new SiteChange(Secured: true));
         await client.RestartSiteAsync("shop");
+        await client.UpdateSiteAsync("shop", new SiteChange(Reverb: true));
+        await client.RestartReverbAsync("shop");
 
         Assert.Equal(
-            ["PATCH /v1/sites/shop", "PATCH /v1/sites/shop", "PATCH /v1/sites/shop", "POST /v1/sites/shop/restart"],
+            ["PATCH /v1/sites/shop", "PATCH /v1/sites/shop", "PATCH /v1/sites/shop", "POST /v1/sites/shop/restart", "PATCH /v1/sites/shop", "POST /v1/sites/shop/reverb/restart"],
             handler.Requests.Select(r => $"{r.Method} {r.RequestUri!.PathAndQuery}"));
-        Assert.Equal(["""{"server":"frankenphp"}""", """{"worker":""}""", """{"secured":true}""", ""], handler.Bodies);
-        // Switching servers and restarting wait for FrankenPHP to come up; other changes 30 seconds.
-        Assert.Equal([TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(1)], handler.Timeouts);
+        Assert.Equal(["""{"server":"frankenphp"}""", """{"worker":""}""", """{"secured":true}""", "", """{"reverb":true}""", ""], handler.Bodies);
+        // Switching servers, turning Reverb on and restarting wait for the process to come up; other changes 30 seconds.
+        Assert.Equal(
+            [TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(30), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1), TimeSpan.FromMinutes(1)],
+            handler.Timeouts);
     }
 
     [Fact]

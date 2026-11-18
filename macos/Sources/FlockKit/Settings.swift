@@ -194,8 +194,11 @@ public struct SiteChange: Encodable, Sendable {
     public var worker: String?
     /// The document root on this machine, relative to the project ("" lets the project or detection decide).
     public var root: String?
+    /// Runs Laravel Reverb for the site, or stops it.
+    public var reverb: Bool?
 
-    public init(type: String? = nil, secured: Bool? = nil, php: String? = nil, node: String? = nil, server: String? = nil, worker: String? = nil, root: String? = nil) {
+    public init(type: String? = nil, secured: Bool? = nil, php: String? = nil, node: String? = nil, server: String? = nil, worker: String? = nil, root: String? = nil,
+                reverb: Bool? = nil) {
         self.type = type
         self.secured = secured
         self.php = php
@@ -203,6 +206,7 @@ public struct SiteChange: Encodable, Sendable {
         self.server = server
         self.worker = worker
         self.root = root
+        self.reverb = reverb
     }
 }
 

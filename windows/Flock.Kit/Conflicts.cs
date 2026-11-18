@@ -34,30 +34,32 @@ public sealed class ConflictingApp
     public List<Conflict> Conflicts { get; } = [];
 
     /// <summary>"Quit Herd".</summary>
-    public string Title => string.IsNullOrEmpty(Hint) ? $"Quit {App}" : char.ToUpperInvariant(Hint[0]) + Hint[1..];
+    public string Title => string.IsNullOrEmpty(Hint) ? Localization.Format(Strings.App_Conflict_Quit, App) : char.ToUpperInvariant(Hint[0]) + Hint[1..];
 
     /// <summary>"Herd (nginx.exe, pid 812) uses port 80 (HTTP) and port 443 (HTTPS)."</summary>
     public string Detail
     {
         get
         {
-            var uses = Conflicts.Where(c => c.Port is not null).Select(c => $"port {c.Port} ({c.Service})").ToList();
+            var uses = Conflicts.Where(c => c.Port is not null).Select(c => Localization.Format(Strings.App_Conflict_Port, c.Port, c.Service)).ToList();
             var parts = new List<string>();
             if (uses.Count > 0)
             {
-                parts.Add("uses " + Joined(uses));
+                parts.Add(Localization.Format(Strings.App_Conflict_Uses, Joined(uses)));
             }
             if (Conflicts.FirstOrDefault(c => c.File is not null) is { } dns)
             {
-                parts.Add($"answers for {dns.Service.Replace(" DNS", "", StringComparison.Ordinal)} ({dns.File})");
+                parts.Add(Localization.Format(Strings.App_Conflict_AnswersFor, dns.Service.Replace(" DNS", "", StringComparison.Ordinal), dns.File));
             }
-            var text = $"{Conflicts.FirstOrDefault()?.Holder ?? App} {string.Join(", and ", parts)}.";
+            var what = parts.Count == 2 ? Localization.Format(Strings.App_Conflict_Both, parts[0], parts[1]) : string.Concat(parts);
+            var text = Localization.Format(Strings.App_Conflict_Detail, Conflicts.FirstOrDefault()?.Holder ?? App, what);
             return char.ToUpperInvariant(text[0]) + text[1..];
         }
     }
 
+    /// <summary>"a, b and c" in the current language.</summary>
     private static string Joined(List<string> items) =>
-        items.Count < 2 ? string.Concat(items) : string.Join(", ", items.Take(items.Count - 1)) + " and " + items[^1];
+        items.Count < 2 ? string.Concat(items) : Localization.Format(Strings.Common_List_And, string.Join(Strings.Common_List_Separator, items.Take(items.Count - 1)), items[^1]);
 
     /// <summary>The conflicts grouped by the app to quit, in the order they were found.</summary>
     public static List<ConflictingApp> Group(IEnumerable<Conflict> conflicts)

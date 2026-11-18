@@ -12,6 +12,7 @@
 //! the link asks for and waits for the user to confirm.
 
 use crate::api::{Catalog, NodeVersions, PhpVersions, PostgresVersions, Service, SiteStatus};
+use crate::i18n::{self, tr, tr_noop};
 
 pub const SCHEME: &str = "flock";
 /// The service of a link that asks for a PHP minor, which the PHP pane installs.
@@ -111,30 +112,38 @@ impl<T> Resolution<T> {
     }
 }
 
-const NEWER_FLOCK: &str = "The link may be meant for a newer Flock. Update Flock, then try again.";
+const NEWER_FLOCK: &str = tr_noop!("links.install.newer_flock");
 // A PHP or Node.js version the manifest doesn't publish for this platform, or doesn't know at all.
-const NO_BUILD: &str = "There's no build of it for this computer, or the link is meant for a newer Flock.";
+const NO_BUILD: &str = tr_noop!("links.install.no_build");
 
 fn install_question(target: Target, purpose: &str) -> Resolution<Target> {
     let version = if target.version.is_empty() { &target.label } else { &target.version };
     Resolution {
-        title: format!("Install {} {}?", target.name, target.label),
-        message: format!("A link asked Flock to install {} {version}. {purpose}", target.name),
+        title: tr!("links.install.install_title", name = target.name, version = target.label),
+        message: tr!("links.install.install_message", name = target.name, version = version, purpose = purpose),
         action: Some(target),
     }
 }
 
 /// The pane that lists it.
 fn already_installed(name: &str, pane: &str) -> Resolution<Target> {
-    Resolution::inform(format!("{name} is already installed"), format!("You'll find it in Settings → {pane}."))
+    Resolution::inform(
+        tr!("links.install.already_installed_title", name = name),
+        tr!("links.install.already_installed_message", pane = pane),
+    )
 }
 
 fn installing(name: &str, pane: &str) -> Resolution<Target> {
-    Resolution::inform(format!("{name} is already being installed"), format!("Settings → {pane} shows how far it is."))
+    Resolution::inform(tr!("links.install.installing_title", name = name), tr!("links.install.installing_message", pane = pane))
 }
 
-fn unknown_version(name: &str, line: &str, message: &str) -> Resolution<Target> {
-    Resolution::inform(format!("Flock doesn't offer {name} {line}").trim_end().to_owned(), message)
+fn unknown_version(name: &str, line: &str, message: &'static str) -> Resolution<Target> {
+    let title = if line.is_empty() {
+        tr!("links.install.unknown_title", name = name)
+    } else {
+        tr!("links.install.flock_doesnt_offer_name_version", name = name, version = line)
+    };
+    Resolution::inform(title, i18n::translate(message))
 }
 
 /// Versions compare by their numbers: "8.10" is newer than "8.9".
@@ -165,11 +174,11 @@ impl InstallLink {
         }
         let line = self.line.as_deref();
         let Some(service) = services.iter().find(|s| s.id == self.service) else {
-            return Some(Resolution::inform(format!("Flock doesn't offer {}", self.service), NEWER_FLOCK));
+            return Some(Resolution::inform(tr!("links.install.unknown_title", name = self.service), i18n::translate(NEWER_FLOCK)));
         };
         if !service.available {
-            let reason = if service.unavailable.is_empty() { "Flock can't run it on this platform." } else { &service.unavailable };
-            return Some(Resolution::inform(format!("{} isn't available on this computer", service.name), reason));
+            let reason = if service.unavailable.is_empty() { tr!("links.install.unavailable_message") } else { &service.unavailable };
+            return Some(Resolution::inform(tr!("links.install.unavailable_title", name = service.name), reason));
         }
         if service.id == "postgres" {
             let majors = postgres?.majors.as_deref().unwrap_or_default();
@@ -181,7 +190,7 @@ impl InstallLink {
                 return Some(unknown_version(&service.name, line.unwrap_or_default(), NEWER_FLOCK));
             };
             if !major.installed.is_empty() {
-                return Some(already_installed(&format!("PostgreSQL {}", major.major), "Services"));
+                return Some(already_installed(&format!("PostgreSQL {}", major.major), tr!("settings.pane.services")));
             }
             let target = Target {
                 service: service.id.clone(),
@@ -190,11 +199,11 @@ impl InstallLink {
                 label: major.major.clone(),
                 version: major.latest.clone(),
             };
-            return Some(install_question(target, "It runs on 127.0.0.1 for your sites."));
+            return Some(install_question(target, tr!("links.install.purpose_service")));
         }
         let entries = catalog?.services.as_deref().unwrap_or_default();
         let Some(entry) = entries.iter().find(|e| e.id == service.id) else {
-            return Some(Resolution::inform(format!("Flock doesn't offer {}", service.name), NEWER_FLOCK));
+            return Some(Resolution::inform(tr!("links.install.unknown_title", name = service.name), i18n::translate(NEWER_FLOCK)));
         };
         let lines = entry.lines.as_deref().unwrap_or_default();
         let found = match line {
@@ -205,7 +214,7 @@ impl InstallLink {
             return Some(unknown_version(&entry.name, line.unwrap_or_default(), NEWER_FLOCK));
         };
         if found.installed {
-            return Some(already_installed(&format!("{} {}", entry.name, found.label), "Services"));
+            return Some(already_installed(&format!("{} {}", entry.name, found.label), tr!("settings.pane.services")));
         }
         let target = Target {
             service: entry.id.clone(),
@@ -214,7 +223,7 @@ impl InstallLink {
             label: found.label.clone(),
             version: found.latest.clone(),
         };
-        Some(install_question(target, "It runs on 127.0.0.1 for your sites."))
+        Some(install_question(target, tr!("links.install.purpose_service")))
     }
 
     /// What a php link asks for, measured against the PHP versions. Without a version, the newest
@@ -243,7 +252,7 @@ impl InstallLink {
             label: release.minor.clone(),
             version: release.latest.clone(),
         };
-        Some(install_question(target, "Sites that use it are served as soon as it's installed."))
+        Some(install_question(target, tr!("links.install.purpose_php")))
     }
 
     /// What a node link asks for, measured against the Node.js lines. Without a version, the
@@ -273,20 +282,21 @@ impl InstallLink {
             label: release.major.clone(),
             version: release.latest.clone(),
         };
-        Some(install_question(target, "Projects that use it get node, npm and npx as soon as it's installed."))
+        Some(install_question(target, tr!("links.install.purpose_node")))
     }
 }
 
 /// What a secure link asks for, measured against the linked sites: the site to secure.
 pub fn resolve_secure(site: &str, sites: &[SiteStatus]) -> Resolution<String> {
     match sites.iter().find(|s| s.name.eq_ignore_ascii_case(site)) {
-        None => Resolution::inform(format!("Flock has no site called {site}"), "Add the site in Settings → Sites first."),
-        Some(s) if s.secured => {
-            Resolution::inform(format!("{} is already secured", s.name), format!("It's served at https://{}.", s.domain))
-        }
+        None => Resolution::inform(tr!("links.secure.unknown_title", site = site), tr!("links.secure.unknown_message")),
+        Some(s) if s.secured => Resolution::inform(
+            tr!("links.secure.already_secured_title", site = s.name),
+            tr!("links.secure.already_secured_message", domain = s.domain),
+        ),
         Some(s) => Resolution {
-            title: format!("Serve {} over HTTPS?", s.name),
-            message: format!("A link asked Flock to secure {}. It gets a certificate this computer already trusts.", s.domain),
+            title: tr!("links.secure.secure_title", site = s.name),
+            message: tr!("links.secure.secure_message", domain = s.domain),
             action: Some(s.name.clone()),
         },
     }

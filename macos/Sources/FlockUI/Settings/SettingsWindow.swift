@@ -9,16 +9,16 @@ enum SettingsPane: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .general: "General"
-        case .sites: "Sites"
+        case .general: String(localized: "general.title")
+        case .sites: String(localized: "settings.pane.sites")
         case .php: "PHP"
         case .node: "Node"
-        case .services: "Services"
-        case .mail: "Mail"
-        case .dumps: "Dumps"
-        case .debugger: "Debugger"
-        case .ai: "AI"
-        case .about: "About"
+        case .services: String(localized: "settings.pane.services")
+        case .mail: String(localized: "services.category.mail")
+        case .dumps: String(localized: "menu.dumps")
+        case .debugger: String(localized: "settings.pane.debugger")
+        case .ai: String(localized: "settings.pane.ai")
+        case .about: String(localized: "settings.pane.about")
         }
     }
 
@@ -98,7 +98,7 @@ struct SettingsWindow: View {
             .background(Color(nsColor: .windowBackgroundColor))
         }
         .ignoresSafeArea(.container, edges: .top)
-        .frame(minWidth: 810, minHeight: 480)
+        .frame(minWidth: 830, minHeight: 480)
         .task {
             store.isVisible = true
             await store.refresh()
@@ -108,22 +108,24 @@ struct SettingsWindow: View {
 
     @ViewBuilder
     private var content: some View {
-        if model.status == nil, pane != .about {
+        // About, and General once Flock is set up (its language, updates and login item don't need
+        // the daemon), also show while the daemon isn't running.
+        if model.status == nil, pane != .about, pane != .general || model.needsSetup {
             if model.needsSetup {
                 ContentUnavailableView {
-                    Label { Text("Flock isn't set up yet") } icon: { LogoMark(size: 44) }
+                    Label { Text("settings.flock_isnt_set_up_yet") } icon: { LogoMark(size: 44) }
                 } description: {
-                    Text("Set Flock up to run your sites and change its settings.")
+                    Text("settings.set_flock_up_to_run")
                 } actions: {
-                    Button("Set Up Flock…") { openWindow.activating(WindowID.setup) }
+                    Button("menu.set_up_flock") { openWindow.activating(WindowID.setup) }
                 }
             } else {
                 ContentUnavailableView {
-                    Label { Text("Flock is not running") } icon: { LogoMark(size: 44) }
+                    Label { Text("app.not_running") } icon: { LogoMark(size: 44) }
                 } description: {
-                    Text(model.error ?? "Start the daemon to change its settings.")
+                    Text(model.error ?? String(localized: "settings.start_daemon_to_change"))
                 } actions: {
-                    Button("Start Flock") { Task { await model.restart() } }
+                    Button("menu.start_flock") { Task { await model.restart() } }
                         .disabled(model.isRestarting)
                 }
             }

@@ -23,8 +23,8 @@ internal sealed partial class AboutPane : UserControl, ISettingsPane
         AppVersion.Text = version.Split('+')[0];
     }
 
-    public string Title => "About";
-    public string Subtitle => "A native local development environment for Laravel.";
+    public string Title => Strings.Settings_Pane_About;
+    public string Subtitle => Strings.About_Tagline;
     public UIElement Root => this;
     public bool ScrollsItself => false;
     public Task ActivateAsync(CancellationToken hidden)
@@ -77,21 +77,19 @@ internal sealed partial class AboutPane : UserControl, ISettingsPane
     {
         if (Installation.Uninstaller is null)
         {
-            model.ShowRuntimeError("This build of Flock wasn't installed with Flock-Setup.exe. Run `flock uninstall` in a terminal and delete the app's folder.");
+            model.ShowRuntimeError(Strings.About_NotInstalledWithSetup);
             return;
         }
-        var purge = new CheckBox { Content = "Also delete my sites' settings and databases" };
+        var purge = new CheckBox { Content = Strings.About_AlsoDeleteData };
         var dialog = new ContentDialog
         {
-            Title = "Uninstall Flock?",
+            Title = Strings.About_UninstallQuestion,
             Content = Ui.Column(12,
-                Ui.Text(
-                    "Flock stops and is removed from your PATH, together with its PHP and Node.js versions, certificates, logs and caches. Windows asks for permission to remove the hosts helper and Flock's trusted certificate."),
-                Ui.Text(
-                    $"Your sites' settings and your PostgreSQL and Redis databases stay in {FlockPaths.Root}, so reinstalling picks up where you left off — unless you also delete them:"),
+                Ui.Text(Strings.About_UninstallDetails),
+                Ui.Text(Localization.Format(Strings.About_UninstallKeeps, FlockPaths.Root)),
                 purge),
-            PrimaryButtonText = "Uninstall",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = Strings.Common_Uninstall,
+            CloseButtonText = Strings.Common_Cancel,
             DefaultButton = ContentDialogButton.Close,
             XamlRoot = XamlRoot
         };
@@ -110,7 +108,7 @@ internal sealed partial class AboutPane : UserControl, ISettingsPane
             model.Changed += Changed;
         }
 
-        public string DaemonVersion => model.Status?.Version ?? "not running";
+        public string DaemonVersion => model.Status?.Version ?? Strings.About_DaemonNotRunning;
         public string DataFolder => FlockPaths.Root;
         public void Dispose()
         {

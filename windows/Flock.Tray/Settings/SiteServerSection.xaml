@@ -1,0 +1,61 @@
+<UserControl
+    x:Class="Flock.Tray.Settings.SiteServerSection"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray"
+    xmlns:settings="using:Flock.Tray.Settings">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///Settings/DetailStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <!-- What runs a PHP site (SiteServerSectionViewModel): php-cgi, or FrankenPHP with its mode, state, Restart and log. -->
+    <StackPanel Style="{StaticResource DetailSectionStyle}">
+        <TextBlock Text="{l:Loc Key=Sites_Server}" Style="{StaticResource DetailHeadingStyle}" />
+        <settings:DetailField Label="{l:Loc Key=Sites_RunsOn}">
+            <ComboBox MinWidth="140" SelectedIndex="{Binding ServerIndex, Mode=TwoWay}" AutomationProperties.Name="{l:Loc Key=Sites_Server}">
+                <ComboBoxItem Content="PHP-CGI" />
+                <!-- FrankenPHP needs PHP 8.2; a site already on it keeps the option (the daemon explains the fallback). -->
+                <ComboBoxItem Content="{l:Loc Key=Common_Frankenphp}" IsEnabled="{Binding CanPickFrankenPhp}" />
+            </ComboBox>
+        </settings:DetailField>
+
+        <StackPanel Spacing="8" Visibility="{Binding IsFrankenPhp, Converter={StaticResource BooleanVisibilityConverter}}">
+            <settings:DetailField Label="{l:Loc Key=Debugger_Mode}">
+                <ComboBox MinWidth="150" SelectedIndex="{Binding ModeIndex, Mode=TwoWay}" AutomationProperties.Name="{l:Loc Key=Debugger_Mode}"
+                          ToolTipService.ToolTip="{Binding ModeTooltip}">
+                    <ComboBoxItem Content="{l:Loc Key=Sites_Classic}" />
+                    <ComboBoxItem Content="{l:Loc Key=Common_LaravelOctane}" IsEnabled="{Binding CanPickOctane}" />
+                </ComboBox>
+            </settings:DetailField>
+
+            <!-- FrankenPHP's state: running, downloading, or why php-cgi serves the site meanwhile. -->
+            <StackPanel Orientation="Horizontal" Spacing="6" Visibility="{Binding IsRunning, Converter={StaticResource BooleanVisibilityConverter}}">
+                <Ellipse Style="{StaticResource StatusDotStyle}" Fill="{ThemeResource SystemFillColorSuccessBrush}" />
+                <TextBlock Text="{Binding RunningText}" Style="{StaticResource DetailCaptionLineStyle}" VerticalAlignment="Center" />
+            </StackPanel>
+            <StackPanel Spacing="8" Visibility="{Binding IsInstalling, Converter={StaticResource BooleanVisibilityConverter}}">
+                <TextBlock Text="{Binding InstallingText}" Style="{StaticResource DetailCaptionLineStyle}" />
+                <ProgressBar Minimum="0" Maximum="1" Value="{Binding Progress}" IsIndeterminate="{Binding IsProgressIndeterminate}"
+                             HorizontalAlignment="Left" Width="320" />
+                <TextBlock Text="{l:Loc Key=Sites_PhpCgiUntilReady}" Style="{StaticResource DetailCaptionStyle}" />
+            </StackPanel>
+            <StackPanel Spacing="8" Visibility="{Binding IsWaiting, Converter={StaticResource BooleanVisibilityConverter}}">
+                <settings:DetailWarning Text="{Binding Problem}" Visibility="{Binding Problem, Converter={StaticResource StringVisibilityConverter}}" />
+                <TextBlock Text="{l:Loc Key=Sites_PhpCgiMeanwhile}" Style="{StaticResource DetailCaptionStyle}" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <ProgressRing Width="16" Height="16" VerticalAlignment="Center"
+                              Visibility="{Binding IsRestarting, Converter={StaticResource BooleanVisibilityConverter}}" />
+                <Button Content="{l:Loc Key=Menu_Restart}" Command="{Binding RestartCommand}" IsEnabled="{Binding CanRestart}" VerticalAlignment="Center"
+                        ToolTipService.ToolTip="{l:Loc Key=Sites_RestartFrankenphpTooltip}" />
+                <Button Content="{l:Loc Key=Sites_ShowLog}" Command="{Binding ShowLogCommand}" VerticalAlignment="Center" />
+            </StackPanel>
+        </StackPanel>
+
+        <TextBlock Text="{Binding Note}" Style="{StaticResource DetailNoteStyle}" />
+    </StackPanel>
+</UserControl>

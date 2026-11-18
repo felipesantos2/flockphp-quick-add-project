@@ -1,0 +1,17 @@
+<UserControl
+    x:Class="Flock.Tray.Settings.ShareForm"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray">
+    <!-- Who may open the shared site (nobody listed: anyone with the link), and whether visitors see the app's debug mode. -->
+    <StackPanel Spacing="12">
+        <TextBox x:Name="AllowBox" Header="{l:Loc Key=Sites_Share_AllowHeader}" PlaceholderText="{l:Loc Key=Sites_Share_AllowPlaceholder}" />
+        <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
+                   Text="{l:Loc Key=Sites_Share_AllowExplanation}" />
+        <StackPanel Spacing="2">
+            <CheckBox x:Name="DebugBox" Content="{l:Loc Key=Sites_Share_ShowErrors}" />
+            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap"
+                       Text="{l:Loc Key=Sites_Share_ShowErrorsExplanation}" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

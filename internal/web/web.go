@@ -45,6 +45,9 @@ type Site struct {
 	// Node is set on a Node.js site: its name, which every request passes to Config.Wake first
 	// (starting its dev server, at Proxy, when it isn't running).
 	Node string
+	// Reverb is the loopback address of the site's Laravel Reverb server, which gets the site's
+	// WebSocket connections and broadcasts (see reverbRequest).
+	Reverb string
 	// CertFile and KeyFile (from certs.SiteCert, covering Domain and *.Domain) are set when the site
 	// is secured. Deeper subdomains and aliases get certificates from Config.Issue.
 	CertFile string
@@ -274,14 +277,31 @@ func upstreamDown(s Site, cfg Config) string {
 const xdebugRequest = `{cookie.XDEBUG_SESSION} != "" || {cookie.XDEBUG_TRIGGER} != "" || ` +
 	`{query.XDEBUG_SESSION} != "" || {query.XDEBUG_SESSION_START} != "" || {query.XDEBUG_TRIGGER} != ""`
 
+// reverbRequest matches the Pusher protocol's requests on /app/* and /apps/*: WebSocket connections
+// (Upgrade: websocket; ?protocol=…&client=…, which pusher-js always sends, also covers WebSockets
+// over HTTP/2, which have no Upgrade header) and the signed HTTP API Laravel broadcasts through.
+// Other requests there stay the app's, e.g. a panel at /app, even with a ?protocol= filter of its
+// own or another upgrade (h2c).
+const reverbRequest = `{http.request.header.Upgrade}.matches("(?i)^websocket$") || ({query.protocol} != "" && {query.client} != "") || {query.auth_signature} != ""`
+
 func app(s Site) string {
 	if strings.TrimSpace(s.Handlers) == "" {
-		return root(s, "\t") + dispatch(s, "\t")
+		return root(s, "\t") + reverb(s, "\t") + dispatch(s, "\t")
 	}
 
 	// A route keeps the written order, so the custom handlers run before the Xdebug/default handle
 	// pair. The remote abort still runs first: it is ordered before every directive, route too.
-	return "\troute {\n" + root(s, "\t\t") + handlers(s.Handlers, "\t\t") + dispatch(s, "\t\t") + "\t}\n"
+	return "\troute {\n" + root(s, "\t\t") + reverb(s, "\t\t") + handlers(s.Handlers, "\t\t") + dispatch(s, "\t\t") + "\t}\n"
+}
+
+// reverb sends the site's Reverb requests (see reverbRequest) to its Reverb server, ahead of the
+// site's other handlers.
+func reverb(s Site, indent string) string {
+	if s.Reverb == "" {
+		return ""
+	}
+	return fmt.Sprintf("%[1]s@reverb {\n%[1]s\tpath /app/* /apps/*\n%[1]s\texpression `%[2]s`\n%[1]s}\n%[1]shandle @reverb {\n%[3]s%[1]s}\n",
+		indent, reverbRequest, proxy(s.Reverb, indent+"\t"))
 }
 
 func root(s Site, indent string) string {
@@ -373,9 +393,9 @@ func CheckHandlers(s Site, name string) error {
 	return nil
 }
 
-// proxy sends every request to a FrankenPHP process, which serves the static files too, or to a
-// proxied name's server. The Host header passes unchanged, so the app sees its own domain, and
-// WebSocket upgrades (a dev server's hot reload) pass through.
+// proxy sends requests to a site's own process (FrankenPHP, which serves the static files too, or
+// Reverb) or to a proxied name's server. The Host header passes unchanged, so the app sees its own
+// domain, and WebSocket upgrades (a dev server's hot reload, Reverb's connections) pass through.
 func proxy(upstream, indent string) string {
 	// Caddy sends an HTTPS upstream its own host:port as the Host header; keep the request's instead.
 	if strings.HasPrefix(upstream, "https://") {

@@ -2,6 +2,7 @@
     x:Class="Flock.Tray.Settings.SitesPane"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray"
     xmlns:settings="using:Flock.Tray.Settings">
     <UserControl.Resources>
         <settings:BooleanVisibilityConverter x:Key="BooleanVisibilityConverter" /><settings:StringVisibilityConverter x:Key="StringVisibilityConverter" />
@@ -17,11 +18,11 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" /><RowDefinition Height="*" />
                 </Grid.RowDefinitions>
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <Button x:Name="NewAppButton" Content="New App…" Click="NewAppClicked" />
-                    <Button Content="Add Site…" Click="AddSiteClicked" />
-                    <Button Content="Add Proxy…" Click="AddProxyClicked"
-                            ToolTipService.ToolTip="Serve a server of its own, e.g. a dashboard or a Docker container, at a .test domain" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button x:Name="NewAppButton" Content="{l:Loc Key=Sites_NewApp}" Click="NewAppClicked" />
+                    <Button Content="{l:Loc Key=Sites_AddSite}" Click="AddSiteClicked" />
+                    <Button Content="{l:Loc Key=Sites_AddProxy}" Click="AddProxyClicked"
+                            ToolTipService.ToolTip="{l:Loc Key=Sites_AddProxyServerTooltip}" />
                     <ProgressRing x:Name="NewAppProgress" Width="16" Height="16" Visibility="Collapsed" VerticalAlignment="Center" />
                 </StackPanel>
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,14,8">
@@ -56,7 +57,7 @@
                                                   Visibility="{Binding Secured, Converter={StaticResource BooleanVisibilityConverter}}" />
                                         <Border Style="{StaticResource BadgeStyle}"
                                                 Visibility="{Binding IsShared, Converter={StaticResource BooleanVisibilityConverter}}">
-                                            <TextBlock Text="Shared" FontSize="11" />
+                                            <TextBlock Text="{l:Loc Key=Sites_Shared}" FontSize="11" />
                                         </Border>
                                     </StackPanel>
                                 </Grid>
@@ -64,7 +65,7 @@
                         </ListView.ItemTemplate>
                     </ListView>
                     <!-- Proxies (flock proxy) follow the sites; their names never clash with a site's. -->
-                    <TextBlock Text="Proxies" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="SemiBold" Margin="12,12,0,4"
+                    <TextBlock Text="{l:Loc Key=Sites_Proxies}" Style="{StaticResource CaptionTextBlockStyle}" FontWeight="SemiBold" Margin="12,12,0,4"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Visibility="{Binding HasProxies, Converter={StaticResource BooleanVisibilityConverter}}" />
                     <ListView x:Name="ProxyList" ItemsSource="{Binding Proxies}" SelectionChanged="ProxySelectionChanged" SelectionMode="Single"
@@ -85,7 +86,7 @@
                                                   Visibility="{Binding HasProblem, Converter={StaticResource BooleanVisibilityConverter}}" />
                                         <Ellipse Width="8" Height="8" VerticalAlignment="Center" Fill="{Binding Dot, Converter={StaticResource ToneBrushConverter}}"
                                                  ToolTipService.ToolTip="{Binding DotTooltip}" />
-                                        <FontIcon Glyph="&#xE72E;" FontFamily="{StaticResource SymbolsFont}" FontSize="12" ToolTipService.ToolTip="Served over HTTPS"
+                                        <FontIcon Glyph="&#xE72E;" FontFamily="{StaticResource SymbolsFont}" FontSize="12" ToolTipService.ToolTip="{l:Loc Key=Sites_ServedOverHttps}"
                                                   Visibility="{Binding Secured, Converter={StaticResource BooleanVisibilityConverter}}" />
                                     </StackPanel>
                                 </Grid>
@@ -97,7 +98,12 @@
             </Grid>
             <ScrollViewer Grid.Column="1" x:Name="DetailScroller" VerticalScrollBarVisibility="Auto" HorizontalScrollMode="Disabled"
                           HorizontalScrollBarVisibility="Disabled">
-                <ContentControl x:Name="DetailHost" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+                <!-- The selection's details: a site's, a worktree's or a proxy's (each shows itself when selected). -->
+                <Grid>
+                    <settings:SiteDetailView x:Name="SiteDetails" />
+                    <settings:WorktreeDetailView x:Name="WorktreeDetails" />
+                    <settings:ProxyDetailView x:Name="ProxyDetails" />
+                </Grid>
             </ScrollViewer>
         </Grid>
         <!-- No sites: only the empty state, centred in the whole pane. -->
@@ -105,13 +111,13 @@
                     Visibility="{Binding HasSites, Converter={StaticResource InverseBooleanVisibilityConverter}}">
             <FontIcon Glyph="&#xE774;" FontFamily="{StaticResource SymbolsFont}" FontSize="40" Foreground="{ThemeResource TextFillColorTertiaryBrush}"
                       HorizontalAlignment="Center" />
-            <TextBlock Text="No sites" Style="{StaticResource SubtitleTextBlockStyle}" HorizontalAlignment="Center" />
-            <TextBlock Text="Add a single site here, or add a project folder in General." Style="{StaticResource CaptionTextBlockStyle}"
+            <TextBlock Text="{l:Loc Key=Sites_NoSites}" Style="{StaticResource SubtitleTextBlockStyle}" HorizontalAlignment="Center" />
+            <TextBlock Text="{l:Loc Key=Sites_NoSitesDescription}" Style="{StaticResource CaptionTextBlockStyle}"
                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextAlignment="Center" HorizontalAlignment="Center" />
             <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" Margin="0,8,0,0">
-                <Button Content="Add Site…" Click="AddSiteClicked" Style="{StaticResource AccentButtonStyle}" />
-                <Button x:Name="EmptyNewAppButton" Content="New App…" Click="NewAppClicked" />
-                <Button Content="Add Proxy…" Click="AddProxyClicked" />
+                <Button Content="{l:Loc Key=Sites_AddSite}" Click="AddSiteClicked" Style="{StaticResource AccentButtonStyle}" />
+                <Button x:Name="EmptyNewAppButton" Content="{l:Loc Key=Sites_NewApp}" Click="NewAppClicked" />
+                <Button Content="{l:Loc Key=Sites_AddProxy}" Click="AddProxyClicked" />
                 <ProgressRing x:Name="EmptyNewAppProgress" Width="16" Height="16" Visibility="Collapsed" VerticalAlignment="Center" />
             </StackPanel>
         </StackPanel>

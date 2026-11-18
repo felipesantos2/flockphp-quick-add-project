@@ -1,0 +1,33 @@
+<UserControl
+    x:Class="Flock.Tray.Settings.ProxyCommandsForm"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray">
+    <!-- A proxy's commands: Start, Stop and Folder, in the Add Proxy dialog and in their own. -->
+    <ScrollViewer x:Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="12">
+            <!-- The commands are typed in a monospaced font; their labels stay in the dialog's own, like Name and Upstream. -->
+            <TextBox x:Name="StartBox" PlaceholderText="npm run dev" FontFamily="{StaticResource MonoFont}">
+                <TextBox.Header>
+                    <TextBlock Text="{l:Loc Key=Services_Start}" FontFamily="{ThemeResource ContentControlThemeFontFamily}" />
+                </TextBox.Header>
+            </TextBox>
+            <StackPanel Spacing="4">
+                <TextBox x:Name="StopBox" PlaceholderText="docker compose stop" FontFamily="{StaticResource MonoFont}">
+                    <TextBox.Header>
+                        <TextBlock Text="{l:Loc Key=Sites_Share_Stop}" FontFamily="{ThemeResource ContentControlThemeFontFamily}" />
+                    </TextBox.Header>
+                </TextBox>
+                <TextBlock Text="{l:Loc Key=Sites_Proxy_StopCommandHint}" Style="{StaticResource CaptionTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorTertiaryBrush}" TextWrapping="Wrap" />
+            </StackPanel>
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="FolderBox" Header="{l:Loc Key=General_Folder}" />
+                <Button Grid.Column="1" Content="{l:Loc Key=Common_Choose}" VerticalAlignment="Bottom" Click="ChooseClicked" />
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

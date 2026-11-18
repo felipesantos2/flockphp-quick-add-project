@@ -54,6 +54,13 @@ pub fn main(args: &[String]) -> glib::ExitCode {
     // The app's preferences too: expanding a site's worktrees remembers it.
     // SAFETY: as above.
     unsafe { std::env::set_var("XDG_CONFIG_HOME", &home) };
+    // English whatever the developer's system speaks, GTK's own texts included: the app's language
+    // stays English here, and the Language row would offer a restart into the system's.
+    // SAFETY: as above.
+    unsafe {
+        std::env::remove_var("LANGUAGE");
+        std::env::set_var("LC_ALL", "C.UTF-8");
+    }
     if args.iter().any(|a| a == "--serve") {
         serve(&home);
         println!("FLOCK_HOME={}", home.display());

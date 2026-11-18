@@ -10,4 +10,10 @@
         <UseWPF>false</UseWPF>
         <UseWindowsForms>false</UseWindowsForms>
     </PropertyGroup>
+    <ItemGroup>
+        <!-- The apps' texts, generated from lang/ by tools/i18n: each Strings.<language>.resx builds into a satellite assembly
+             (cs\, es\, ...). The build generates the public Strings class, which the tray app uses too, into obj\. -->
+        <EmbeddedResource Update="Strings.resx" StronglyTypedLanguage="CSharp" StronglyTypedNamespace="Flock.Kit" StronglyTypedClassName="Strings"
+                          StronglyTypedManifestPrefix="Flock.Kit" StronglyTypedFileName="$(IntermediateOutputPath)Strings.g.cs" PublicClass="true"/>
+    </ItemGroup>
 </Project>

@@ -292,7 +292,9 @@ public sealed class SitesWorkflowTests : IDisposable
                 Site("problem", "8.3", problem: "site problem", notice: "site notice", domains: [Domain("tenant1", "tenant1.problem.test", "domain problem")], server: Status.SiteServer.FrankenPhp, frankenPhp: Franken("franken problem")),
                 Site("notice", "8.3", notice: "site notice"),
                 Site("domain", "8.3", domains: [Domain("tenant1", "tenant1.domain.test", "domain problem")]),
-                Site("franken", "8.3", server: Status.SiteServer.FrankenPhp, frankenPhp: Franken("franken problem"))
+                Site("franken", "8.3", server: Status.SiteServer.FrankenPhp, frankenPhp: Franken("franken problem")),
+                Site("reverb", "8.3", reverb: new Status.SiteReverb { State = Status.ReverbState.Failed, Problem = "reverb problem" }),
+                Site("reverb-running", "8.3", reverb: new Status.SiteReverb { State = Status.ReverbState.Running })
             ]
         });
 
@@ -300,6 +302,8 @@ public sealed class SitesWorkflowTests : IDisposable
         Assert.Equal("site notice", model.Sites[1].Problem);
         Assert.Equal("tenant1.domain.test: domain problem", model.Sites[2].Problem);
         Assert.Equal("franken problem", model.Sites[3].Problem);
+        Assert.Equal("reverb problem", model.Sites[4].Problem);
+        Assert.False(model.Sites[5].HasProblem);
     }
 
     [Fact]
@@ -374,7 +378,7 @@ public sealed class SitesWorkflowTests : IDisposable
     }
 
     private static Status.Site Site(string name, string php, string? problem = null, string? notice = null,
-        List<Status.SiteDomain>? domains = null, string server = Status.SiteServer.FastCgi, Status.SiteFrankenPhp? frankenPhp = null) => new()
+        List<Status.SiteDomain>? domains = null, string server = Status.SiteServer.FastCgi, Status.SiteFrankenPhp? frankenPhp = null, Status.SiteReverb? reverb = null) => new()
     {
         Name = name,
         Domain = name + ".test",
@@ -383,7 +387,8 @@ public sealed class SitesWorkflowTests : IDisposable
         Notice = notice,
         Domains = domains ?? [],
         Server = server,
-        FrankenPhp = frankenPhp
+        FrankenPhp = frankenPhp,
+        Reverb = reverb
     };
     private static Status.SiteDomain Domain(string entry, string host, string? problem = null) => new() { Entry = entry, Host = host, Problem = problem };
     private static Status.SiteFrankenPhp Franken(string problem) => new() { State = "failed", Problem = problem };

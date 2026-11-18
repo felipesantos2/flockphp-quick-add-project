@@ -26,7 +26,7 @@ internal sealed partial class NodePane : UserControl, ISettingsPane
     }
 
     public string Title => "Node";
-    public string Subtitle => "node, npm and npx follow the project's .nvmrc / .node-version, then the site's version, then the default.";
+    public string Subtitle => Strings.Node_Subtitle;
     public UIElement Root => this;
     public bool ScrollsItself => false;
 
@@ -79,9 +79,9 @@ internal sealed partial class NodePane : UserControl, ISettingsPane
         }
 
         var menu = new MenuFlyout();
-        if (row.CanUpdateNpm) menu.Items.Add(Item("Update npm", () => _ = row.UpdateNpmCommand.ExecuteAsync(null)));
-        if (row.CanMakeDefault) menu.Items.Add(Item("Make default", () => _ = row.SetDefaultCommand.ExecuteAsync(null)));
-        if (row.CanUninstall && row.HasUpdate) menu.Items.Add(Item("Uninstall…", () => _ = UninstallNodeAsync(row)));
+        if (row.CanUpdateNpm) menu.Items.Add(Item(Strings.Node_UpdateNpm, () => _ = row.UpdateNpmCommand.ExecuteAsync(null)));
+        if (row.CanMakeDefault) menu.Items.Add(Item(Strings.Versions_MakeDefault, () => _ = row.SetDefaultCommand.ExecuteAsync(null)));
+        if (row.CanUninstall && row.HasUpdate) menu.Items.Add(Item(Strings.Common_UninstallEllipsis, () => _ = UninstallNodeAsync(row)));
         button.Flyout = menu;
         menu.ShowAt(button);
     }
@@ -96,9 +96,8 @@ internal sealed partial class NodePane : UserControl, ISettingsPane
 
     private async Task UninstallNodeAsync(NodeVersionViewModel row)
     {
-        if (!await window.Confirm($"Uninstall Node {row.Major}?",
-                $"Its global npm packages are removed too. Projects and sites that use Node {row.Major} fall back to the default version until you install it again.",
-                "Uninstall"))
+        if (!await window.Confirm(Localization.Format(Strings.Services_UninstallQuestion, $"Node {row.Major}"),
+                Localization.Format(Strings.Node_UninstallDetails, row.Major), Strings.Common_Uninstall))
         {
             return;
         }
@@ -149,7 +148,7 @@ internal sealed partial class NodePane : UserControl, ISettingsPane
                         completion.TrySetResult();
                         return;
                     }
-                    if (token.IsCancellationRequested || !await window.Confirm(request.Title, request.Message, "Install") || token.IsCancellationRequested)
+                    if (token.IsCancellationRequested || !await window.Confirm(request.Title, request.Message, Strings.Common_Install) || token.IsCancellationRequested)
                     {
                         completion.TrySetResult();
                         return;

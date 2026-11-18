@@ -2,6 +2,7 @@
     x:Class="Flock.Tray.SetupWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray"
     xmlns:local="using:Flock.Tray"
     xmlns:automation="using:Microsoft.UI.Xaml.Automation">
     <Grid x:Name="WindowRoot">
@@ -19,8 +20,8 @@
                 <StackPanel x:Name="IntroStage" Spacing="0">
                     <StackPanel Margin="0,8,0,24" Spacing="12">
                         <Image Source="Assets/AppIcon.png" Width="48" Height="48" automation:AutomationProperties.Name="Flock" />
-                        <TextBlock Text="Welcome to Flock" Style="{StaticResource TitleTextBlockStyle}" />
-                        <TextBlock Text="Flock runs your Laravel sites, PHP, mail and databases on this PC. Setting it up takes a moment:" TextWrapping="Wrap"
+                        <TextBlock Text="{l:Loc Key=Setup_Welcome}" Style="{StaticResource TitleTextBlockStyle}" />
+                        <TextBlock Text="{l:Loc Key=Setup_Intro}" TextWrapping="Wrap"
                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                     </StackPanel>
                     <StackPanel Spacing="4" Margin="0,0,0,24">
@@ -29,10 +30,10 @@
                             <Grid ColumnSpacing="12">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                 <FontIcon Glyph="{StaticResource GlyphServer}" FontFamily="{StaticResource SymbolsFont}" FontSize="18"
-                                          automation:AutomationProperties.Name="Runs in the background" VerticalAlignment="Top" Margin="0,2,0,0" />
+                                          automation:AutomationProperties.Name="{l:Loc Key=Setup_Background}" VerticalAlignment="Top" Margin="0,2,0,0" />
                                 <StackPanel Grid.Column="1" Spacing="1">
-                                    <TextBlock Text="Runs in the background" />
-                                    <TextBlock Text="The Flock daemon serves your sites and services, and starts whenever you sign in."
+                                    <TextBlock Text="{l:Loc Key=Setup_Background}" />
+                                    <TextBlock Text="{l:Loc Key=Setup_BackgroundDescription}"
                                                Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Grid>
@@ -42,10 +43,10 @@
                             <Grid ColumnSpacing="12">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                 <FontIcon Glyph="{StaticResource GlyphTerminal}" FontFamily="{StaticResource SymbolsFont}" FontSize="18"
-                                          automation:AutomationProperties.Name="Terminal" VerticalAlignment="Top" Margin="0,2,0,0" />
+                                          automation:AutomationProperties.Name="{l:Loc Key=Setup_Terminal}" VerticalAlignment="Top" Margin="0,2,0,0" />
                                 <StackPanel Grid.Column="1" Spacing="1">
-                                    <TextBlock Text="php, composer and node in your terminal" />
-                                    <TextBlock Text="Flock's versions come first on your PATH. Open a new terminal after setup."
+                                    <TextBlock Text="{l:Loc Key=Setup_TerminalTitle}" />
+                                    <TextBlock Text="{l:Loc Key=Setup_TerminalDescription}"
                                                Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Grid>
@@ -55,31 +56,33 @@
                             <Grid ColumnSpacing="12">
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                 <FontIcon Glyph="{StaticResource GlyphLock}" FontFamily="{StaticResource SymbolsFont}" FontSize="18"
-                                          automation:AutomationProperties.Name="Trusted HTTPS" VerticalAlignment="Top" Margin="0,2,0,0" />
+                                          automation:AutomationProperties.Name="{l:Loc Key=Setup_TrustedHttps}" VerticalAlignment="Top" Margin="0,2,0,0" />
                                 <StackPanel Grid.Column="1" Spacing="1">
-                                    <TextBlock Text="*.test sites with trusted HTTPS" />
+                                    <TextBlock Text="{l:Loc Key=Setup_TrustedHttpsTitle}" />
                                     <TextBlock
-                                        Text="Windows asks once for administrator permission: for the small service that adds your sites to the hosts file, and to trust Flock's certificate."
+                                        Text="{l:Loc Key=Setup_TrustedHttpsDescription}"
                                         Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                                 </StackPanel>
                             </Grid>
                         </Border>
                     </StackPanel>
-                    <CheckBox x:Name="Startup" Content="Open Flock when I sign in" IsChecked="True" Margin="0,12,0,0" />
+                    <CheckBox x:Name="Startup" Content="{l:Loc Key=Setup_OpenAtSignIn}" IsChecked="True" Margin="0,12,0,0" />
+                    <!-- Settings → General isn't available before the setup; the language can be changed here. -->
+                    <StackPanel x:Name="LanguageHost" Margin="0,16,0,0" />
                     <StackPanel x:Name="IntroButtons" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
-                        <Button Content="Not now" Click="CloseClicked" />
-                        <Button Content="Set up Flock" Click="RunClicked" Style="{StaticResource AccentButtonStyle}" />
+                        <Button Content="{l:Loc Key=Setup_NotNow}" Click="CloseClicked" />
+                        <Button Content="{l:Loc Key=Setup_SetUpFlock}" Click="RunClicked" Style="{StaticResource AccentButtonStyle}" />
                     </StackPanel>
                 </StackPanel>
 
                 <StackPanel x:Name="CheckingStage" Spacing="0" Visibility="Collapsed">
-                    <TextBlock Text="Checking Flock's ports…" Style="{StaticResource TitleTextBlockStyle}" Margin="0,8,0,24" />
+                    <TextBlock Text="{l:Loc Key=Setup_CheckingPorts}" Style="{StaticResource TitleTextBlockStyle}" Margin="0,8,0,24" />
                     <ProgressBar IsIndeterminate="True" Margin="0,0,0,16" />
                 </StackPanel>
 
                 <StackPanel x:Name="ConflictsStage" Spacing="0" Visibility="Collapsed">
-                    <TextBlock Text="Quit other local environments first" Style="{StaticResource TitleTextBlockStyle}" Margin="0,8,0,4" />
-                    <TextBlock Text="Flock needs these ports for itself, but other programs use them. Running both would leave neither working." TextWrapping="Wrap"
+                    <TextBlock Text="{l:Loc Key=Setup_QuitOthers}" Style="{StaticResource TitleTextBlockStyle}" Margin="0,8,0,4" />
+                    <TextBlock Text="{l:Loc Key=Setup_QuitOthersDescription}" TextWrapping="Wrap"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,24" />
                     <ItemsControl x:Name="ConflictsItems" Margin="0,0,0,8">
                         <ItemsControl.ItemTemplate>
@@ -89,7 +92,7 @@
                                     <Grid ColumnSpacing="12">
                                         <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
                                         <FontIcon Glyph="{StaticResource GlyphWarning}" FontFamily="{StaticResource SymbolsFont}" FontSize="18"
-                                                  automation:AutomationProperties.Name="Warning" VerticalAlignment="Top" Margin="0,2,0,0" />
+                                                  automation:AutomationProperties.Name="{l:Loc Key=Setup_Warning}" VerticalAlignment="Top" Margin="0,2,0,0" />
                                         <StackPanel Grid.Column="1" Spacing="1">
                                             <TextBlock Text="{Binding Title}" />
                                             <TextBlock Text="{Binding Detail}" Style="{StaticResource CaptionTextBlockStyle}"
@@ -101,13 +104,13 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
-                        <Button Content="Not now" Click="CloseClicked" /><Button Content="Check again" Click="RunClicked" Style="{StaticResource AccentButtonStyle}" />
+                        <Button Content="{l:Loc Key=Setup_NotNow}" Click="CloseClicked" /><Button Content="{l:Loc Key=Setup_CheckAgain}" Click="RunClicked" Style="{StaticResource AccentButtonStyle}" />
                     </StackPanel>
                 </StackPanel>
 
                 <StackPanel x:Name="RunningStage" Spacing="0" Visibility="Collapsed">
-                    <TextBlock Text="Setting up Flock…" Style="{StaticResource TitleTextBlockStyle}" Margin="0,8,0,4" />
-                    <TextBlock Text="Windows asks for administrator permission in a moment." TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                    <TextBlock Text="{l:Loc Key=Setup_SettingUp}" Style="{StaticResource TitleTextBlockStyle}" Margin="0,8,0,4" />
+                    <TextBlock Text="{l:Loc Key=Setup_AdminPrompt}" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                Margin="0,0,0,24" />
                     <ProgressBar IsIndeterminate="True" Margin="0,0,0,16" />
                     <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -119,46 +122,46 @@
                 </StackPanel>
 
                 <StackPanel x:Name="DoneStage" Spacing="0" Visibility="Collapsed">
-                    <TextBlock Text="Flock is ready" Style="{StaticResource TitleTextBlockStyle}" Margin="0,8,0,24" />
+                    <TextBlock Text="{l:Loc Key=Setup_Ready}" Style="{StaticResource TitleTextBlockStyle}" Margin="0,8,0,24" />
                     <StackPanel x:Name="Defaults" Spacing="4" Margin="0,0,0,24" />
                     <TextBlock x:Name="StartupProblem" TextWrapping="Wrap" Foreground="{ThemeResource SystemFillColorCriticalBrush}" Visibility="Collapsed"
                                Margin="0,0,0,12" />
-                    <TextBlock Text="Next steps" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
+                    <TextBlock Text="{l:Loc Key=Setup_NextSteps}" Style="{StaticResource BodyStrongTextBlockStyle}" Margin="1,0,0,6" />
                     <StackPanel Spacing="4">
                         <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1" CornerRadius="6" Padding="16,12">
                             <StackPanel Spacing="1">
-                                <TextBlock Text="Open a new terminal" />
-                                <TextBlock Text="Terminals that were already open still have the old PATH." Style="{StaticResource CaptionTextBlockStyle}"
+                                <TextBlock Text="{l:Loc Key=Setup_NewTerminal}" />
+                                <TextBlock Text="{l:Loc Key=Setup_NewTerminalDescription}" Style="{StaticResource CaptionTextBlockStyle}"
                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
                         <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1" CornerRadius="6" Padding="16,12">
                             <StackPanel Spacing="1">
-                                <TextBlock Text="Link a project" />
-                                <TextBlock Text="In a Laravel project, run `flock link`: the site is then at http://&lt;folder&gt;.test. `flock secure` adds HTTPS."
+                                <TextBlock Text="{l:Loc Key=Setup_LinkProject}" />
+                                <TextBlock Text="{l:Loc Key=Setup_LinkProjectDescription}"
                                            Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
                         <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                                 BorderThickness="1" CornerRadius="6" Padding="16,12">
                             <StackPanel Spacing="1">
-                                <TextBlock Text="PHP and Node.js" />
-                                <TextBlock Text="Flock installs the newest PHP and Node.js LTS as the defaults. Settings → PHP and Node install other versions."
+                                <TextBlock Text="{l:Loc Key=Setup_PhpAndNode}" />
+                                <TextBlock Text="{l:Loc Key=Setup_PhpAndNodeDescription}"
                                            Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}" TextWrapping="Wrap" />
                             </StackPanel>
                         </Border>
                     </StackPanel>
-                    <TextBlock TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="1,16,0,8">Flock is free and open source. If you like it, <Hyperlink NavigateUri="https://github.com/flock-php/flock">a star on GitHub</Hyperlink> helps others find it.</TextBlock>
+                    <TextBlock x:Name="StarText" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="1,16,0,8" />
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
-                        <Button Content="Open Settings" Click="OpenSettingsClicked" />
-                        <Button Content="Done" Click="CloseClicked" Style="{StaticResource AccentButtonStyle}" />
+                        <Button Content="{l:Loc Key=Setup_OpenSettings}" Click="OpenSettingsClicked" />
+                        <Button Content="{l:Loc Key=Common_Done}" Click="CloseClicked" Style="{StaticResource AccentButtonStyle}" />
                     </StackPanel>
                 </StackPanel>
 
                 <StackPanel x:Name="FailedStage" Spacing="0" Visibility="Collapsed">
-                    <TextBlock x:Name="FailedTitle" Text="Setup didn't finish" Style="{StaticResource TitleTextBlockStyle}" Margin="0,8,0,4" />
+                    <TextBlock x:Name="FailedTitle" Text="{l:Loc Key=Setup_DidNotFinish}" Style="{StaticResource TitleTextBlockStyle}" Margin="0,8,0,4" />
                     <TextBlock x:Name="FailedMessage" TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}" Margin="0,0,0,24" />
                     <Border Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
                             BorderThickness="1" CornerRadius="6" Padding="12,10">
@@ -167,7 +170,7 @@
                         </ScrollViewer>
                     </Border>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,8,0,0">
-                        <Button Content="Close" Click="CloseClicked" /><Button Content="Try Again" Click="RetryClicked" Style="{StaticResource AccentButtonStyle}" />
+                        <Button Content="{l:Loc Key=Common_Close}" Click="CloseClicked" /><Button Content="{l:Loc Key=Setup_TryAgain}" Click="RetryClicked" Style="{StaticResource AccentButtonStyle}" />
                     </StackPanel>
                 </StackPanel>
             </StackPanel>

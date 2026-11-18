@@ -11,6 +11,7 @@ use gtk::{gio, glib};
 
 use crate::api::{DefaultInstall, DefaultsStatus};
 use crate::autostart;
+use crate::i18n::{tr, trn};
 use crate::installation::{self, Conflict};
 use crate::model::AppModel;
 
@@ -45,7 +46,7 @@ impl SetupView {
             seen_defaults: RefCell::default(),
             next_steps: RefCell::default(),
             step_rows: RefCell::default(),
-            startup: gtk::CheckButton::builder().label("Open Flock when I log in").active(true).build(),
+            startup: gtk::CheckButton::builder().label(tr!("setup.open_flock_when_i_log")).active(true).build(),
             startup_problem: RefCell::default(),
         });
         this.intro();
@@ -121,29 +122,14 @@ impl SetupView {
     /// Leaves a failed or blocked setup for the first page.
     fn back_button(self: &Rc<Self>) -> gtk::Button {
         let this = self.clone();
-        self.button("Back", false, move || this.finish())
+        self.button(tr!("setup.back"), false, move || this.finish())
     }
 
     fn intro(self: &Rc<Self>) {
         let list = item_list(&[
-            (
-                "network-server-symbolic",
-                "Runs in the background",
-                "The Flock daemon serves your sites and services, and starts with your computer.",
-                "",
-            ),
-            (
-                "utilities-terminal-symbolic",
-                "php, composer and node in your terminal",
-                "Flock's versions come first on your PATH. Open a new terminal after setup.",
-                "",
-            ),
-            (
-                "channel-secure-symbolic",
-                "*.test sites with trusted HTTPS",
-                "Linux asks for your password once: to start the background service, resolve *.test through Flock and trust Flock's certificate in the system and your browsers.",
-                "",
-            ),
+            ("network-server-symbolic", tr!("setup.background"), tr!("setup.flock_daemon_serves_your_sites_and"), ""),
+            ("utilities-terminal-symbolic", tr!("setup.terminal_title"), tr!("setup.terminal_description"), ""),
+            ("channel-secure-symbolic", tr!("setup.trusted_https_title"), tr!("setup.linux_asks_for_your_password_once"), ""),
         ]);
         let body = gtk::Box::builder().orientation(gtk::Orientation::Vertical).spacing(12).build();
         body.append(&list);
@@ -152,14 +138,10 @@ impl SetupView {
             parent.remove(&self.startup);
         }
         body.append(&self.startup);
+        body.append(&crate::panes::general::language());
         let this = self.clone();
-        let set_up = self.button("Set Up Flock", true, move || this.run());
-        self.page(
-            "Welcome to Flock",
-            "Flock runs your Laravel sites, PHP, mail and databases on this computer. Setting it up takes a moment:",
-            Some(body.upcast_ref()),
-            &[set_up],
-        );
+        let set_up = self.button(tr!("setup.window_title"), true, move || this.run());
+        self.page(tr!("setup.welcome"), tr!("setup.flock_runs_your_laravel_sites_php"), Some(body.upcast_ref()), &[set_up]);
         self.next_steps.replace(None);
     }
 
@@ -167,7 +149,7 @@ impl SetupView {
         self.engaged.set(true);
         let bar = gtk::ProgressBar::new();
         bar.pulse();
-        self.page("Checking Flock's ports…", "", Some(bar.upcast_ref()), &[]);
+        self.page(tr!("setup.checking_ports"), "", Some(bar.upcast_ref()), &[]);
         let this = self.clone();
         glib::spawn_future_local(async move {
             let conflicts = gio::spawn_blocking(installation::conflicts).await.unwrap_or_default();
@@ -186,21 +168,20 @@ impl SetupView {
             .map(|(app, hint, conflicts)| {
                 let title = match hint {
                     Some(hint) if !hint.is_empty() => format!("{}{}", hint[..1].to_uppercase(), &hint[1..]),
-                    _ => format!("Quit {app}"),
+                    _ => tr!("app.conflict.quit", app = app),
                 };
-                let ports: Vec<String> = conflicts.iter().filter_map(|c| c.port.map(|p| format!("port {p} ({})", c.service))).collect();
-                (title, format!("{} uses {}.", conflicts[0].holder, ports.join(" and ")))
+                let ports: Vec<String> =
+                    conflicts.iter().filter_map(|c| c.port.map(|p| tr!("app.conflict.port", port = p, service = c.service))).collect();
+                (title, tr!("app.program_uses_ports", program = conflicts[0].holder, ports = and(ports)))
             })
             .collect();
         let list =
             item_list(&items.iter().map(|(t, d)| ("dialog-warning-symbolic", t.as_str(), d.as_str(), "warning")).collect::<Vec<_>>());
         let this = self.clone();
-        let again = self.button("Check Again", true, move || this.run());
+        let again = self.button(tr!("setup.check_again_title_case"), true, move || this.run());
         self.page(
-            "Stop other web servers first",
-            &format!(
-                "Flock needs these ports and *.{tld} for itself, but other programs use them. Running both would leave neither working."
-            ),
+            tr!("setup.stop_other_web_servers_first"),
+            &tr!("setup.flock_needs_these_ports_and", tld = tld),
             Some(list.upcast_ref()),
             &[self.back_button(), again],
         );
@@ -212,7 +193,7 @@ impl SetupView {
         let body = gtk::Box::builder().orientation(gtk::Orientation::Vertical).spacing(12).build();
         body.append(&bar);
         body.append(&log);
-        self.page("Setting up Flock…", "Linux asks for your password in a moment.", Some(body.upcast_ref()), &[]);
+        self.page(tr!("setup.setting_up"), tr!("setup.linux_asks_for_your_password"), Some(body.upcast_ref()), &[]);
         let pulse = glib::timeout_add_local(std::time::Duration::from_millis(150), move || {
             bar.pulse();
             glib::ControlFlow::Continue
@@ -229,7 +210,7 @@ impl SetupView {
                 this.model.refresh();
                 if output.ok {
                     let problem = autostart::set(this.startup.is_active()).err();
-                    this.startup_problem.replace(problem.map(|e| format!("Could not change the startup setting: {e}.")));
+                    this.startup_problem.replace(problem.map(|e| tr!("setup.could_not_change_the_startup", error = e)));
                     this.done();
                 } else {
                     this.failed(&output);
@@ -241,39 +222,35 @@ impl SetupView {
     fn failed(self: &Rc<Self>, output: &installation::Output) {
         let (log, buffer) = log_view();
         append(&buffer, &output.text);
-        let text = if installation::declined(output) {
-            "The password prompt was cancelled. Flock runs, but *.test sites won't resolve and HTTPS isn't trusted until you allow it."
-        } else {
-            "Something went wrong. The output below says what; you can try again."
-        };
+        let text = if installation::declined(output) { tr!("setup.password_prompt_was_cancelled_flock") } else { tr!("setup.failed") };
         let this = self.clone();
-        let again = self.button("Try Again", true, move || this.run());
-        self.page("Setup didn't finish", text, Some(log.upcast_ref()), &[self.back_button(), again]);
+        let again = self.button(tr!("setup.try_again"), true, move || this.run());
+        self.page(tr!("setup.did_not_finish"), text, Some(log.upcast_ref()), &[self.back_button(), again]);
     }
 
     fn done(self: &Rc<Self>) {
-        let group = adw::PreferencesGroup::builder().title("Next steps").build();
+        let group = adw::PreferencesGroup::builder().title(tr!("setup.next_steps")).build();
         self.next_steps.replace(Some(group.clone()));
         self.update_next_steps();
         let this = self.clone();
-        let settings = self.button("Open Settings", false, move || {
+        let settings = self.button(tr!("setup.open_settings"), false, move || {
             this.finish();
             let _ = this.widget.activate_action("app.settings", None);
         });
         let this = self.clone();
-        let done = self.button("Done", true, move || this.finish());
+        let done = self.button(tr!("common.done"), true, move || this.finish());
         let body = gtk::Box::builder().orientation(gtk::Orientation::Vertical).spacing(18).build();
         body.append(&group);
         body.append(
             &gtk::Label::builder()
-                .label("Flock is free and open source. If you like it, <a href=\"https://github.com/flock-php/flock\">a star on GitHub</a> helps others find it.")
+                .label(markdown_links(tr!("setup.star")))
                 .use_markup(true)
                 .wrap(true)
                 .xalign(0.0)
                 .css_classes(["dim-label"])
                 .build(),
         );
-        self.page("Flock is ready", "", Some(body.upcast_ref()), &[settings, done]);
+        self.page(tr!("setup.ready"), "", Some(body.upcast_ref()), &[settings, done]);
     }
 
     /// The next steps, with the first run's installs of the newest PHP and Node.js LTS as the
@@ -307,28 +284,27 @@ impl SetupView {
                 let error = if install.error.is_empty() { String::new() } else { format!("{}. ", install.error) };
                 add(item(
                     "dialog-warning-symbolic",
-                    &format!("{} couldn't be installed", label(name, install)),
-                    &format!("{error}Try again in Settings → {pane}."),
+                    &tr!("setup.name_couldnt_be_installed", name = label(name, install)),
+                    &tr!("setup.error_try_again_in_settings", error = error, pane = pane),
                     "warning",
                 ));
             }
             let pending: Vec<_> = all.iter().filter(|(_, _, i)| i.state == "waiting" || i.state == "installing").collect();
-            let names =
-                |list: &[&(&str, &str, &DefaultInstall)]| list.iter().map(|(n, _, i)| label(n, i)).collect::<Vec<_>>().join(" and ");
+            let names = |list: &[&(&str, &str, &DefaultInstall)]| and(list.iter().map(|(n, _, i)| label(n, i)).collect());
             if !pending.is_empty() {
                 let installing = pending.iter().any(|(_, _, i)| i.state == "installing");
                 let row = if installing {
                     item(
                         "folder-download-symbolic",
-                        &format!("Installing {}…", names(&pending)),
-                        &format!("Flock makes {} the default for your sites and terminal.", if pending.len() > 1 { "them" } else { "it" }),
+                        &tr!("setup.installing", names = names(&pending)),
+                        &trn!("setup.flock_makes_them_the_default", pending.len()),
                         "",
                     )
                 } else {
                     item(
                         "folder-download-symbolic",
-                        &format!("Waiting to install {}", names(&pending)),
-                        "As soon as Flock can download it.",
+                        &tr!("setup.waiting_to_install_names", names = names(&pending)),
+                        &trn!("setup.as_soon_as_flock_can", pending.len()),
                         "",
                     )
                 };
@@ -339,8 +315,8 @@ impl SetupView {
                 let refs: Vec<_> = all.iter().collect();
                 add(item(
                     "emblem-ok-symbolic",
-                    &format!("{} are installed", names(&refs)),
-                    "They're the defaults for your sites and terminal.",
+                    &tr!("setup.names_are_installed", names = names(&refs)),
+                    tr!("setup.theyre_the_defaults_for_your"),
                     "success",
                 ));
             }
@@ -348,34 +324,26 @@ impl SetupView {
         if let Some(problem) = self.startup_problem.borrow().as_deref() {
             add(item(
                 "dialog-warning-symbolic",
-                "Flock won't open at login",
-                &format!("{problem} Settings → General has it too."),
+                tr!("setup.flock_wont_open_at_login"),
+                &tr!("setup.problem_settings_to_general_has", problem = problem),
                 "warning",
             ));
         }
-        add(item("utilities-terminal-symbolic", "Open a new terminal", "Terminals that were already open still have the old PATH.", ""));
-        add(item(
-            "dev.flock.Flock-sites-symbolic",
-            "Link a project",
-            "In a Laravel project, run `flock link`: the site is then at http://<folder>.test. `flock secure` adds HTTPS.",
-            "",
-        ));
+        add(item("utilities-terminal-symbolic", tr!("setup.new_terminal"), tr!("setup.new_terminal_description"), ""));
+        add(item("dev.flock.Flock-sites-symbolic", tr!("setup.link_project"), tr!("setup.link_project_description"), ""));
     }
 }
 
 /// Runs `flock uninstall` in a dialog with its output; purge also deletes the sites' settings and
 /// databases. The package itself stays: the package manager removes it.
 pub fn uninstall(parent: &impl IsA<gtk::Widget>, model: Rc<AppModel>) {
-    let purge = gtk::CheckButton::with_label("Also delete my sites' settings and databases");
+    let purge = gtk::CheckButton::with_label(tr!("about.also_delete_data"));
     let dialog = adw::AlertDialog::new(
-        Some("Uninstall Flock?"),
-        Some(&format!(
-            "Flock stops and is removed from your PATH, together with its PHP and Node.js versions, certificates, logs and caches. Linux asks for your password to remove the *.test DNS setup and Flock's trusted certificate.\n\nYour sites' settings and databases stay in {}, so reinstalling picks up where you left off — unless you also delete them.",
-            crate::paths::root().display()
-        )),
+        Some(tr!("about.uninstall_question")),
+        Some(&tr!("setup.flock_stops_and_is_removed", folder = crate::paths::root().display())),
     );
     dialog.set_extra_child(Some(&purge));
-    dialog.add_responses(&[("cancel", "Cancel"), ("uninstall", "Uninstall")]);
+    dialog.add_responses(&[("cancel", tr!("common.cancel")), ("uninstall", tr!("common.uninstall"))]);
     dialog.set_response_appearance("uninstall", adw::ResponseAppearance::Destructive);
     let parent = parent.as_ref().clone();
     dialog.choose(Some(&parent.clone()), gio::Cancellable::NONE, move |response| {
@@ -387,14 +355,27 @@ pub fn uninstall(parent: &impl IsA<gtk::Widget>, model: Rc<AppModel>) {
             args.push("--purge".to_owned());
         }
         let (log, buffer) = log_view();
-        let status = gtk::Label::builder().label("Uninstalling Flock…").xalign(0.0).css_classes(["heading"]).build();
-        let column = gtk::Box::builder().orientation(gtk::Orientation::Vertical).spacing(12).margin_top(12).margin_bottom(18).margin_start(18).margin_end(18).build();
+        let status = gtk::Label::builder().label(tr!("about.uninstalling_flock")).xalign(0.0).css_classes(["heading"]).build();
+        let column = gtk::Box::builder()
+            .orientation(gtk::Orientation::Vertical)
+            .spacing(12)
+            .margin_top(12)
+            .margin_bottom(18)
+            .margin_start(18)
+            .margin_end(18)
+            .build();
         column.append(&status);
         column.append(&log);
         let view = adw::ToolbarView::new();
         view.add_top_bar(&adw::HeaderBar::new());
         view.set_content(Some(&column));
-        let progress = adw::Dialog::builder().title("Uninstall Flock").content_width(560).content_height(380).child(&view).can_close(false).build();
+        let progress = adw::Dialog::builder()
+            .title(tr!("about.uninstall_flock"))
+            .content_width(560)
+            .content_height(380)
+            .child(&view)
+            .can_close(false)
+            .build();
         progress.present(Some(&parent));
         installation::run_streaming(
             args,
@@ -402,17 +383,22 @@ pub fn uninstall(parent: &impl IsA<gtk::Widget>, model: Rc<AppModel>) {
             move |output| {
                 progress.set_can_close(true);
                 status.set_label(if output.ok {
-                    "Flock was uninstalled. Remove the app with your package manager (sudo apt remove flockphp, or sudo dnf remove flockphp). Open a new terminal: Flock is no longer on its PATH."
+                    tr!("setup.flock_was_uninstalled_remove_the")
                 } else if installation::declined(&output) {
-                    "The password prompt was cancelled, so the DNS setup and the certificate are still in place."
+                    tr!("about.password_prompt_was_cancelled_so")
                 } else {
-                    "Uninstalling didn't finish. The output below says what; you can try again."
+                    tr!("setup.uninstalling_didnt_finish_the_output")
                 });
                 status.set_wrap(true);
                 model.refresh();
             },
         );
     });
+}
+
+/// "PHP 8.5 and Node.js 24", whole: the lists here have two items, a longer one would nest.
+fn and(items: Vec<String>) -> String {
+    items.into_iter().reduce(|first, second| tr!("common.list.and", first = first, second = second)).unwrap_or_default()
 }
 
 /// A list of rows with an icon, a title and a line of text.
@@ -451,4 +437,37 @@ fn append(buffer: &gtk::TextBuffer, text: &str) {
     let mut end = buffer.end_iter();
     buffer.insert(&mut end, text);
     buffer.insert(&mut end, "\n");
+}
+
+/// Pango markup for a text with Markdown links, [label](url), as the translations write them (the
+/// macOS and Windows apps share the text).
+fn markdown_links(text: &str) -> String {
+    let mut markup = String::new();
+    let mut rest = text;
+    while let Some(start) = rest.find('[') {
+        let Some((label, url, after)) =
+            rest[start + 1..].split_once("](").and_then(|(label, tail)| tail.split_once(')').map(|(url, after)| (label, url, after)))
+        else {
+            break;
+        };
+        markup.push_str(&glib::markup_escape_text(&rest[..start]));
+        markup.push_str(&format!("<a href=\"{}\">{}</a>", glib::markup_escape_text(url), glib::markup_escape_text(label)));
+        rest = after;
+    }
+    markup.push_str(&glib::markup_escape_text(rest));
+    markup
+}
+
+#[cfg(test)]
+mod tests {
+    use super::markdown_links;
+
+    #[test]
+    fn makes_markdown_links_pango_ones() {
+        assert_eq!(
+            markdown_links("Free & open. If you like it, [a star](https://example.com/a?b=1&c=2) helps."),
+            "Free &amp; open. If you like it, <a href=\"https://example.com/a?b=1&amp;c=2\">a star</a> helps."
+        );
+        assert_eq!(markdown_links("No [link here"), "No [link here");
+    }
 }

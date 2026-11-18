@@ -166,7 +166,18 @@ public sealed partial class ServicesPaneViewModel : ObservableObject, IDisposabl
 /// <summary>One visible service category and its retained rows.</summary>
 public sealed class ServiceGroupViewModel(string name, IReadOnlyList<ServiceViewModel> services)
 {
-    public string Name { get; } = name;
+    /// <summary>The category in the app's language; one the app doesn't know shows as the daemon sends it.</summary>
+    public string Name { get; } = name switch
+    {
+        "Core" => Strings.Services_Category_Core,
+        "Database" => Strings.Services_Category_Database,
+        "Cache & Queue" => Strings.Services_Category_CacheQueue,
+        "Search" => Strings.Services_Category_Search,
+        "Storage" => Strings.Services_Category_Storage,
+        "Mail" => Strings.Services_Category_Mail,
+        "Debugging" => Strings.Services_Category_Debugging,
+        _ => name,
+    };
     public IReadOnlyList<ServiceViewModel> Services { get; } = services;
 }
 
@@ -192,8 +203,8 @@ public sealed class ServiceViewModel : ObservableObject
     public string ListDetail => string.Join(" · ", new[]
     {
         value.Version,
-        value.Port > 0 ? $"Port {value.Port}" : null,
-        !value.Running ? "Stopped" : null,
+        value.Port > 0 ? Localization.Format(Strings.Services_PortNumber, value.Port) : null,
+        !value.Running ? Strings.Services_Postgres_Stopped : null,
     }.Where(part => !string.IsNullOrEmpty(part)));
     public bool Installed => value.Installed;
     public bool Enabled => value.Enabled;

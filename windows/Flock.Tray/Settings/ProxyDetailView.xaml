@@ -1,0 +1,113 @@
+<UserControl
+    x:Class="Flock.Tray.Settings.ProxyDetailView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray"
+    xmlns:settings="using:Flock.Tray.Settings">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///Settings/DetailStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <!-- The selected proxy (ProxyDetailViewModel): its address and actions, then its server, HTTPS and upstream, and its commands. -->
+    <Border Style="{StaticResource DetailCardStyle}" Visibility="{Binding IsShown, Converter={StaticResource BooleanVisibilityConverter}}">
+        <StackPanel Spacing="20">
+            <Grid ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Spacing="2">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="{Binding Name}" Style="{StaticResource DetailTitleStyle}" VerticalAlignment="Center" />
+                        <Border Style="{StaticResource NeutralBadgeStyle}">
+                            <TextBlock Text="{l:Loc Key=Sites_Proxy}" Style="{StaticResource NeutralBadgeTextStyle}" />
+                        </Border>
+                    </StackPanel>
+                    <HyperlinkButton Content="{Binding Url}" Command="{Binding OpenCommand}" Padding="0"
+                                     Visibility="{Binding HasUrl, Converter={StaticResource BooleanVisibilityConverter}}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top">
+                    <Button Command="{Binding OpenCommand}" IsEnabled="{Binding HasUrl}" Padding="8,6,8,6" Background="Transparent" BorderThickness="0"
+                            VerticalAlignment="Center" ToolTipService.ToolTip="{Binding OpenLabel}" AutomationProperties.Name="{Binding OpenLabel}">
+                        <FontIcon Glyph="{StaticResource GlyphOpen}" Style="{StaticResource IconStyle}" />
+                    </Button>
+                    <Button Command="{Binding RemoveCommand}" Padding="8,6,8,6" Background="Transparent" BorderThickness="0"
+                            VerticalAlignment="Center" ToolTipService.ToolTip="{l:Loc Key=Sites_RemoveProxy}" AutomationProperties.Name="{l:Loc Key=Sites_RemoveProxy}">
+                        <FontIcon Glyph="{StaticResource GlyphDelete}" Style="{StaticResource IconStyle}" />
+                    </Button>
+                </StackPanel>
+            </Grid>
+            <settings:DetailWarning Text="{Binding Problem}" Visibility="{Binding Problem, Converter={StaticResource StringVisibilityConverter}}" />
+
+            <StackPanel Style="{StaticResource DetailSectionStyle}">
+                <TextBlock Text="{l:Loc Key=Sites_Proxy}" Style="{StaticResource DetailHeadingStyle}" />
+                <settings:DetailField Label="{l:Loc Key=Sites_Server}" LabelAlignment="Top">
+                    <StackPanel Spacing="2">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <Ellipse Style="{StaticResource StatusDotStyle}" Fill="{Binding Running, Converter={StaticResource StatusBrushConverter}}" />
+                            <TextBlock Text="{Binding ServerLabel}" Style="{StaticResource DetailLineStyle}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding NotRunningText}" Style="{StaticResource DetailNoteStyle}"
+                                   Visibility="{Binding IsNotRunning, Converter={StaticResource BooleanVisibilityConverter}}" />
+                    </StackPanel>
+                </settings:DetailField>
+                <settings:DetailField Label="{l:Loc Key=Common_Https}">
+                    <ToggleSwitch IsOn="{Binding Secured, Mode=TwoWay}" MinWidth="0" AutomationProperties.Name="{l:Loc Key=Common_Https}" />
+                </settings:DetailField>
+                <settings:DetailField Label="{l:Loc Key=Sites_Upstream}" LabelAlignment="Top">
+                    <!-- Change keeps its place in the smallest window: a long upstream is trimmed (its tooltip shows it whole). -->
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding Upstream}" FontFamily="{StaticResource MonoFont}" FontSize="13" IsTextSelectionEnabled="True"
+                                   TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"
+                                   ToolTipService.ToolTip="{Binding Upstream}" />
+                        <Button Grid.Column="1" Content="{l:Loc Key=Sites_Change}" Command="{Binding ChangeUpstreamCommand}" VerticalAlignment="Center" />
+                    </Grid>
+                </settings:DetailField>
+                <TextBlock Text="{Binding Note}" Style="{StaticResource DetailNoteStyle}" />
+            </StackPanel>
+
+            <!-- Commands: the command Flock starts the server with, its state, Start and Stop, and its output; or a way to add them. -->
+            <StackPanel Style="{StaticResource DetailSectionStyle}">
+                <TextBlock Text="{l:Loc Key=Sites_Proxy_Commands}" Style="{StaticResource DetailHeadingStyle}" />
+                <Button Content="{l:Loc Key=Sites_Proxy_AddCommands}" Command="{Binding ChangeCommandsCommand}"
+                        Visibility="{Binding HasNoCommands, Converter={StaticResource BooleanVisibilityConverter}}" />
+                <StackPanel Spacing="8" Visibility="{Binding HasCommands, Converter={StaticResource BooleanVisibilityConverter}}">
+                    <settings:DetailField Label="{l:Loc Key=Sites_State}" LabelAlignment="Top">
+                        <StackPanel Spacing="2">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <Ellipse Style="{StaticResource StatusDotStyle}" Fill="{Binding Tone, Converter={StaticResource ToneBrushConverter}}" />
+                                <TextBlock Text="{Binding StateLabel}" Style="{StaticResource DetailTextStyle}" VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding StateProblem}" Style="{StaticResource DetailCautionStyle}"
+                                       Visibility="{Binding StateProblem, Converter={StaticResource StringVisibilityConverter}}" />
+                        </StackPanel>
+                    </settings:DetailField>
+                    <settings:DetailField Label="{l:Loc Key=Services_Start}">
+                        <TextBlock Text="{Binding StartLine}" Style="{StaticResource DetailMonoStyle}" />
+                    </settings:DetailField>
+                    <settings:DetailField Label="{l:Loc Key=Sites_Share_Stop}" Visibility="{Binding HasStopLine, Converter={StaticResource BooleanVisibilityConverter}}">
+                        <TextBlock Text="{Binding StopLine}" Style="{StaticResource DetailMonoStyle}" />
+                    </settings:DetailField>
+                    <settings:DetailField Label="{l:Loc Key=General_Folder}">
+                        <TextBlock Text="{Binding Folder}" Style="{StaticResource DetailLineStyle}" ToolTipService.ToolTip="{Binding Folder}" />
+                    </settings:DetailField>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="{l:Loc Key=Services_Start}" Command="{Binding StartServerCommand}"
+                                Visibility="{Binding CanStart, Converter={StaticResource BooleanVisibilityConverter}}" />
+                        <Button Content="{l:Loc Key=Sites_Share_Stop}" Command="{Binding StopServerCommand}"
+                                Visibility="{Binding CanStop, Converter={StaticResource BooleanVisibilityConverter}}" />
+                        <Button Content="{l:Loc Key=Sites_Change}" Command="{Binding ChangeCommandsCommand}" />
+                    </StackPanel>
+                    <settings:OutputPanel DataContext="{Binding OutputPanel}" />
+                </StackPanel>
+                <TextBlock Text="{l:Loc Key=Sites_Proxy_CommandHelp}"
+                           Style="{StaticResource DetailNoteStyle}" />
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

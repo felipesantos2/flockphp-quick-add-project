@@ -63,7 +63,7 @@ public sealed class RuntimeService
         Postgres.OnChange = RefreshAfterServiceVersionMutationAsync;
         Catalog.OnChange = RefreshAfterServiceVersionMutationAsync;
         Sites.Changed += NotifyChanged;
-        UpdateService.Changed += NotifyChanged;
+        UpdateService.Changed += NotifyUpdateChanged;
         Dumps.OnCaptureChanged = RefreshAsync;
         statusPolling.StatusPublished = ApplyPublished;
         operations.RunningChanged += OperationRunningChanged;
@@ -105,10 +105,10 @@ public sealed class RuntimeService
         }
     }
     public bool IsUpdating { get; private set; }
-    public string Headline => IsUpdating ? "Updating…"
-        : NeedsSetup ? "Not set up"
-        : Status is { } status ? $"{(status.IsDegraded ? "Needs attention" : "Running")} · v{status.Version}"
-        : "Not running";
+    public string Headline => IsUpdating ? Strings.Menu_Status_Updating
+        : NeedsSetup ? Strings.Menu_Status_NotSetUp
+        : Status is { } status ? $"{(status.IsDegraded ? Strings.Menu_Status_NeedsAttention : Strings.Menu_Status_Running)} · v{status.Version}"
+        : Strings.Menu_Status_NotRunning;
     public bool IsRunning => Status is not null;
     public bool IsDegraded => Status?.IsDegraded ?? false;
     public UpdateService UpdateService { get; }
@@ -127,8 +127,10 @@ public sealed class RuntimeService
     public McpService Mcp { get; }
     public SitesService Sites { get; }
     public event Action? Changed;
+    public event Action? UpdateChanged;
 
     public void NotifyChanged() => Changed?.Invoke();
+    private void NotifyUpdateChanged() => UpdateChanged?.Invoke();
 
     public async Task UpdateInstallationAsync()
     {
@@ -139,7 +141,7 @@ public sealed class RuntimeService
         if (!result.Ok)
         {
             App.Log(new InvalidOperationException("flock install (update) failed:\n" + result.Output));
-            Native.ShowError("Flock could not update", $"{result.Output}\n\nYou can run `flock install` in a terminal, or reinstall Flock.");
+            Native.ShowError(Strings.Updates_CouldNotUpdate, Localization.Format(Strings.Updates_CouldNotUpdateDetails, result.Output));
         }
         NotifyChanged();
         await RefreshAsync();
@@ -192,7 +194,7 @@ public sealed class RuntimeService
             var result = await processRunner.RunAsync(FlockPaths.FlockBinary, ["restart"], TimeSpan.FromMinutes(2), token);
             if (!result.Succeeded)
             {
-                throw new FlockException(result.Output.Length == 0 ? $"Could not restart Flock ({FlockPaths.FlockBinary})." : result.Output);
+                throw new FlockException(result.Output.Length == 0 ? Localization.Format(Strings.App_CouldNotRestart, FlockPaths.FlockBinary) : result.Output);
             }
         }, CancellationToken.None);
         ActionError = outcome switch

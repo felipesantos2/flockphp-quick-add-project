@@ -1,0 +1,72 @@
+<UserControl
+    x:Class="Flock.Tray.Settings.SiteExtensionsView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///Settings/DetailStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <!-- A site's PHP extensions (SiteExtensionsViewModel), in the PHP extensions dialog. -->
+    <StackPanel Spacing="10">
+        <ScrollViewer Width="560" Height="320">
+            <StackPanel Spacing="6">
+                <StackPanel Orientation="Horizontal" Spacing="6" Visibility="{Binding HasError, Converter={StaticResource BooleanVisibilityConverter}}">
+                    <FontIcon Glyph="{StaticResource GlyphWarning}" FontFamily="{StaticResource SymbolsFont}" FontSize="12" VerticalAlignment="Center"
+                              Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
+                    <TextBlock Text="{Binding Error}" Style="{StaticResource DetailCaptionStyle}" Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="10" Visibility="{Binding IsLoading, Converter={StaticResource BooleanVisibilityConverter}}">
+                    <ProgressRing Width="16" Height="16" VerticalAlignment="Center" />
+                    <TextBlock Text="{l:Loc Key=Common_Loading}" Style="{StaticResource DetailCaptionStyle}" VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBlock Text="{Binding Summary}" Style="{StaticResource DetailCaptionStyle}"
+                           Visibility="{Binding HasReport, Converter={StaticResource BooleanVisibilityConverter}}" />
+                <TextBlock Text="{l:Loc Key=Sites_ExtensionsNone}" Style="{StaticResource DetailTextStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                           Visibility="{Binding HasNoExtensions, Converter={StaticResource BooleanVisibilityConverter}}" />
+                <ItemsControl ItemsSource="{Binding Extensions}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="6" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnSpacing="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                                    <FontIcon Glyph="{Binding Glyph}" FontFamily="{StaticResource SymbolsFont}" FontSize="14" VerticalAlignment="Center"
+                                              Foreground="{Binding Tone, Converter={StaticResource ToneBrushConverter}}" />
+                                    <StackPanel Spacing="2" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Name}" Style="{StaticResource DetailLineStyle}" />
+                                        <TextBlock Text="{Binding Detail}" Style="{StaticResource DetailCaptionStyle}" MaxWidth="360" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                    <ProgressRing Width="16" Height="16" VerticalAlignment="Center"
+                                                  Visibility="{Binding IsAdding, Converter={StaticResource BooleanVisibilityConverter}}" />
+                                    <HyperlinkButton Content="{l:Loc Key=Common_Cancel}" Command="{Binding CancelCommand}" Padding="4,2,4,2" VerticalAlignment="Center"
+                                                     Visibility="{Binding IsConfirming, Converter={StaticResource BooleanVisibilityConverter}}" />
+                                    <Button Content="{l:Loc Key=Sites_Require}" Command="{Binding RequireCommand}" Style="{StaticResource AccentButtonStyle}" VerticalAlignment="Center"
+                                            ToolTipService.ToolTip="{Binding RequireTooltip}"
+                                            Visibility="{Binding IsConfirming, Converter={StaticResource BooleanVisibilityConverter}}" />
+                                    <Button Content="{l:Loc Key=Sites_AddToComposer}" Command="{Binding ConfirmCommand}" IsEnabled="{Binding CanAdd}" VerticalAlignment="Center"
+                                            Visibility="{Binding CanBeAdded, Converter={StaticResource BooleanVisibilityConverter}}" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </ScrollViewer>
+        <TextBlock Text="{l:Loc Key=Sites_ExtensionsFootnote}"
+                   Style="{StaticResource DetailCaptionStyle}" />
+    </StackPanel>
+</UserControl>

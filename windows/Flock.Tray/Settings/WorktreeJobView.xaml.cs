@@ -65,7 +65,7 @@ internal sealed partial class WorktreeJobView : UserControl
     private void UpdateButtons()
     {
         dialog.PrimaryButtonText = viewModel.PrimaryAction;
-        dialog.CloseButtonText = viewModel.IsBusy ? "Hide" : "Close";
+        dialog.CloseButtonText = viewModel.IsBusy ? Strings.Common_Hide : Strings.Common_Close;
         dialog.DefaultButton = viewModel.IsBusy ? ContentDialogButton.None : ContentDialogButton.Close;
         dialog.IsPrimaryButtonEnabled = true;
     }

@@ -6,6 +6,8 @@
   <project_license>AGPL-3.0-only</project_license>
   <name>Flock</name>
   <summary>Local development environment for Laravel and PHP</summary>
+  <summary xml:lang="cs">Lokální vývojové prostředí pro Laravel a PHP</summary>
+  <summary xml:lang="es">Entorno de desarrollo local para Laravel y PHP</summary>
   <developer id="com.flockphp">
     <name>Guava s.r.o.</name>
   </developer>
@@ -14,10 +16,24 @@
       Flock runs your Laravel and PHP sites on this computer, without Docker: every project
       folder is a site under .test, served over HTTPS with a trusted certificate.
     </p>
+    <p xml:lang="cs">
+      Flock provozuje vaše weby v Laravelu a PHP na tomto počítači, bez Dockeru: každá složka
+      projektu je web pod .test, obsluhovaný přes HTTPS s důvěryhodným certifikátem.
+    </p>
+    <p xml:lang="es">
+      Flock ejecuta tus sitios de Laravel y PHP en este equipo, sin Docker: cada carpeta de
+      proyecto es un sitio bajo .test, servido por HTTPS con un certificado de confianza.
+    </p>
     <ul>
       <li>PHP, Composer and Node.js versions per site</li>
+      <li xml:lang="cs">Verze PHP, Composeru a Node.js pro každý web</li>
+      <li xml:lang="es">Versiones de PHP, Composer y Node.js por sitio</li>
       <li>PostgreSQL, MySQL, Redis and more on 127.0.0.1</li>
+      <li xml:lang="cs">PostgreSQL, MySQL, Redis a další na 127.0.0.1</li>
+      <li xml:lang="es">PostgreSQL, MySQL, Redis y más en 127.0.0.1</li>
       <li>Mail, dumps and logs of your sites in one place</li>
+      <li xml:lang="cs">Pošta, dumpy a logy vašich webů na jednom místě</li>
+      <li xml:lang="es">Correo, dumps y registros de tus sitios en un solo lugar</li>
     </ul>
   </description>
   <launchable type="desktop-id">dev.flock.Flock.desktop</launchable>

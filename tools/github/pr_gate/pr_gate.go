@@ -3,6 +3,7 @@ package pr_gate
 
 import (
 	"fmt"
+	"path"
 	"strings"
 	"time"
 
@@ -99,7 +100,7 @@ func approvedResult(issue issue_reference.Reference) Result {
 }
 
 func evaluate(files []*github.CommitFile) action {
-	if docsOnly(files) {
+	if needsNoIssue(files) {
 		return allow
 	}
 	return closeUnapproved
@@ -138,13 +139,38 @@ func bypassesGate(user *github.User, authorAssociation string) bool {
 	return user.GetType() == "Bot" || authorAssociation == "OWNER" || authorAssociation == "MEMBER" || authorAssociation == "COLLABORATOR"
 }
 
-func docsOnly(files []*github.CommitFile) bool {
+// Files a pull request may change without an approved issue: the docs, and the translations in
+// lang/ with the files tools/i18n generates from them (CI fails when those don't match lang/).
+var (
+	openFolders = []string{"docs/", "lang/"}
+	openFiles   = []string{
+		"macos/Resources/Localizable.xcstrings", "macos/Sources/FlockUI/Languages.swift",
+		"windows/Flock.Kit/Strings*.resx", "windows/Flock.Kit/Languages.g.cs", "windows/installer/Strings.iss",
+		"linux/po/*.po",
+	}
+)
+
+func needsNoIssue(files []*github.CommitFile) bool {
 	for _, file := range files {
-		if !strings.HasPrefix(file.GetFilename(), "docs/") || (file.GetPreviousFilename() != "" && !strings.HasPrefix(file.GetPreviousFilename(), "docs/")) {
+		if !openToChange(file.GetFilename()) || (file.GetPreviousFilename() != "" && !openToChange(file.GetPreviousFilename())) {
 			return false
 		}
 	}
 	return true
+}
+
+func openToChange(name string) bool {
+	for _, folder := range openFolders {
+		if strings.HasPrefix(name, folder) {
+			return true
+		}
+	}
+	for _, pattern := range openFiles {
+		if matched, _ := path.Match(pattern, name); matched {
+			return true
+		}
+	}
+	return false
 }
 
 func isApproved(issue *github.Issue, author string) bool {

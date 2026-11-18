@@ -1,0 +1,70 @@
+<UserControl
+    x:Class="Flock.Tray.Settings.ReverbSection"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray"
+    xmlns:settings="using:Flock.Tray.Settings">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///Settings/DetailStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <!-- A PHP site's Laravel Reverb server (ReverbSectionViewModel): its state, what the app's .env needs, Restart and its output. -->
+    <StackPanel Style="{StaticResource DetailSectionStyle}">
+        <TextBlock Text="{l:Loc Key=Sites_Reverb_Title}" Style="{StaticResource DetailHeadingStyle}" />
+        <settings:DetailField Label="{l:Loc Key=Sites_Reverb_Run}">
+            <ToggleSwitch IsOn="{Binding IsOn, Mode=TwoWay}" IsEnabled="{Binding CanToggle}" MinWidth="0" AutomationProperties.Name="{l:Loc Key=Sites_Reverb_Run}" />
+        </settings:DetailField>
+        <TextBlock Text="{Binding OffNote}" Style="{StaticResource DetailNoteStyle}"
+                   Visibility="{Binding IsOff, Converter={StaticResource BooleanVisibilityConverter}}" />
+
+        <StackPanel Spacing="8" Visibility="{Binding HasReverb, Converter={StaticResource BooleanVisibilityConverter}}">
+            <!-- The state's text wraps, so a long domain or problem fits the smallest window. -->
+            <Grid ColumnSpacing="6" Visibility="{Binding IsRunning, Converter={StaticResource BooleanVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Ellipse Style="{StaticResource StatusDotStyle}" Fill="{ThemeResource SystemFillColorSuccessBrush}" VerticalAlignment="Top" Margin="0,6,0,0" />
+                <TextBlock Grid.Column="1" Text="{Binding RunningText}" Style="{StaticResource DetailTextStyle}" IsTextSelectionEnabled="True" />
+            </Grid>
+            <Grid ColumnSpacing="6" Visibility="{Binding IsFailed, Converter={StaticResource BooleanVisibilityConverter}}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Ellipse Style="{StaticResource StatusDotStyle}" Fill="{ThemeResource SystemFillColorCriticalBrush}" VerticalAlignment="Top" Margin="0,6,0,0" />
+                <TextBlock Grid.Column="1" Text="{Binding FailedText}" Style="{StaticResource DetailTextStyle}" IsTextSelectionEnabled="True" />
+            </Grid>
+            <settings:DetailWarning Text="{Binding UnavailableText}" Visibility="{Binding IsUnavailable, Converter={StaticResource BooleanVisibilityConverter}}" />
+
+            <StackPanel Spacing="6" Visibility="{Binding HasEnv, Converter={StaticResource BooleanVisibilityConverter}}">
+                <TextBlock Text="{l:Loc Key=Sites_Reverb_EnvNeeds}" Style="{StaticResource DetailCaptionStyle}" />
+                <Grid>
+                    <Border Style="{StaticResource CodeBlockStyle}">
+                        <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                            <TextBlock Text="{Binding Env}" Style="{StaticResource DetailMonoStyle}" />
+                        </ScrollViewer>
+                    </Border>
+                    <Button Command="{Binding CopyEnvCommand}" Padding="8,6,8,6" Background="Transparent" BorderThickness="0"
+                            HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,2,2,0"
+                            ToolTipService.ToolTip="{l:Loc Key=Common_Copy}" AutomationProperties.Name="{l:Loc Key=Common_Copy}">
+                        <FontIcon Glyph="{StaticResource GlyphCopy}" Style="{StaticResource IconStyle}" />
+                    </Button>
+                </Grid>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <ProgressRing Width="16" Height="16" VerticalAlignment="Center"
+                              Visibility="{Binding IsRestarting, Converter={StaticResource BooleanVisibilityConverter}}" />
+                <Button Content="{l:Loc Key=Menu_Restart}" Command="{Binding RestartCommand}" IsEnabled="{Binding CanRestart}" VerticalAlignment="Center"
+                        ToolTipService.ToolTip="{l:Loc Key=Sites_Reverb_RestartTooltip}" />
+            </StackPanel>
+            <Grid Visibility="{Binding HasOutput, Converter={StaticResource BooleanVisibilityConverter}}">
+                <settings:OutputPanel DataContext="{Binding OutputPanel}" />
+            </Grid>
+            <TextBlock Style="{StaticResource DetailNoteStyle}"
+                       Text="{l:Loc Key=Sites_Reverb_Footnote}" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>

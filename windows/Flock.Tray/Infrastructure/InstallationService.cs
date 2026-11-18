@@ -30,7 +30,7 @@ public sealed class InstallationService(CliProcessRunner processRunner, Preferen
     {
         if (Installation.BundledFlock is not { } bundled)
         {
-            return new Installation.Result(false, "This build of Flock has no bundled CLI — run `flock install` in a terminal.");
+            return new Installation.Result(false, Strings.Setup_NoBundledCli);
         }
         var result = await processRunner.RunAsync(bundled, ["install"], cancellationToken: cancellationToken);
         await RecordInstalledAsync(cancellationToken);

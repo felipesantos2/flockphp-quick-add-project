@@ -154,6 +154,35 @@ jobs:
                 if: env.CODE == 'true' && matrix.name == 'macOS'
                 run: go run ./tools/notices -check
 
+            # The apps' translation files are what lang/ and the apps' keys generate; run `make i18n`
+            # after changing either.
+            -   name: Translations
+                if: env.CODE == 'true' && matrix.name == 'macOS'
+                run: go run ./tools/i18n -check
+
+            # How much of each language is translated, in the job's summary. A pull request that changes
+            # the English of an existing key gets a reminder: a new meaning needs a new key (lang/README.md).
+            -   name: Translation status
+                if: env.CODE == 'true' && matrix.name == 'macOS'
+                env:
+                    BASE_SHA: ${{ github.event.pull_request.base.sha }}
+                #language=bash
+                run: |
+                    { echo '### Translations'; echo '```'; go run ./tools/i18n -status; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+                    [ -n "$BASE_SHA" ] || exit 0
+                    git fetch --quiet --depth=1 origin "$BASE_SHA"
+                    git show "$BASE_SHA:lang/en/app.json" > "$RUNNER_TEMP/en.json" 2>/dev/null || exit 0
+                    changed=$(go run ./tools/i18n -changed "$RUNNER_TEMP/en.json")
+                    [ -n "$changed" ] || exit 0
+                    echo "::warning title=English texts changed::If a text's meaning changed, give it a new key so translators see it (lang/README.md)."
+                    {
+                      echo '### English texts changed'
+                      echo "If a text's meaning changed, give it a new key, so translators see it (lang/README.md)."
+                      echo '```'
+                      echo "$changed"
+                      echo '```'
+                    } >> "$GITHUB_STEP_SUMMARY"
+
     tool-test:
         name: Tool tests
         needs: changes

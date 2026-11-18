@@ -1,3 +1,4 @@
+using System.Globalization;
 using Flock.Kit;
 using Flock.Tray.Features.Services;
 using Flock.Tray.Infrastructure;
@@ -27,18 +28,18 @@ internal sealed partial class ServicesPane
     {
         if (Model.Catalog.Current is not { } catalog)
         {
-            panel.Children.Add(LoadingRow("Loading…"));
+            panel.Children.Add(LoadingRow(Strings.Common_Loading));
             return;
         }
         if (catalog[service.Id] is not { } entry)
         {
-            panel.Children.Add(Ui.Caption($"This Flock daemon doesn't offer {service.Name}. Update Flock, then try again."));
+            panel.Children.Add(Ui.Caption(Localization.Format(Strings.Services_DaemonDoesNotOffer, service.Name)));
             return;
         }
         var row = Model.ReleaseActions.ResolveRow(entry.Id);
         if (!row.IsAvailable)
         {
-            panel.Children.Add(Ui.Caption(entry.Unavailable.Length > 0 ? entry.Unavailable : $"{entry.Name} isn't available on this computer."));
+            panel.Children.Add(Ui.Caption(entry.Unavailable.Length > 0 ? entry.Unavailable : Localization.Format(Strings.Services_NotOnThisComputer, entry.Name)));
             panel.Children.Add(CheckFooter(service.Id, Model.ReleaseActions.Resolve(service.Id)));
             return;
         }
@@ -52,7 +53,7 @@ internal sealed partial class ServicesPane
             {
                 var targets = Model.ReleaseActions.InstallTargets(entry.Id);
                 panel.Children.Add(targets.Count == 0
-                    ? Inner(Ui.Caption($"Flock offers no {entry.Name} versions for this computer."))
+                    ? Inner(Ui.Caption(Localization.Format(Strings.Services_NoVersions, entry.Name)))
                     : CatalogInstallCard(entry, row, targets));
             }
         }
@@ -66,8 +67,8 @@ internal sealed partial class ServicesPane
     /// <summary>What it is, the version line and port, and Install (see InstallCard).</summary>
     private Border CatalogInstallCard(CatalogService entry, ServiceReleaseRow row, IReadOnlyList<ServiceReleaseTarget> targets)
     {
-        return InstallCard(entry.Id, entry.Name, entry.Description.Length > 0 ? entry.Description : "Runs on 127.0.0.1 for your sites.",
-            targets, row.Port, row.Port != row.DefaultPort ? $"Port {row.DefaultPort} is taken, so Flock suggests {row.Port}." : null, row.Estimate);
+        return InstallCard(entry.Id, entry.Name, entry.Description.Length > 0 ? entry.Description : Strings.Services_RunsForSites,
+            targets, row.Port, row.Port != row.DefaultPort ? Localization.Format(Strings.Services_PortTaken, row.DefaultPort, row.Port) : null, row.Estimate);
     }
 
     /// <summary>A running or failed install.</summary>
@@ -78,10 +79,10 @@ internal sealed partial class ServicesPane
         var target = job.Version.Length > 0 ? $"{entry.Name} {job.Version}" : entry.Name;
         if (job.IsRunning)
         {
-            var verb = job.Action == "update" ? "Updating" : "Installing";
-            var percent = job.HasProgress ? $"{Math.Round(job.Progress * 100)} %" : "";
-            content.Children.Add(Ui.Spread(Ui.Text($"{verb} {target}", "BodyStrongTextBlockStyle"), Ui.Caption(percent, wrap: false)));
-            var phase = job.PhaseText + (job.StartedAt is { Year: > 2000 } started ? $" · started {Ui.Relative(started)}" : "");
+            var heading = Localization.Format(job.Action == "update" ? Strings.Services_UpdatingTarget : Strings.Services_InstallingTarget, target);
+            var percent = job.HasProgress ? job.Progress.ToString("P0", CultureInfo.CurrentCulture) : "";
+            content.Children.Add(Ui.Spread(Ui.Text(heading, "BodyStrongTextBlockStyle"), Ui.Caption(percent, wrap: false)));
+            var phase = job.PhaseText + (job.StartedAt is { Year: > 2000 } started ? " · " + Localization.Format(Strings.Services_Started, Ui.Relative(started)) : "");
             content.Children.Add(new Controls.OperationProgress { Text = phase, Value = job.Progress, IsIndeterminate = !job.HasProgress });
             foreach (var command in row.JobCommands)
             {
@@ -92,8 +93,9 @@ internal sealed partial class ServicesPane
         }
 
         content.Children.Add(Ui.Row(6, Ui.Icon(Ui.GlyphWarning, 14, Ui.Critical),
-            Ui.Text(job.Action == "update" ? $"Updating {entry.Name} failed" : $"Installing {target} failed", "BodyStrongTextBlockStyle")));
-        var error = Ui.Caption(job.Error.Length > 0 ? job.Error : "Flock reported no details; the log may tell more.", Ui.Critical);
+            Ui.Text(Localization.Format(job.Action == "update" ? Strings.Services_UpdatingFailed : Strings.Services_InstallingFailed,
+                job.Action == "update" ? entry.Name : target), "BodyStrongTextBlockStyle")));
+        var error = Ui.Caption(job.Error.Length > 0 ? job.Error : Strings.Services_NoDetails, Ui.Critical);
         error.IsTextSelectionEnabled = true;
         error.MaxLines = 4;
         ToolTipService.SetToolTip(error, job.Error);
@@ -116,13 +118,13 @@ internal sealed partial class ServicesPane
             var title = Ui.Row(8, Ui.Text($"{entry.Name} {line.Target.Label}", line.IsInstalled ? "BodyStrongTextBlockStyle" : "BodyTextBlockStyle", wrap: false));
             if (line.IsActive)
             {
-                title.Children.Add(Ui.Badge("Active"));
+                title.Children.Add(Ui.Badge(Strings.Services_Active));
             }
             var info = Ui.Column(2, title, Ui.Caption(line.Facts, line.HasUpdate ? Ui.Accent : null, false));
             if (source.Yanked.Length > 0)
             {
-                var withdrawn = Ui.Caption(line.HasUpdate ? $"Withdrawn: {source.Yanked} — update to replace it" : $"Withdrawn: {source.Yanked}", Ui.Caution);
-                ToolTipService.SetToolTip(withdrawn, "This build was withdrawn. Flock replaces it as soon as a fixed build is published.");
+                var withdrawn = Ui.Caption(Localization.Format(line.HasUpdate ? Strings.Services_WithdrawnUpdate : Strings.Services_Withdrawn, source.Yanked), Ui.Caution);
+                ToolTipService.SetToolTip(withdrawn, Strings.Services_WithdrawnTooltip);
                 info.Children.Add(Ui.Row(6, Ui.Icon(Ui.GlyphWarning, 12, Ui.Caution), withdrawn));
             }
 
@@ -139,44 +141,42 @@ internal sealed partial class ServicesPane
                     switch (command)
                     {
                         case ServiceRowCommandKind.Activate:
-                            more.Items.Add(Item("Switch…", () => _ = SwitchCatalog(entry, source, line.Target)));
+                            more.Items.Add(Item(Strings.Services_SwitchEllipsis, () => _ = SwitchCatalog(entry, source, line.Target)));
                             break;
                         case ServiceRowCommandKind.Uninstall:
-                            more.Items.Add(Item("Uninstall…", () => _ = UninstallCatalog(entry, source, line.Target)));
+                            more.Items.Add(Item(Strings.Common_UninstallEllipsis, () => _ = UninstallCatalog(entry, source, line.Target)));
                             break;
                         case ServiceRowCommandKind.Reinstall:
-                            more.Items.Add(Item($"Reinstall {source.Version}", () => _ = RunCatalogAsync(entry.Id,
+                            more.Items.Add(Item(Localization.Format(Strings.Services_Reinstall, source.Version), () => _ = RunCatalogAsync(entry.Id,
                                 () => Model.ReleaseActions.RunAsync(line.Target, command))));
                             break;
                         case ServiceRowCommandKind.ShowLog:
-                            more.Items.Add(Item("Show Last Log", () => _ = ShowCatalogLog(entry)));
+                            more.Items.Add(Item(Strings.Services_ShowLastLog, () => _ = ShowCatalogLog(entry)));
                             break;
                     }
                 }
-                var moreButton = Ui.IconButton(Ui.GlyphMore, "More", () => { });
+                var moreButton = Ui.IconButton(Ui.GlyphMore, Strings.Services_More, () => { });
                 moreButton.Flyout = more;
                 actions.Children.Add(moreButton);
             }
             rows.Add(VersionRow(info, actions));
         }
-        return Ui.Column(6, Ui.Text("Versions", "BodyStrongTextBlockStyle"), VersionRows(rows),
-            Ui.Caption(entry.Lines.Count > 1
-                ? "Installed versions stay side by side. One runs at a time; each keeps its own data, and updates within a version keep it."
-                : "Updates keep your data."));
+        return Ui.Column(6, Ui.Text(Strings.Versions_Versions, "BodyStrongTextBlockStyle"), VersionRows(rows),
+            Ui.Caption(entry.Lines.Count > 1 ? Strings.Services_SideBySide : Strings.Services_UpdatesKeepData));
     }
 
     private Button CatalogCommandButton(CatalogService entry, CatalogLine source, ServiceReleaseLine line, ServiceRowCommandKind command)
     {
         return command switch
         {
-            ServiceRowCommandKind.Install => Ui.Button("Install", () => _ = RunCatalogAsync(entry.Id, () => Model.ReleaseActions.RunAsync(line.Target, command)),
-                glyph: Ui.GlyphDownload, tooltip: (source.Latest.Length > 0 ? $"Downloads {entry.Name} {source.Latest}." : "Downloads the newest release.")
-                                                  + (entry.IsInstalled ? $" {entry.Name} {entry.Line} keeps running until you switch." : "")
-                                                  + (source.HasData ? " Its data is still here and comes back." : "")),
-            ServiceRowCommandKind.Update => Ui.Button($"Update to {source.Latest}", () => _ = RunCatalogAsync(entry.Id,
+            ServiceRowCommandKind.Install => Ui.Button(Strings.Common_Install, () => _ = RunCatalogAsync(entry.Id, () => Model.ReleaseActions.RunAsync(line.Target, command)),
+                glyph: Ui.GlyphDownload, tooltip: (source.Latest.Length > 0 ? Localization.Format(Strings.Services_Downloads, $"{entry.Name} {source.Latest}") : Strings.Services_DownloadsNewest)
+                                                  + (entry.IsInstalled ? " " + Localization.Format(Strings.Services_KeepsRunning, $"{entry.Name} {entry.Line}") : "")
+                                                  + (source.HasData ? " " + Strings.Services_DataComesBack : "")),
+            ServiceRowCommandKind.Update => Ui.Button(Localization.Format(Strings.General_UpdateTo, source.Latest), () => _ = RunCatalogAsync(entry.Id,
                     () => Model.ReleaseActions.RunAsync(line.Target, command)), true, Ui.GlyphDownload,
-                $"Installs {source.Latest} in place of {source.Version}. Your data stays{(source.Active ? $"; {entry.Name} restarts for a moment" : "")}."),
-            ServiceRowCommandKind.Uninstall => Ui.Button("Uninstall…", () => _ = UninstallCatalog(entry, source, line.Target)),
+                Localization.Format(source.Active ? Strings.Services_UpdateTooltipRestart : Strings.Services_UpdateTooltip, source.Latest, source.Version, entry.Name)),
+            ServiceRowCommandKind.Uninstall => Ui.Button(Strings.Common_UninstallEllipsis, () => _ = UninstallCatalog(entry, source, line.Target)),
             _ => throw new ArgumentOutOfRangeException(nameof(command), command, null)
         };
     }
@@ -186,20 +186,20 @@ internal sealed partial class ServicesPane
         var target = new ServiceReleaseTarget(entry.Id, ServiceReleaseSource.Catalog, job.Line, entry.Name, job.Version);
         return command switch
         {
-            ServiceRowCommandKind.ShowLog => Ui.Link("Show Log", () => _ = ShowCatalogLog(entry)),
-            ServiceRowCommandKind.Cancel => Ui.Button("Cancel", () => _ = RunCatalogAsync(entry.Id, () => Model.ReleaseActions.RunAsync(target, command))),
-            ServiceRowCommandKind.Retry => Ui.Button("Try Again", () => _ = RunCatalogAsync(entry.Id, () => Model.ReleaseActions.RunAsync(target, command)),
+            ServiceRowCommandKind.ShowLog => Ui.Link(Strings.Sites_ShowLog, () => _ = ShowCatalogLog(entry)),
+            ServiceRowCommandKind.Cancel => Ui.Button(Strings.Common_Cancel, () => _ = RunCatalogAsync(entry.Id, () => Model.ReleaseActions.RunAsync(target, command))),
+            ServiceRowCommandKind.Retry => Ui.Button(Strings.Setup_TryAgain, () => _ = RunCatalogAsync(entry.Id, () => Model.ReleaseActions.RunAsync(target, command)),
                 true, Ui.GlyphRefresh),
-            ServiceRowCommandKind.Dismiss => Ui.Button("Dismiss", () => _ = RunCatalogAsync(entry.Id, () => Model.ReleaseActions.RunAsync(target, command))),
+            ServiceRowCommandKind.Dismiss => Ui.Button(Strings.Sites_Share_Dismiss, () => _ = RunCatalogAsync(entry.Id, () => Model.ReleaseActions.RunAsync(target, command))),
             _ => throw new ArgumentOutOfRangeException(nameof(command), command, null)
         };
     }
 
     private async Task SwitchCatalog(CatalogService entry, CatalogLine target, ServiceReleaseTarget releaseTarget)
     {
-        var own = target.HasData ? $"{entry.Name} {target.Label} uses its own data." : $"{entry.Name} {target.Label} starts with empty data.";
-        if (!entry.IsInstalled || await Window.Confirm($"Switch to {entry.Name} {target.Label}?",
-                $"{entry.Name} {entry.Line} stops; its data stays but isn't used until you switch back. {own}", "Switch"))
+        var own = Localization.Format(target.HasData ? Strings.Services_UsesOwnData : Strings.Services_StartsEmpty, $"{entry.Name} {target.Label}");
+        if (!entry.IsInstalled || await Window.Confirm(Localization.Format(Strings.Services_SwitchQuestion, $"{entry.Name} {target.Label}"),
+                Localization.Format(Strings.Services_SwitchDetails, $"{entry.Name} {entry.Line}") + " " + own, Strings.Worktrees_Switch))
         {
             await RunCatalogAsync(entry.Id, () => Model.ReleaseActions.RunAsync(releaseTarget, ServiceRowCommandKind.Activate));
         }
@@ -209,25 +209,25 @@ internal sealed partial class ServicesPane
     {
         var next = entry.Lines.FirstOrDefault(l => l.Installed && l.Id != line.Id);
         var details = !line.Active ? ""
-            : next is not null ? $"{entry.Name} {line.Label} stops and {entry.Name} {next.Label} becomes the active version. "
-            : $"{entry.Name} {line.Label} stops; your sites can't use {entry.Name} until you install a version again. ";
+            : next is not null ? Localization.Format(Strings.Services_UninstallNext, $"{entry.Name} {line.Label}", $"{entry.Name} {next.Label}") + " "
+            : Localization.Format(Strings.Services_UninstallLast, $"{entry.Name} {line.Label}", entry.Name) + " ";
         details += line.HasData
-            ? $"Its data stays unless you delete it below; installing {line.Label} again picks it up."
-            : "It holds no data.";
+            ? Localization.Format(Strings.Services_DataStays, line.Label)
+            : Strings.Services_NoData;
 
         CheckBox? delete = null;
         UIElement? extra = null;
         if (line.HasData)
         {
-            delete = new CheckBox { Content = "Also delete its data" };
-            var warning = Ui.Caption("Deleted data can't be recovered.", Ui.Caution);
+            delete = new CheckBox { Content = Strings.Services_AlsoDeleteData };
+            var warning = Ui.Caption(Strings.Services_DeletedDataGone, Ui.Caution);
             warning.Visibility = Visibility.Collapsed;
             warning.Margin = new Thickness(28, -4, 0, 0);
             delete.Checked += (_, _) => warning.Visibility = Visibility.Visible;
             delete.Unchecked += (_, _) => warning.Visibility = Visibility.Collapsed;
             extra = Ui.Column(4, delete, warning);
         }
-        if (await Window.Confirm($"Uninstall {entry.Name} {line.Label}?", details, "Uninstall", true, extra))
+        if (await Window.Confirm(Localization.Format(Strings.Services_UninstallQuestion, $"{entry.Name} {line.Label}"), details, Strings.Common_Uninstall, true, extra))
         {
             var deleteData = delete?.IsChecked == true;
             await RunCatalogAsync(entry.Id, () => Model.ReleaseActions.RunAsync(releaseTarget, ServiceRowCommandKind.Uninstall, deleteData));
@@ -243,6 +243,6 @@ internal sealed partial class ServicesPane
 
     private Task ShowCatalogLog(CatalogService entry)
     {
-        return JobLogDialog.ShowAsync(Window, $"{entry.Name} install log", token => Model.Catalog.ReadLogAsync(entry.Id, token), () => CatalogWorking(entry.Id));
+        return JobLogDialog.ShowAsync(Window, Localization.Format(Strings.Services_InstallLog, entry.Name), token => Model.Catalog.ReadLogAsync(entry.Id, token), () => CatalogWorking(entry.Id));
     }
 }

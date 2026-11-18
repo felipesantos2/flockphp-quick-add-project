@@ -12,7 +12,7 @@ public enum Editor: String, CaseIterable, Sendable, Identifiable {
         case .vscode: "VS Code"
         case .cursor: "Cursor"
         case .zed: "Zed"
-        case .none: "Don't link"
+        case .none: String(localized: "settings.editor.none")
         }
     }
 

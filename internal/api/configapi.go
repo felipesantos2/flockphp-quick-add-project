@@ -22,6 +22,7 @@ import (
 	"flock/internal/php"
 	"flock/internal/ports"
 	"flock/internal/project"
+	"flock/internal/reverb"
 )
 
 // Service is one background service as shown in the Services settings.
@@ -282,6 +283,7 @@ func registerConfig(mux *http.ServeMux, b Backend) {
 			// Server is "fastcgi" or "frankenphp"; Worker "" (classic) or "octane" (FrankenPHP's worker mode).
 			Server *string `json:"server"`
 			Worker *string `json:"worker"`
+			Reverb *bool   `json:"reverb"`
 			// Root is the document root on this machine, relative to the project ("" lets the
 			// project's .flockrc or detection decide again).
 			Root *string `json:"root"`
@@ -339,6 +341,12 @@ func registerConfig(mux *http.ServeMux, b Backend) {
 				if err := setServer(b, cfg, &site, server, worker); err != nil {
 					return err
 				}
+			}
+			if body.Reverb != nil {
+				if *body.Reverb && !reverb.Installed(site.Path) {
+					return invalid("Laravel Reverb isn't installed in %s — run `php artisan install:broadcasting --reverb`", site.Path)
+				}
+				cfg.SetReverb(&site, *body.Reverb)
 			}
 			// A parked site becomes linked so its settings can be stored.
 			site.Parked = false
@@ -633,6 +641,7 @@ type SiteChange struct {
 	Node    *string `json:"node,omitempty"`
 	Server  *string `json:"server,omitempty"`
 	Worker  *string `json:"worker,omitempty"`
+	Reverb  *bool   `json:"reverb,omitempty"`
 	Root    *string `json:"root,omitempty"`
 }
 
@@ -715,7 +724,8 @@ func (c *Client) RemoveProxy(ctx context.Context, name string) (Status, error) {
 	return out, err
 }
 
-// UpdateSite changes a site's settings. Switching servers can take a while (FrankenPHP starts).
+// UpdateSite changes a site's settings. Switching servers or turning on Reverb can take a while
+// (the process starts).
 func (c *Client) UpdateSite(ctx context.Context, name string, change SiteChange) (Status, error) {
 	var out Status
 	err := c.timeout(time.Minute).send(ctx, http.MethodPatch, "/v1/sites/"+url.PathEscape(name), change, &out)

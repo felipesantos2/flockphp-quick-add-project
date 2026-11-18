@@ -28,18 +28,18 @@ public sealed class WorktreeJobViewModel(RuntimeService model, Action<string> fo
 
     public string Headline => phase switch
     {
-        WorktreeJobPhase.Starting => "Starting…",
+        WorktreeJobPhase.Starting => Strings.Worktrees_Job_Starting,
         WorktreeJobPhase.Running when step.Length > 0 => char.ToUpperInvariant(step[0]) + step[1..] + "…",
-        WorktreeJobPhase.Running => "Setting up…",
-        WorktreeJobPhase.Ready => Worktree?.Url is { } url ? $"Ready at {url}" : "Ready",
+        WorktreeJobPhase.Running => Strings.Worktrees_SettingUp,
+        WorktreeJobPhase.Ready => Worktree?.Url is { } url ? Localization.Format(Strings.Worktrees_Job_ReadyAt, url) : Strings.Worktrees_Job_Ready,
         _ => error,
     };
 
     /// <summary>Open in Browser once it's ready, Run Setup Again after a failure.</summary>
     public string PrimaryAction => phase switch
     {
-        WorktreeJobPhase.Ready when Worktree?.Url is not null => "Open in Browser",
-        WorktreeJobPhase.Failed when Path is not null => "Run Setup Again",
+        WorktreeJobPhase.Ready when Worktree?.Url is not null => Strings.Common_OpenInBrowser,
+        WorktreeJobPhase.Failed when Path is not null => Strings.Worktrees_RunAgain,
         _ => "",
     };
 
@@ -64,7 +64,7 @@ public sealed class WorktreeJobViewModel(RuntimeService model, Action<string> fo
         if (failure is not null || folder is null)
         {
             Path ??= folder;
-            error = failure ?? "Flock didn't say where the worktree is.";
+            error = failure ?? Strings.Worktrees_Job_NoPath;
             Show(WorktreeJobPhase.Failed);
             return;
         }
@@ -104,7 +104,7 @@ public sealed class WorktreeJobViewModel(RuntimeService model, Action<string> fo
                 }
                 if (setup.IsFailed)
                 {
-                    error = "Setup failed: " + (setup.Error.Length > 0 ? setup.Error : "see the log");
+                    error = Localization.Format(Strings.Worktrees_Job_SetupFailed, setup.Error.Length > 0 ? setup.Error : Strings.Worktrees_Job_SeeLog);
                     Show(WorktreeJobPhase.Failed);
                     return;
                 }

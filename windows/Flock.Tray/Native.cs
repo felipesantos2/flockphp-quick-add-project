@@ -188,6 +188,30 @@ internal static partial class Native
         }
     }
 
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern bool GetUserPreferredUILanguages(uint flags, out uint count, char[]? buffer, ref uint length);
+
+    /// <summary>
+    /// The user's preferred UI languages, most preferred first ("cs-CZ", "en-US"); empty when Windows
+    /// can't tell. Plain Win32, so it works before WinUI and its COM wrappers are set up.
+    /// </summary>
+    public static IReadOnlyList<string> PreferredUiLanguages()
+    {
+        const uint MUI_LANGUAGE_NAME = 0x8;
+        uint length = 0;
+        if (!GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, out _, null, ref length) || length == 0)
+        {
+            return [];
+        }
+        var buffer = new char[length];
+        if (!GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, out _, buffer, ref length))
+        {
+            return [];
+        }
+        // A list of null-terminated names that ends with an empty one.
+        return new string(buffer).Split('\0', StringSplitOptions.RemoveEmptyEntries);
+    }
+
     // Start at sign-in
 
     private const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";

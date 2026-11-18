@@ -83,6 +83,10 @@ Creates a project in `<name>` from a template (`blank`, `php`, or `wordpress`; d
 | `flock frankenphp list` | List FrankenPHP builds, installed and available |
 | `flock frankenphp install <php-version>` | Install or update FrankenPHP for a PHP version (`--from <dir\|archive>` for a local package) |
 | `flock frankenphp uninstall <php-version>` | Remove FrankenPHP for a PHP version |
+| `flock reverb [site]` | Show a site's [Reverb](php.md#laravel-reverb) server and the `.env` lines its app needs |
+| `flock reverb on [site]` | Run a Laravel app's Reverb server, reached at `wss://<site>.test/app` |
+| `flock reverb off [site]` | Stop a site's Reverb server |
+| `flock reverb restart [site]` | Restart a site's Reverb server, e.g. to load changed code |
 
 ## Services
 

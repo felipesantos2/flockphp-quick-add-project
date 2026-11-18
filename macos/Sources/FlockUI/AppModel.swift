@@ -108,16 +108,16 @@ final class AppModel {
     /// "Running · v1.2", "Needs attention · v1.2", "Not running" (or "Not set up", "Updating…").
     var headline: String {
         if isUpdating {
-            return "Updating…"
+            return String(localized: "common.updating")
         }
         // Before the setup is done, a daemon that answers is the setup's (it may still fail).
         if needsSetup {
-            return "Not set up"
+            return String(localized: "menu.status.not_set_up")
         }
         if let status {
-            return "\(status.isDegraded ? "Needs attention" : "Running") · v\(status.version)"
+            return "\(status.isDegraded ? String(localized: "menu.status.needs_attention") : String(localized: "sites.proxy.running")) · v\(status.version)"
         }
-        return "Not running"
+        return String(localized: "sites.proxy.not_running")
     }
 
     private func startPolling() {
@@ -217,8 +217,8 @@ final class AppModel {
         let binary = FlockPaths.flockBinary
         guard FileManager.default.fileExists(atPath: binary.path) else {
             actionError = needsSetup
-                ? "Flock is not set up for this user yet — click Set Up Flock… first."
-                : "Flock is not installed for this user (\(binary.path) is missing) — run `flock install` once."
+                ? String(localized: "app.flock_is_not_set_up")
+                : String(localized: "app.flock_is_not_installed_for \(binary.path)")
             return
         }
         let result = await Installation.run(binary, ["restart"])
@@ -236,8 +236,8 @@ final class AppModel {
         if !result.ok {
             let alert = NSAlert()
             alert.alertStyle = .warning
-            alert.messageText = "Flock could not update"
-            alert.informativeText = "\(result.output)\n\nYou can run `flock install` in a terminal, or reinstall Flock."
+            alert.messageText = String(localized: "updates.could_not_update")
+            alert.informativeText = "\(result.output)\n\n" + String(localized: "app.you_can_run_flock_install")
             NSApp.activate()
             alert.runModal()
         }
@@ -289,7 +289,7 @@ final class AppModel {
     /// purge also deletes the user's settings and databases.
     func uninstall(purge: Bool, onLine: @escaping @Sendable (String) -> Void) async -> Installation.Result {
         guard let flock = installation.uninstaller else {
-            return Installation.Result(ok: false, output: "Flock's CLI is not installed — there is nothing to uninstall.")
+            return Installation.Result(ok: false, output: String(localized: "app.flocks_cli_is_not_installed"))
         }
         let result = await Installation.run(flock, ["uninstall", "--keep-app"] + (purge ? ["--purge"] : []), onLine: onLine)
         needsSetup = installation.needsSetup

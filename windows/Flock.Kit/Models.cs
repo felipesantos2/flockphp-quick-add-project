@@ -170,7 +170,7 @@ public sealed class Status
 
         /// <summary>What answers at the upstream: the server's name, "Running" or "Not running".</summary>
         [JsonIgnore]
-        public string ServerLabel => Running ? Server is { Length: > 0 } server ? server : "Running" : "Not running";
+        public string ServerLabel => Running ? Server is { Length: > 0 } server ? server : Strings.Sites_Proxy_Running : Strings.Sites_Proxy_NotRunning;
     }
 
     /// <summary>The command that starts a proxy's server, and how that went.</summary>
@@ -197,11 +197,11 @@ public sealed class Status
         [JsonIgnore]
         public string StateLabel => State switch
         {
-            ProxyState.Starting => "Starting…",
-            ProxyState.Running => "Running",
-            ProxyState.Stopping => "Stopping…",
-            ProxyState.Failed => Problem.Length > 0 ? $"Failed: {Problem}" : "Failed",
-            _ => "Stopped",
+            ProxyState.Starting => Strings.Sites_Server_Starting,
+            ProxyState.Running => Strings.Sites_Proxy_Running,
+            ProxyState.Stopping => Strings.Sites_Server_Stopping,
+            ProxyState.Failed => Problem.Length > 0 ? Localization.Format(Strings.Sites_Server_FailedBecause, Problem) : Strings.Sites_Server_Failed,
+            _ => Strings.Sites_Server_Stopped,
         };
     }
 
@@ -238,10 +238,10 @@ public sealed class Status
         [JsonIgnore]
         public string StateLabel => State switch
         {
-            NodeServerState.Starting => "Starting…",
-            NodeServerState.Running => $"Running on port {Port}",
-            NodeServerState.Failed => Problem.Length > 0 ? $"Stopped: {Problem}" : "Stopped",
-            _ => "Sleeping · starts on the next visit",
+            NodeServerState.Starting => Strings.Sites_Server_Starting,
+            NodeServerState.Running => Localization.Format(Strings.Sites_Server_RunningOnPort, Port),
+            NodeServerState.Failed => Problem.Length > 0 ? Localization.Format(Strings.Sites_Server_StoppedBecause, Problem) : Strings.Sites_Server_Stopped,
+            _ => Strings.Sites_Server_Sleeping,
         };
     }
 
@@ -322,6 +322,10 @@ public sealed class Status
         /// <summary>The site's FrankenPHP process, when Server is FrankenPHP.</summary>
         [JsonPropertyName("frankenphp")]
         public SiteFrankenPhp? FrankenPhp { get; init; }
+        /// <summary>The project has Laravel Reverb installed, so Flock can run it.</summary>
+        public bool ReverbAvailable { get; init; }
+        /// <summary>The site's Reverb server, while it is turned on.</summary>
+        public SiteReverb? Reverb { get; init; }
         /// <summary>What the site is: SiteType.Php (also when an older daemon leaves it out) or SiteType.Node.</summary>
         public string Type { get; init; } = SiteType.Php;
         /// <summary>A Node.js site's dev server.</summary>
@@ -445,6 +449,34 @@ public sealed class Status
 
         [JsonIgnore]
         public bool HasProgress => Progress is >= 0 and <= 1;
+    }
+
+    /// <summary>
+    /// A site's Laravel Reverb server (php artisan reverb:start), which browsers reach at
+    /// wss://&lt;domain&gt;/app. Problem says why it isn't running.
+    /// </summary>
+    public sealed class SiteReverb
+    {
+        /// <summary>One of ReverbState; "" when unknown.</summary>
+        public string State { get; init; } = "";
+        public int Port { get; init; }
+        /// <summary>What the app's .env needs, e.g. "REVERB_HOST=app.test".</summary>
+        public List<string> Env { get; init; } = [];
+        public string Problem { get; init; } = "";
+        /// <summary>Name for /v1/logs/services/{name}: its output.</summary>
+        public string Log { get; init; } = "";
+
+        [JsonIgnore]
+        public bool IsRunning => State == ReverbState.Running;
+    }
+
+    /// <summary>Values of SiteReverb.State.</summary>
+    public static class ReverbState
+    {
+        public const string Running = "running";
+        public const string Failed = "failed";
+        /// <summary>It can't run, e.g. the project no longer has Reverb.</summary>
+        public const string Unavailable = "unavailable";
     }
 
     /// <summary>
@@ -730,11 +762,11 @@ public static class EventKind
 
     public static string Name(string kind) => kind switch
     {
-        Query => "Queries",
-        Log => "Logs",
-        View => "Views",
-        Job => "Jobs",
-        Request => "Requests",
+        Query => Strings.Dumps_EventKind_Queries,
+        Log => Strings.Dumps_EventKind_Logs,
+        View => Strings.Dumps_EventKind_Views,
+        Job => Strings.Dumps_EventKind_Jobs,
+        Request => Strings.Dumps_EventKind_Requests,
         _ => kind,
     };
 }

@@ -41,7 +41,7 @@ public static class UpdateFeed
         }
         catch (System.Xml.XmlException e)
         {
-            throw new FormatException($"The update feed isn't valid: {e.Message}", e);
+            throw new FormatException(Localization.Format(Strings.Updates_Invalid, e.Message), e);
         }
 
         var items = new List<Item>();

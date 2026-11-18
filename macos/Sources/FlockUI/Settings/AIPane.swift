@@ -16,7 +16,7 @@ struct AIPane: View {
         let store = model.settings
 
         VStack(spacing: 0) {
-            PaneHeader(title: "AI", subtitle: "Let AI agents like Claude Code and Cursor work with Flock: your sites' URLs and PHP versions, logs, dumps and mail, and installing versions and services.")
+            PaneHeader(title: "settings.pane.ai", subtitle: "ai.subtitle")
             Form {
                 Section {
                     if let mcp = store.mcp {
@@ -27,17 +27,17 @@ struct AIPane: View {
                         ProgressView().frame(maxWidth: .infinity)
                     }
                 } header: {
-                    Text("AI clients")
+                    Text("ai.clients")
                 } footer: {
-                    Text("Added once, Flock works in every project. Restart the client, or reload its MCP servers, after adding Flock.")
+                    Text("ai.added_once")
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 Section {
                     CodeBlock(text: store.mcp?.snippet ?? "")
                 } header: {
-                    Text("Other clients")
+                    Text("ai.other_clients")
                 } footer: {
-                    Text("Add this to the client's MCP settings.")
+                    Text("ai.add_to_settings")
                         .font(.caption).foregroundStyle(.secondary)
                 }
             }
@@ -55,9 +55,9 @@ struct AIPane: View {
                 }
                 switch client.state {
                 case .registered:
-                    Button("Remove") { change(client, add: false) }
+                    Button("common.remove") { change(client, add: false) }
                 case .available:
-                    Button("Add") { change(client, add: true) }
+                    Button("common.add") { change(client, add: true) }
                 case .missing:
                     EmptyView()
                 }
@@ -83,9 +83,9 @@ struct AIPane: View {
 
     private func caption(_ client: MCPClient) -> String {
         switch client.state {
-        case .registered: "Flock is added"
-        case .available: "Installed"
-        case .missing: "Not installed"
+        case .registered: String(localized: "ai.flock_added")
+        case .available: String(localized: "common.installed")
+        case .missing: String(localized: "common.not_installed")
         }
     }
 

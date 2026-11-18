@@ -15,8 +15,8 @@ internal sealed partial class MailPane : UserControl, ISettingsPane
         DataContext = viewModel;
     }
 
-    public string Title => "Mail";
-    public string Subtitle => "Flock catches every email your apps send — nothing leaves your PC.";
+    public string Title => Strings.Settings_Pane_Mail;
+    public string Subtitle => Strings.Mail_Subtitle;
     public UIElement Root => this;
     public bool ScrollsItself => false;
     public Task ActivateAsync(CancellationToken hidden)

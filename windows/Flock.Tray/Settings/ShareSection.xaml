@@ -1,0 +1,74 @@
+<UserControl
+    x:Class="Flock.Tray.Settings.ShareSection"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray"
+    xmlns:settings="using:Flock.Tray.Settings">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///Settings/DetailStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+    <!-- The site at a temporary public URL (ShareSectionViewModel): not shared, starting, running or stopped. -->
+    <StackPanel Style="{StaticResource DetailSectionStyle}">
+        <TextBlock Text="{l:Loc Key=Sites_ShareSection}" Style="{StaticResource DetailHeadingStyle}" />
+
+        <StackPanel Spacing="8" Visibility="{Binding IsIdle, Converter={StaticResource BooleanVisibilityConverter}}">
+            <TextBlock Style="{StaticResource DetailCaptionStyle}"
+                       Text="{l:Loc Key=Sites_Share_Explanation}" />
+            <Button Content="{l:Loc Key=Sites_Share_ShareEllipsis}" Command="{Binding StartCommand}" IsEnabled="{Binding CanShare}" />
+        </StackPanel>
+
+        <StackPanel Spacing="8" Visibility="{Binding IsStarting, Converter={StaticResource BooleanVisibilityConverter}}">
+            <TextBlock Text="{Binding StartingText}" Style="{StaticResource DetailCaptionLineStyle}" />
+            <ProgressBar IsIndeterminate="True" HorizontalAlignment="Left" Width="320" />
+            <Button Content="{Binding StopText}" Command="{Binding StopCommand}" />
+        </StackPanel>
+
+        <StackPanel Spacing="8" Visibility="{Binding IsRunning, Converter={StaticResource BooleanVisibilityConverter}}">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <HyperlinkButton Content="{Binding Url}" Command="{Binding OpenCommand}" Padding="0" VerticalAlignment="Center" />
+                <Button Command="{Binding CopyCommand}" Padding="4" Background="Transparent" BorderThickness="0" VerticalAlignment="Center"
+                        ToolTipService.ToolTip="{l:Loc Key=Common_Copy}" AutomationProperties.Name="{l:Loc Key=Common_Copy}">
+                    <FontIcon Glyph="{StaticResource GlyphCopy}" Style="{StaticResource IconStyle}" />
+                </Button>
+            </StackPanel>
+            <!-- The daemon's PNG (8 pixels per module), shown at 160 pixels; it copies, saves and drags out as a .png file. -->
+            <Image x:Name="QrImage" Width="160" Height="160" Stretch="Uniform" HorizontalAlignment="Left" CanDrag="True"
+                   DragStarting="QrDragStarting" AutomationProperties.Name="{l:Loc Key=Sites_Share_QrName}"
+                   ToolTipService.ToolTip="{l:Loc Key=Sites_Share_QrTooltip}"
+                   Visibility="{Binding HasQr, Converter={StaticResource BooleanVisibilityConverter}}">
+                <Image.ContextFlyout>
+                    <MenuFlyout>
+                        <MenuFlyoutItem Text="{l:Loc Key=Sites_Share_CopyImage}" Command="{Binding CopyQrCommand}" />
+                        <MenuFlyoutItem Text="{l:Loc Key=Sites_Share_SaveImage}" Command="{Binding SaveQrCommand}" />
+                    </MenuFlyout>
+                </Image.ContextFlyout>
+            </Image>
+            <TextBlock Text="{Binding Expires}" Style="{StaticResource DetailCaptionLineStyle}"
+                       Visibility="{Binding Expires, Converter={StaticResource StringVisibilityConverter}}" />
+            <TextBlock Text="{Binding Allowed}" Style="{StaticResource DetailCaptionStyle}"
+                       Visibility="{Binding Allowed, Converter={StaticResource StringVisibilityConverter}}" />
+            <TextBlock Text="{l:Loc Key=Sites_Share_DebugOn}" Style="{StaticResource DetailCaptionStyle}"
+                       Visibility="{Binding IsDebug, Converter={StaticResource BooleanVisibilityConverter}}" />
+            <settings:DetailWarning Text="{Binding Warning}" Visibility="{Binding HasWarning, Converter={StaticResource BooleanVisibilityConverter}}" />
+            <settings:DetailWarning Text="{Binding RebuildError}" Visibility="{Binding HasRebuildError, Converter={StaticResource BooleanVisibilityConverter}}" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="{Binding RebuildText}" Command="{Binding RebuildCommand}" IsEnabled="{Binding IsRebuildEnabled}"
+                        ToolTipService.ToolTip="{l:Loc Key=Sites_Share_RebuildTooltip}"
+                        Visibility="{Binding CanRebuild, Converter={StaticResource BooleanVisibilityConverter}}" />
+                <Button Content="{Binding StopText}" Command="{Binding StopCommand}" />
+            </StackPanel>
+        </StackPanel>
+
+        <StackPanel Spacing="8" Visibility="{Binding IsStopped, Converter={StaticResource BooleanVisibilityConverter}}">
+            <settings:DetailWarning Text="{Binding Failure}" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="{l:Loc Key=Common_TryAgain}" Command="{Binding TryAgainCommand}" />
+                <Button Content="{Binding StopText}" Command="{Binding StopCommand}" />
+            </StackPanel>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

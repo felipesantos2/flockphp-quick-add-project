@@ -1,3 +1,4 @@
+using Flock.Kit;
 using Flock.Tray.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -22,8 +23,8 @@ internal static class JobLogDialog
         {
             Title = title,
             Content = scroller,
-            PrimaryButtonText = "Copy",
-            CloseButtonText = "Done",
+            PrimaryButtonText = Strings.Common_Copy,
+            CloseButtonText = Strings.Common_Done,
             DefaultButton = ContentDialogButton.Close,
             XamlRoot = window.Content.XamlRoot,
         };
@@ -52,7 +53,7 @@ internal static class JobLogDialog
         }
         void ApplyOnUi()
         {
-            text.Text = viewModel.Error is { } error ? $"Log could not be loaded.\n\n{error}" : viewModel.DisplayText;
+            text.Text = viewModel.Error is { } error ? Localization.Format(Strings.Worktrees_Job_CouldNotLoad, error) : viewModel.DisplayText;
             dialog.IsPrimaryButtonEnabled = viewModel.CanCopy;
             if (viewModel.State is JobLogState.Loaded)
             {

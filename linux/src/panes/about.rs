@@ -3,11 +3,11 @@
 use std::rc::Rc;
 
 use adw::prelude::*;
-use gtk::gio;
 
 use super::{Data, Pane};
+use crate::i18n::tr;
 use crate::model::AppModel;
-use crate::paths;
+use crate::{paths, ui};
 
 pub struct AboutPane {
     page: adw::StatusPage,
@@ -18,35 +18,28 @@ impl AboutPane {
     pub fn new(model: Rc<AppModel>) -> Self {
         let daemon = gtk::Label::new(None);
         let versions = gtk::Box::builder().orientation(gtk::Orientation::Vertical).spacing(4).build();
-        versions.append(&gtk::Label::new(Some(&format!("App {}", crate::VERSION))));
+        versions.append(&gtk::Label::new(Some(&tr!("about.app_version", version = crate::VERSION))));
         versions.append(&daemon);
 
         let links = gtk::Box::builder().spacing(8).halign(gtk::Align::Center).build();
-        let data = gtk::Button::with_label("Data Folder");
-        data.connect_clicked(|button| {
-            let window = button.root().and_downcast::<gtk::Window>();
-            gtk::FileLauncher::new(Some(&gio::File::for_path(paths::root()))).launch(window.as_ref(), gio::Cancellable::NONE, |_| {});
-        });
+        let data = gtk::Button::with_label(tr!("about.data_folder_title_case"));
+        data.connect_clicked(|button| ui::open_file(Some(button.upcast_ref()), paths::root()));
         links.append(&data);
         for (label, url) in [
-            ("Flock Docs", "https://flockphp.com/docs"),
+            (tr!("about.flock_docs"), "https://flockphp.com/docs"),
             ("Discord", "https://discord.flockphp.com"),
-            ("License", "https://github.com/flock-php/flock/blob/main/LICENSE"),
+            (tr!("about.license"), "https://github.com/flock-php/flock/blob/main/LICENSE"),
         ] {
             links.append(&link_button(label, url));
         }
 
         let support = gtk::Box::builder().orientation(gtk::Orientation::Vertical).spacing(8).build();
-        support.append(
-            &gtk::Label::builder()
-                .label("Flock is free and open source, forever. Sponsoring helps keep it maintained.")
-                .wrap(true)
-                .css_classes(["dim-label"])
-                .build(),
-        );
+        support.append(&gtk::Label::builder().label(tr!("about.support_description")).wrap(true).css_classes(["dim-label"]).build());
         let support_links = gtk::Box::builder().spacing(8).halign(gtk::Align::Center).build();
-        for (label, url) in [("Star on GitHub", "https://github.com/flock-php/flock"), ("Sponsor", "https://github.com/sponsors/flock-php")]
-        {
+        for (label, url) in [
+            (tr!("about.star_on_github"), "https://github.com/flock-php/flock"),
+            (tr!("about.sponsor"), "https://github.com/sponsors/flock-php"),
+        ] {
             support_links.append(&link_button(label, url));
         }
         support.append(&support_links);
@@ -55,11 +48,11 @@ impl AboutPane {
         column.append(&versions);
         column.append(&links);
         column.append(&support);
-        let issue = link_button("Found a bug? Report an issue", "");
+        let issue = link_button(tr!("about.found_a_bug_report_an"), "");
         issue.add_css_class("flat");
         column.append(&issue);
         let uninstall = gtk::Button::builder()
-            .label("Uninstall Flock…")
+            .label(tr!("about.uninstall_flock_ellipsis"))
             .halign(gtk::Align::Center)
             .css_classes(["destructive-action"])
             .margin_top(12)
@@ -70,22 +63,17 @@ impl AboutPane {
         column.append(&uninstall);
         column.append(
             &gtk::Label::builder()
-                .label("Stops Flock and removes it from this computer. Your sites, databases and settings are kept.")
+                .label(tr!("about.stops_flock_and_removes_it_from"))
                 .wrap(true)
                 .css_classes(["caption", "dim-label"])
                 .build(),
         );
-        column.append(
-            &gtk::Label::builder()
-                .label("Copyright © Guava s.r.o. Licensed under the AGPL-3.0.")
-                .css_classes(["caption", "dim-label"])
-                .build(),
-        );
+        column.append(&gtk::Label::builder().label(tr!("about.license_description")).css_classes(["caption", "dim-label"]).build());
 
         let page = adw::StatusPage::builder()
             .icon_name("network-server-symbolic")
             .title("Flock")
-            .description("A native local development environment for Laravel.")
+            .description(tr!("about.tagline"))
             .child(&column)
             .build();
         issue.connect_clicked(move |button| open_uri(button, &issue_url(model.status().map(|s| s.version))));
@@ -99,8 +87,8 @@ impl Pane for AboutPane {
     }
 
     fn update(&self, data: &Data) {
-        let daemon = data.status.as_ref().map_or("not running".to_owned(), |s| s.version.clone());
-        self.daemon.set_label(&format!("Daemon {daemon}"));
+        let daemon = data.status.as_ref().map_or(tr!("about.daemon_not_running").to_owned(), |s| s.version.clone());
+        self.daemon.set_label(&tr!("about.daemon_version", version = daemon));
     }
 }
 
@@ -114,8 +102,7 @@ fn link_button(label: &str, url: &str) -> gtk::Button {
 }
 
 fn open_uri(widget: &impl IsA<gtk::Widget>, uri: &str) {
-    let window = widget.root().and_downcast::<gtk::Window>();
-    gtk::UriLauncher::new(uri).launch(window.as_ref(), gio::Cancellable::NONE, |_| {});
+    ui::open_uri(Some(widget.upcast_ref()), uri);
 }
 
 /// A blank GitHub issue with the versions filled in, so reports say what they run on.

@@ -1,8 +1,12 @@
 //! Widgets and formats the windows share: times, monospaced text and HTML views.
 
+use std::path::Path;
+
 use adw::prelude::*;
-use gtk::glib;
+use gtk::{gio, glib};
 use webkit6::prelude::*;
+
+use crate::i18n::{self, tr, trn};
 
 /// "just now", "5 minutes ago", "3 hours ago", else the date, from the daemon's RFC 3339 time.
 pub fn relative_time(time: &str) -> String {
@@ -11,18 +15,16 @@ pub fn relative_time(time: &str) -> String {
     };
     let seconds = now.difference(&time).as_seconds();
     match seconds {
-        ..60 => "just now".to_owned(),
-        60..120 => "a minute ago".to_owned(),
-        120..3600 => format!("{} minutes ago", seconds / 60),
-        3600..7200 => "an hour ago".to_owned(),
-        7200..86400 => format!("{} hours ago", seconds / 3600),
-        _ => local_time(&time, "%e %b"),
+        ..60 => tr!("common.time.just_now").to_owned(),
+        60..3600 => trn!("common.n_minutes_ago", seconds / 60),
+        3600..86400 => trn!("common.n_hours_ago", seconds / 3600),
+        _ => local_time(&time, tr!("common.e_b")),
     }
 }
 
 /// A daemon time in the user's time zone, e.g. "24 Oct 2026, 14:03:12".
 pub fn date_time(time: &str) -> String {
-    glib::DateTime::from_iso8601(time, None).map(|t| local_time(&t, "%e %b %Y, %H:%M:%S")).unwrap_or_default()
+    glib::DateTime::from_iso8601(time, None).map(|t| local_time(&t, tr!("common.e_b_y_h_m"))).unwrap_or_default()
 }
 
 /// "14:03:12.481" for a timeline.
@@ -30,8 +32,52 @@ pub fn clock(time: &str) -> String {
     glib::DateTime::from_iso8601(time, None).map(|t| local_time(&t, "%H:%M:%S.%f").chars().take(12).collect()).unwrap_or_default()
 }
 
+/// The English formats' month names: GLib's %b follows the system's LC_TIME, which may not be the
+/// app's language. The translations' formats use the month's number.
+const MONTHS: [&str; 12] = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 fn local_time(time: &glib::DateTime, format: &str) -> String {
-    time.to_local().and_then(|t| t.format(format)).map(|s| s.trim().to_owned()).unwrap_or_default()
+    let Ok(local) = time.to_local() else { return String::new() };
+    let format = format.replace("%b", MONTHS[(local.month() - 1) as usize]);
+    local.format(&format).map(|s| s.trim().to_owned()).unwrap_or_default()
+}
+
+/// Opens a URI (a page, a mail address) in the app the desktop picks for it.
+pub fn open_uri(widget: Option<&gtk::Widget>, uri: &str) {
+    if i18n::overrides_system() {
+        launch(uri);
+        return;
+    }
+    let window = widget.and_then(|w| w.root()).and_downcast::<gtk::Window>();
+    gtk::UriLauncher::new(uri).launch(window.as_ref(), gio::Cancellable::NONE, |_| {});
+}
+
+/// Opens a file or folder in the app the desktop picks for it.
+pub fn open_file(widget: Option<&gtk::Widget>, path: impl AsRef<Path>) {
+    let file = gio::File::for_path(path);
+    if i18n::overrides_system() {
+        launch(&file.uri());
+        return;
+    }
+    let window = widget.and_then(|w| w.root()).and_downcast::<gtk::Window>();
+    gtk::FileLauncher::new(Some(&file)).launch(window.as_ref(), gio::Cancellable::NONE, |_| {});
+}
+
+/// With the Language setting, GTK's launchers would hand it on to the app (when it isn't started
+/// through the desktop portal): this starts it with the system's language instead.
+fn launch(uri: &str) {
+    gio::AppInfo::launch_default_for_uri_async(uri, Some(&launch_context()), gio::Cancellable::NONE, |_| {});
+}
+
+/// The display's launch context: a started app gets a startup notification or activation token,
+/// and the system's LANGUAGE.
+pub fn launch_context() -> gio::AppLaunchContext {
+    let context = gtk::gdk::Display::default().map_or_else(gio::AppLaunchContext::new, |d| d.app_launch_context().upcast());
+    i18n::with_system_language(|value| match value {
+        Some(value) => context.setenv("LANGUAGE", value),
+        None => context.unsetenv("LANGUAGE"),
+    });
+    context
 }
 
 /// Scrollable, selectable monospaced text.
@@ -64,8 +110,7 @@ pub fn html_view(html: &str, javascript: bool) -> webkit6::WebView {
         let uri = action.clone().request().and_then(|r| r.uri()).unwrap_or_default();
         if uri.starts_with("http://") || uri.starts_with("https://") || uri.starts_with("mailto:") {
             decision.ignore();
-            let window = view.root().and_downcast::<gtk::Window>();
-            gtk::UriLauncher::new(&uri).launch(window.as_ref(), gtk::gio::Cancellable::NONE, |_| {});
+            open_uri(Some(view.upcast_ref()), &uri);
             return true;
         }
         false
@@ -86,4 +131,17 @@ pub fn with_policy(html: &str, javascript: bool) -> String {
 /// A page saying there is nothing to show (yet).
 pub fn empty(icon: &str, title: &str, description: &str) -> adw::StatusPage {
     adw::StatusPage::builder().icon_name(icon).title(title).description(glib::markup_escape_text(description)).vexpand(true).build()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn names_months_itself_or_by_number() {
+        let time = glib::DateTime::from_iso8601("2026-11-15T12:00:00Z", None).unwrap();
+        assert!(local_time(&time, "%e %b").ends_with("Nov"), "{}", local_time(&time, "%e %b"));
+        assert!(local_time(&time, "%e. %-m.").ends_with("11."));
+        assert!(local_time(&time, "%e/%-m/%Y").ends_with("11/2026"));
+    }
 }

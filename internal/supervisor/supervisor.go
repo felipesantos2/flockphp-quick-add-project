@@ -110,6 +110,18 @@ func (s *Supervisor) Running() []string {
 	return names
 }
 
+// Paths maps each supervised process's name to the executable it was started with.
+func (s *Supervisor) Paths() map[string]string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	paths := make(map[string]string, len(s.procs))
+	for n, p := range s.procs {
+		paths[n] = p.spec.Path
+	}
+	return paths
+}
+
 // Status reports every supervised process, sorted by name.
 func (s *Supervisor) Status() []ProcStatus {
 	s.mu.Lock()

@@ -35,6 +35,12 @@ struct SitesPane: View {
         get { restartingState.wrappedValue }
         nonmutating set { restartingState.wrappedValue = newValue }
     }
+    /// The site whose Reverb server is restarting.
+    private let restartingReverbState = State<String?>(initialValue: nil)
+    private var restartingReverb: String? {
+        get { restartingReverbState.wrappedValue }
+        nonmutating set { restartingReverbState.wrappedValue = newValue }
+    }
     /// The site the Share sheet is open for.
     private let sharingState = State<String?>(initialValue: nil)
     private var sharing: String? {
@@ -72,19 +78,19 @@ struct SitesPane: View {
 
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .bottom) {
-                PaneHeader(title: "Sites", subtitle: "Sites you added one by one, plus every folder inside your project folders.")
+                PaneHeader(title: "settings.pane.sites", subtitle: "sites.subtitle")
                 if creatingAppState.wrappedValue {
                     ProgressView().controlSize(.small).padding(.bottom, 8)
                 }
-                Button("New App…") { openNewAppSheet() }
+                Button("sites.new_app") { openNewAppSheet() }
                     .disabled(creatingAppState.wrappedValue)
-                    .help("Create a new project from a template and link it as a site")
+                    .help("sites.new_app_tooltip")
                     .padding(.bottom, 6)
-                Button("Add Proxy…") { addingProxyState.wrappedValue = true }
-                    .help("Serve a server of its own, e.g. a dashboard, an object store, a Docker container or a Go or Python app, at a .\(model.status?.dns.tld ?? "test") domain")
+                Button("sites.add_proxy") { addingProxyState.wrappedValue = true }
+                    .help("sites.serve_a_server_of_its \(model.status?.dns.tld ?? "test")")
                     .padding(.bottom, 6)
-                Button("Add Site…") {
-                    for url in SettingsStore.chooseDirectories(prompt: "Add", multiple: false) {
+                Button("sites.add_site") {
+                    for url in SettingsStore.chooseDirectories(prompt: String(localized: "common.add"), multiple: false) {
                         Task { await store.perform { _ = try await $0.linkSite(path: url.path) } }
                     }
                 }
@@ -93,8 +99,8 @@ struct SitesPane: View {
             }
 
             if sites.isEmpty && proxies.isEmpty {
-                ContentUnavailableView("No sites", systemImage: "globe",
-                                       description: Text("Add a single site here, or add a project folder in General."))
+                ContentUnavailableView("sites.no_sites", systemImage: "globe",
+                                       description: Text("sites.no_sites_description"))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 // The sites in a list, the selected one's details beside it, as in Services.
@@ -117,7 +123,7 @@ struct SitesPane: View {
                             }
                         }
                         if !proxies.isEmpty {
-                            Section("Proxies") {
+                            Section("sites.proxies") {
                                 ForEach(proxies) { proxy in
                                     proxyRow(proxy).tag(proxy.id)
                                 }
@@ -201,13 +207,13 @@ struct SitesPane: View {
             Button(action.button, role: action.destructive ? .destructive : nil) {
                 Task { await store.perform { _ = try await action.run($0) } }
             }
-            Button("Cancel", role: .cancel) {}
+            Button("common.cancel", role: .cancel) {}
         } message: { action in
             Text(action.message)
         }
-        .alert("Add a domain to \(adding ?? "")", isPresented: Binding(get: { adding != nil }, set: { if !$0 { adding = nil } })) {
-            TextField("tenant1, a.b or \(adding ?? "app")-2.\(model.status?.dns.tld ?? "test")", text: newDomainState.projectedValue)
-            Button("Add") {
+        .alert("sites.add_domain_title \(adding ?? "")", isPresented: Binding(get: { adding != nil }, set: { if !$0 { adding = nil } })) {
+            TextField("sites.tenant1_a_b_or_site \(adding ?? "app") \(model.status?.dns.tld ?? "test")", text: newDomainState.projectedValue)
+            Button("common.add") {
                 let name = adding ?? ""
                 let domain = newDomainState.wrappedValue.trimmingCharacters(in: .whitespaces)
                 newDomainState.wrappedValue = ""
@@ -215,7 +221,7 @@ struct SitesPane: View {
                     Task { await store.perform { _ = try await $0.addDomain(site: name, domain: domain) } }
                 }
             }
-            Button("Cancel", role: .cancel) { newDomainState.wrappedValue = "" }
+            Button("common.cancel", role: .cancel) { newDomainState.wrappedValue = "" }
         } message: {
             Text(domainHelp)
         }
@@ -229,29 +235,29 @@ struct SitesPane: View {
                 addingProxyState.wrappedValue = false
             }, tld: model.status?.dns.tld ?? "test")
         }
-        .alert("Change the upstream of \(editingUpstream ?? "")", isPresented: Binding(get: { editingUpstream != nil }, set: { if !$0 { editingUpstream = nil } })) {
-            TextField("Port, host:port or URL", text: upstreamDraftState.projectedValue)
-            Button("Change") {
+        .alert("sites.change_upstream_title \(editingUpstream ?? "")", isPresented: Binding(get: { editingUpstream != nil }, set: { if !$0 { editingUpstream = nil } })) {
+            TextField("sites.upstream_placeholder", text: upstreamDraftState.projectedValue)
+            Button("sites.change_action") {
                 let name = editingUpstream ?? ""
                 let upstream = upstreamDraftState.wrappedValue.trimmingCharacters(in: .whitespaces)
                 if !name.isEmpty, !upstream.isEmpty {
                     Task { await store.perform { _ = try await $0.proxy(name: name, upstream: upstream) } }
                 }
             }
-            Button("Cancel", role: .cancel) {}
+            Button("common.cancel", role: .cancel) {}
         } message: {
-            Text("A port means 127.0.0.1; give a host and port (localhost:5173) or a URL (https://127.0.0.1:8443) for anything else.")
+            Text("sites.change_upstream_details")
         }
         // A flock://secure link (AppModel.handle): nothing changes until the user confirms here.
         .alert(linkRequest?.title ?? "", isPresented: Binding(get: { linkRequest != nil }, set: { if !$0 { model.pendingSecure = nil } }),
                presenting: linkRequest) { request in
             if let name = request.confirmation {
-                Button("Secure") {
+                Button("sites.secure") {
                     Task { await store.perform { _ = try await $0.updateSite(name, SiteChange(secured: true)) } }
                 }
-                Button("Cancel", role: .cancel) {}
+                Button("common.cancel", role: .cancel) {}
             } else {
-                Button("OK") {}
+                Button("common.ok") {}
             }
         } message: { request in
             Text(request.message)
@@ -268,9 +274,11 @@ struct SitesPane: View {
         let dns = model.status?.dns
         let depth = dns?.maxDepth ?? 4
         if dns?.wildcard ?? true {
-            return "Every subdomain up to \(depth) levels below the site already works. Add a full name like \(adding ?? "app")-2.\(dns?.tld ?? "test") for an alias, or a subdomain (tenant1, a.b) so it is listed here and also resolves on Windows machines without wildcard DNS."
+            let alias = "\(adding ?? "app")-2.\(dns?.tld ?? "test")"
+            return String(localized: "sites.every_subdomain_up_to_levels \(depth) \(alias)")
         }
-        return "Wildcard subdomains don't work here (\(dns?.wildcardProblem ?? "")), so add each subdomain you use (tenant1, a.b). A full name adds an alias."
+        let problem = dns?.wildcardProblem ?? ""
+        return String(localized: "sites.wildcard_subdomains_dont_work_here \(problem)")
     }
 
     /// A site in the list: its name and address, a lock when it is secured, a badge while it is shared, a
@@ -290,12 +298,12 @@ struct SitesPane: View {
                 StateDot(color: dot.color).help(dot.help)
             }
             if site.shared {
-                Badge(text: "Shared", color: .green)
-                    .help("Shared at \(site.share?.url ?? "")")
+                Badge(text: "sites.shared", color: .green)
+                    .help("menu.shared_at \(site.share?.url ?? "")")
             }
             if site.secured {
                 Image(systemName: "lock.fill").font(.caption).foregroundStyle(.secondary)
-                    .help("Served over HTTPS")
+                    .help("sites.served_over_https")
             }
         }
         .padding(.vertical, 2)
@@ -308,7 +316,7 @@ struct SitesPane: View {
         HStack(spacing: 6) {
             VStack(alignment: .leading, spacing: 1) {
                 Text(proxy.name).fontWeight(.medium).lineLimit(1)
-                Text("\(proxy.domain) → \(upstreamLabel(proxy.upstream))").font(.caption).foregroundStyle(.secondary)
+                Text("common.from_to \(proxy.domain) \(upstreamLabel(proxy.upstream))").font(.caption).foregroundStyle(.secondary)
                     .lineLimit(1).truncationMode(.middle)
             }
             Spacer(minLength: 4)
@@ -318,7 +326,7 @@ struct SitesPane: View {
             StateDot(color: proxy.stateDot.color).help(proxy.stateDot.help)
             if proxy.secured {
                 Image(systemName: "lock.fill").font(.caption).foregroundStyle(.secondary)
-                    .help("Served over HTTPS")
+                    .help("sites.served_over_https")
             }
         }
         .padding(.vertical, 2)
@@ -338,7 +346,7 @@ struct SitesPane: View {
                 VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 6) {
                         Text(proxy.name).font(.title3.weight(.semibold))
-                        Badge(text: "Proxy", color: .secondary)
+                        Badge(text: "sites.proxy", color: .secondary)
                     }
                     if let text = proxy.url, let url = URL(string: text) {
                         Link(text, destination: url).font(.callout)
@@ -349,17 +357,17 @@ struct SitesPane: View {
                     Button {
                         if let text = proxy.url, let url = URL(string: text) { NSWorkspace.shared.open(url) }
                     } label: { Image(systemName: "safari") }
-                        .help("Open \(proxy.url ?? proxy.domain)")
+                        .help("common.open_target \(proxy.url ?? proxy.domain)")
                         .disabled(proxy.url == nil)
                     Button {
                         confirm = ConfirmAction(
-                            title: "Remove \(proxy.name)?", button: "Remove", destructive: true,
+                            title: String(localized: "common.remove_question \(proxy.name)"), button: String(localized: "common.remove"), destructive: true,
                             message: proxy.command == nil
-                                ? "Flock stops serving \(proxy.domain). The server at \(proxy.upstream) keeps running."
-                                : "Flock stops serving \(proxy.domain), and stops its server if Flock started it.",
+                                ? String(localized: "sites.remove_proxy_details \(proxy.domain) \(proxy.upstream)")
+                                : String(localized: "sites.flock_stops_serving_domain_and \(proxy.domain)"),
                             run: { [name = proxy.name] client in try await client.removeProxy(name) })
                     } label: { Image(systemName: "minus.circle") }
-                        .help("Remove proxy")
+                        .help("sites.remove_proxy")
                 }
                 .buttonStyle(.borderless)
             }
@@ -370,8 +378,8 @@ struct SitesPane: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            section("Proxy") {
-                field("Server") {
+            section("sites.proxy") {
+                field("sites.server") {
                     if let command = proxy.command {
                         proxyCommandState(proxy, command)
                     } else {
@@ -380,17 +388,17 @@ struct SitesPane: View {
                                 Circle()
                                     .fill(proxy.running ? Color.green : Color.secondary.opacity(0.5))
                                     .frame(width: 7, height: 7)
-                                Text(proxy.running ? proxy.server ?? "Running" : "Not running")
+                                Text(proxy.running ? proxy.server ?? String(localized: "sites.proxy.running") : String(localized: "sites.proxy.not_running"))
                             }
                             if !proxy.running {
-                                Text("Nothing answers at \(upstreamLabel(proxy.upstream)) yet.")
+                                Text("sites.nothing_answers_yet \(upstreamLabel(proxy.upstream))")
                                     .font(.caption).foregroundStyle(.secondary)
                             }
                         }
                     }
                 }
-                field("HTTPS") {
-                    Toggle("HTTPS", isOn: Binding(
+                field("common.https") {
+                    Toggle("common.https", isOn: Binding(
                         get: { proxy.secured },
                         set: { on in Task { await store.perform { _ = try await $0.secureProxy(proxy.name, on) } } }
                     ))
@@ -398,10 +406,10 @@ struct SitesPane: View {
                     .toggleStyle(.switch)
                     .controlSize(.small)
                 }
-                field("Upstream") {
+                field("sites.upstream") {
                     HStack(spacing: 8) {
                         Text(proxy.upstream).font(.callout.monospaced()).textSelection(.enabled)
-                        Button("Change…") {
+                        Button("sites.change") {
                             upstreamDraftState.wrappedValue = upstreamLabel(proxy.upstream)
                             editingUpstream = proxy.name
                         }
@@ -409,31 +417,31 @@ struct SitesPane: View {
                     }
                 }
                 Text(proxy.command == nil
-                     ? "Every request passes to the upstream with its Host header, WebSocket upgrades (hot reload) included. Flock doesn't start the server, so start it as usual, or give it commands below. Until it answers, \(proxy.domain) shows a page saying so."
-                     : "Every request passes to the upstream with its Host header, WebSocket upgrades (hot reload) included. Until it answers, \(proxy.domain) shows a page saying so.")
+                     ? "sites.proxy_footnote_no_commands \(proxy.domain)"
+                     : "sites.proxy_footnote_commands \(proxy.domain)")
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            section("Commands") {
+            section("sites.proxy.commands") {
                 if let command = proxy.command {
-                    field("Start") {
+                    field("services.start") {
                         Text(command.command).font(.callout.monospaced()).textSelection(.enabled)
                             .lineLimit(1).truncationMode(.middle)
                     }
                     if let stop = command.stopCommand, !stop.isEmpty {
-                        field("Stop") {
+                        field("sites.share.stop") {
                             Text(stop).font(.callout.monospaced()).textSelection(.enabled)
                                 .lineLimit(1).truncationMode(.middle)
                         }
                     }
-                    field("Folder") {
+                    field("general.folder") {
                         Text(command.dir).font(.callout.monospaced()).textSelection(.enabled)
                             .lineLimit(1).truncationMode(.middle)
                             .help(command.dir)
                     }
                 }
-                Button(proxy.command == nil ? "Add Commands…" : "Change…") { editingCommandState.wrappedValue = proxy }
+                Button(proxy.command == nil ? "sites.proxy.add_commands" : "sites.change") { editingCommandState.wrappedValue = proxy }
                     .controlSize(.small)
                 Text(proxyCommandsHelp)
                     .font(.caption).foregroundStyle(.secondary)
@@ -451,11 +459,11 @@ struct SitesPane: View {
         let color: Color
         let text: String
         switch command.state {
-        case .stopped: (color, text) = (StateDot.stopped, "Stopped")
-        case .starting: (color, text) = (StateDot.busy, "Starting…")
-        case .running: (color, text) = (StateDot.running, "Running")
-        case .stopping: (color, text) = (StateDot.busy, "Stopping…")
-        case .failed: (color, text) = (StateDot.failed, command.problem.map { "Failed: \($0)" } ?? "Failed")
+        case .stopped: (color, text) = (StateDot.stopped, String(localized: "services.postgres.stopped"))
+        case .starting: (color, text) = (StateDot.busy, String(localized: "worktrees.job.starting"))
+        case .running: (color, text) = (StateDot.running, String(localized: "sites.proxy.running"))
+        case .stopping: (color, text) = (StateDot.busy, String(localized: "sites.server.stopping"))
+        case .failed: (color, text) = (StateDot.failed, command.problem.map { String(localized: "sites.server.failed_because \($0)") } ?? String(localized: "sites.server.failed"))
         }
         return VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
@@ -463,10 +471,10 @@ struct SitesPane: View {
                 Text(text).textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
                 switch command.state {
                 case .stopped, .failed:
-                    Button("Start") { runProxy(proxy.name, start: true) }
+                    Button("services.start") { runProxy(proxy.name, start: true) }
                         .disabled(proxyBusy == proxy.name)
                 case .starting, .running:
-                    Button("Stop") { runProxy(proxy.name, start: false) }
+                    Button("sites.share.stop") { runProxy(proxy.name, start: false) }
                         .disabled(proxyBusy == proxy.name)
                 case .stopping:
                     EmptyView()
@@ -512,7 +520,8 @@ struct SitesPane: View {
         .help(worktree.path)
     }
 
-    /// What a site's list row warns about: the site, its document root, one of its domains, or its FrankenPHP.
+    /// What a site's list row warns about: the site, its document root, one of its domains, its FrankenPHP
+    /// or its Reverb server.
     private func problem(_ site: Status.Site) -> String? {
         if let problem = site.problem {
             return problem
@@ -527,6 +536,9 @@ struct SitesPane: View {
            !franken.problem.isEmpty {
             return franken.problem
         }
+        if !site.isNode, let reverb = site.reverb, reverb.state == .failed || reverb.state == .unavailable, !reverb.problem.isEmpty {
+            return reverb.problem
+        }
         return nil
     }
 
@@ -539,7 +551,7 @@ struct SitesPane: View {
                     HStack(spacing: 6) {
                         Text(site.name).font(.title3.weight(.semibold))
                         if site.parked {
-                            Badge(text: "Project folder", color: .secondary)
+                            Badge(text: "sites.project_folder_badge", color: .secondary)
                         }
                     }
                     if let text = site.url, let url = URL(string: text) {
@@ -552,23 +564,23 @@ struct SitesPane: View {
                 Spacer(minLength: 8)
                 HStack(spacing: 8) {
                     Button { model.open(site) } label: { Image(systemName: "safari") }
-                        .help("Open \(site.url ?? site.domain)")
+                        .help("common.open_target \(site.url ?? site.domain)")
                         .disabled(site.url == nil)
                     Button { reveal(site.path) } label: { Image(systemName: "folder") }
-                        .help("Show in Finder")
+                        .help("general.show_in_finder")
                     if !site.isNode {
                         Button { extensionsState.wrappedValue = site } label: { Image(systemName: "puzzlepiece.extension") }
-                            .help("PHP extensions")
+                            .help("sites.php_extensions")
                     }
                     pinMenu(site)
                     if !site.parked {
                         Button {
                             confirm = ConfirmAction(
-                                title: "Remove \(site.name)?", button: "Remove", destructive: true,
-                                message: "Flock stops serving \(site.domain). The project in \(site.path) is not touched.",
+                                title: String(localized: "common.remove_question \(site.name)"), button: String(localized: "common.remove"), destructive: true,
+                                message: String(localized: "sites.flock_stops_serving_domain_the \(site.domain) \(site.path)"),
                                 run: { [name = site.name] client in try await client.unlinkSite(name) })
                         } label: { Image(systemName: "minus.circle") }
-                            .help("Remove site")
+                            .help("sites.remove_site")
                     }
                 }
                 .buttonStyle(.borderless)
@@ -580,20 +592,20 @@ struct SitesPane: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
-            section("Site") {
-                field("Type") {
-                    Picker("Type", selection: Binding(
+            section("sites.site") {
+                field("sites.type") {
+                    Picker("sites.type", selection: Binding(
                         get: { site.type },
                         set: { type in Task { await store.perform { _ = try await $0.updateSite(site.name, SiteChange(type: type.rawValue)) } } }
                     )) {
-                        Text("PHP").tag(Status.SiteType.php)
-                        Text("Node.js").tag(Status.SiteType.node)
+                        Text("common.php").tag(Status.SiteType.php)
+                        Text("common.nodejs").tag(Status.SiteType.node)
                     }
                     .labelsHidden()
                     .fixedSize()
                 }
-                field("HTTPS") {
-                    Toggle("HTTPS", isOn: Binding(
+                field("common.https") {
+                    Toggle("common.https", isOn: Binding(
                         get: { site.secured },
                         set: { on in Task { await store.perform { _ = try await $0.updateSite(site.name, SiteChange(secured: on)) } } }
                     ))
@@ -601,62 +613,63 @@ struct SitesPane: View {
                     .toggleStyle(.switch)
                     .controlSize(.small)
                 }
-                field("Domains") {
+                field("sites.domains") {
                     VStack(alignment: .leading, spacing: 3) {
                         ForEach(site.domains) { domain in
                             HStack(spacing: 4) {
                                 if let problem = domain.problem {
-                                    Label("\(domain.host): \(problem)", systemImage: "exclamationmark.triangle.fill")
+                                    Label("common.label_value \(domain.host) \(problem)", systemImage: "exclamationmark.triangle.fill")
                                         .foregroundStyle(.orange)
                                         .fixedSize(horizontal: false, vertical: true)
                                 } else if let url = domain.url.flatMap(URL.init(string:)) {
-                                    Link(domain.alias ? "\(domain.host) (alias)" : domain.host, destination: url)
+                                    Link(domain.alias ? String(localized: "sites.alias \(domain.host)") : domain.host, destination: url)
                                 } else {
                                     Text(domain.host)
                                 }
                                 Button {
                                     confirm = ConfirmAction(
-                                        title: "Remove \(domain.host)?", button: "Remove", destructive: true,
-                                        message: "\(domain.host) is no longer served by \(site.name).",
+                                        title: String(localized: "common.remove_question \(domain.host)"), button: String(localized: "common.remove"), destructive: true,
+                                        message: String(localized: "sites.domain_is_no_longer_served \(domain.host) \(site.name)"),
                                         run: { [name = site.name, entry = domain.entry] client in try await client.removeDomain(site: name, domain: entry) })
                                 } label: { Image(systemName: "minus.circle") }
                                     .buttonStyle(.borderless)
-                                    .help("Remove \(domain.host)")
+                                    .help("common.remove_target \(domain.host)")
                             }
                         }
-                        Button("Add Domain…") { adding = site.name }
+                        Button("sites.add_domain") { adding = site.name }
                             .buttonStyle(.link)
-                            .help("Extra domains: subdomains and aliases")
+                            .help("sites.extra_domains_subdomains_and_aliases")
                     }
                     .font(.callout)
                 }
                 if let dns = model.status?.dns, !dns.wildcard, !dns.wildcardProblem.isEmpty {
-                    Text("Subdomains only work when you add them here: \(dns.wildcardProblem).")
+                    Text("sites.subdomains_only_here \(dns.wildcardProblem)")
                         .font(.caption).foregroundStyle(.orange)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 if !site.isNode {
-                    field("Root") {
+                    field("sites.root") {
                         rootPicker(site)
                     }
                     rootHints(site)
                 }
             }
 
-            section("Share") {
+            // The heading is a noun where the button ("Share") is a verb, in Czech.
+            section("sites.share_section") {
                 shareFields(site)
             }
 
-            section("Versions") {
+            section("versions.versions") {
                 if !site.isNode {
-                    field("PHP") {
+                    field("common.php") {
                         versionPicker(label: "PHP", current: site.php, source: site.phpSource, pinned: site.phpPinned, file: site.phpFile,
                                       defaultVersion: store.config?.defaultPHP ?? "", installed: phpVersions) { version in
                             Task { await store.perform { _ = try await $0.updateSite(site.name, SiteChange(php: version)) } }
                         }
                     }
                 }
-                field("Node.js") {
+                field("common.nodejs") {
                     versionPicker(label: "Node", current: major(site.node ?? ""), source: site.nodeSource, pinned: major(site.nodePinned), file: site.nodeFile,
                                   defaultVersion: store.config?.defaultNode ?? "", installed: nodeMajors) { version in
                         Task { await store.perform { _ = try await $0.updateSite(site.name, SiteChange(node: version)) } }
@@ -664,8 +677,8 @@ struct SitesPane: View {
                 }
                 hints(site)
                 Text(site.isNode
-                     ? "A version picked here applies on this machine only. To set it for everyone working on the project, pin it (\(Image(systemName: "pin"))): Node.js goes into .nvmrc."
-                     : "A version picked here applies on this machine only. To set it for everyone working on the project, pin it (\(Image(systemName: "pin"))): PHP goes into .flockrc, Node.js into .nvmrc.")
+                     ? "sites.version_picked_here_applies_on \(Image(systemName: "pin"))"
+                     : "sites.version_picked_here_applies_on_this \(Image(systemName: "pin"))")
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -673,13 +686,16 @@ struct SitesPane: View {
             if site.isNode {
                 NodeDevServerSection(site: site)
             } else {
-                section("Server") {
+                section("sites.server") {
                     serverFields(site)
+                }
+                section("sites.reverb.title") {
+                    reverbFields(site)
                 }
             }
 
             if site.boost == .missing || site.boost == .outdated {
-                section("Laravel Boost") {
+                section("common.laravel_boost") {
                     boost(site)
                 }
             }
@@ -694,15 +710,19 @@ struct SitesPane: View {
     }
 
     /// A section of the details: a heading and its settings.
-    private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+    private func section<Content: View>(_ title: LocalizedStringKey, @ViewBuilder content: () -> Content) -> some View {
+        section(Text(title), content: content)
+    }
+
+    private func section<Content: View>(_ title: Text, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(title).font(.subheadline.weight(.semibold))
+            title.font(.subheadline.weight(.semibold))
             content()
         }
     }
 
     /// A labelled setting: the label in a fixed column, so the controls line up.
-    private func field<Content: View>(_ label: String, @ViewBuilder content: () -> Content) -> some View {
+    private func field<Content: View>(_ label: LocalizedStringKey, @ViewBuilder content: () -> Content) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             Text(label).foregroundStyle(.secondary)
                 .frame(width: 80, alignment: .leading)
@@ -716,13 +736,13 @@ struct SitesPane: View {
     private func versionPicker(label: String, current: String, source: Status.VersionSource, pinned: String, file: String,
                                defaultVersion: String, installed: [String], change: @escaping (String) -> Void) -> some View {
         // On the first run there's no default until Flock has installed one.
-        let follow = !pinned.isEmpty ? "Use \(fileName(file)) (\(label) \(pinned))"
-            : defaultVersion.isEmpty ? "Default" : "Default (\(label) \(defaultVersion))"
+        let follow = !pinned.isEmpty ? String(localized: "sites.use_file_tool_version \(fileName(file)) \(label) \(pinned)")
+            : defaultVersion.isEmpty ? String(localized: "sites.default") : String(localized: "sites.default_tool_version \(label) \(defaultVersion)")
         let versions = source == .isolated && !current.isEmpty && !installed.contains(current) ? installed + [current] : installed
         let help: String = switch source {
-        case .isolated: "\(label) \(current) is set for this site on this machine (isolated)."
-        case .project: "The project pins \(label) \(pinned) in \(fileName(file))."
-        case .default: "The site follows Flock's default \(label) version."
+        case .isolated: String(localized: "sites.tool_version_is_set_for \(label) \(current)")
+        case .project: String(localized: "sites.project_pins_tool_version_in \(label) \(pinned) \(fileName(file))")
+        case .default: String(localized: "sites.version_default \(label)")
         }
         return Picker(label, selection: Binding(
             get: { source == .isolated ? current : "" },
@@ -731,7 +751,7 @@ struct SitesPane: View {
             Text(follow).tag("")
             Divider()
             ForEach(versions, id: \.self) { version in
-                Text("\(label) \(version)").tag(version)
+                Text("common.name_and_version \(label) \(version)").tag(version)
             }
         }
         .labelsHidden()
@@ -748,21 +768,21 @@ struct SitesPane: View {
     private func rootPicker(_ site: Status.Site) -> some View {
         let store = model.settings
         let follow: String = switch (site.rootSource, site.rootPinnedHere, site.rootState) {
-        case (_, true, _): "Use .flockrc (\(rootLabel(site.rootPinned)))"
-        case (.default, _, .notFound): "Automatic (none found)"
-        case (.default, _, _): "Automatic (\(rootLabel(site.root)))"
-        default: "Automatic"
+        case (_, true, _): String(localized: "sites.use_flockrc_root \(rootLabel(site.rootPinned))")
+        case (.default, _, .notFound): String(localized: "sites.root_automatic_none")
+        case (.default, _, _): String(localized: "sites.root_automatic_found \(rootLabel(site.root))")
+        default: String(localized: "sites.root_automatic")
         }
         var folders = site.rootSuggestions
         if site.rootSource == .isolated, !folders.contains(site.root) {
             folders.append(site.root)
         }
         let help: String = switch site.rootSource {
-        case .isolated: "\(rootLabel(site.root)) is set for this site on this machine."
-        case .project: "The project sets \(rootLabel(site.root)) in .flockrc."
-        case .default: "Flock serves the first of public/, www/, web/ and webroot/ with an index.php, else the project folder."
+        case .isolated: String(localized: "sites.root_isolated \(rootLabel(site.root))")
+        case .project: String(localized: "sites.root_pinned \(rootLabel(site.root))")
+        case .default: String(localized: "sites.flock_serves_the_first_of")
         }
-        return Picker("Document root", selection: Binding(
+        return Picker("sites.document_root", selection: Binding(
             get: { site.rootSource == .isolated ? site.root : "" },
             set: { root in
                 if root == Self.chooseRootTag {
@@ -780,7 +800,7 @@ struct SitesPane: View {
                 }
             }
             Divider()
-            Text("Choose Folder…").tag(Self.chooseRootTag)
+            Text("sites.choose_folder").tag(Self.chooseRootTag)
         }
         .labelsHidden()
         .fixedSize()
@@ -791,10 +811,10 @@ struct SitesPane: View {
     private func chooseRoot(_ site: Status.Site) {
         let store = model.settings
         let start = URL(fileURLWithPath: site.path)
-        guard let folder = SettingsStore.chooseDirectories(prompt: "Choose", multiple: false, in: start,
-                                                           message: "Choose the folder with the app's index.php in \(site.name).").first else { return }
+        guard let folder = SettingsStore.chooseDirectories(prompt: String(localized: "sites.server.choose"), multiple: false, in: start,
+                                                           message: String(localized: "sites.choose_the_folder_with_the \(site.name)")).first else { return }
         guard let root = site.root(for: folder) else {
-            store.error = "\(folder.path) isn't in \(site.path). The document root must be a folder in the project."
+            store.error = String(localized: "sites.choose_folder_in_project_details \(folder.path) \(site.path)")
             return
         }
         Task { await store.perform { _ = try await $0.updateSite(site.name, SiteChange(root: root)) } }
@@ -806,22 +826,22 @@ struct SitesPane: View {
         let store = model.settings
         switch site.rootState {
         case .notFound:
-            Text("No public/, www/, web/ or webroot/ with an index.php was found, so Flock shows a page instead of the site. Choose the folder with the app's index.php.")
+            Text("sites.no_public_www_web_or")
                 .font(.caption).foregroundStyle(.orange)
                 .fixedSize(horizontal: false, vertical: true)
         case .missing:
-            Text("Choose the folder with the app's index.php, or create \(site.root).")
+            Text("sites.root_missing \(site.root)")
                 .font(.caption).foregroundStyle(.orange)
                 .fixedSize(horizontal: false, vertical: true)
         case .empty:
-            Text("\(rootLabel(site.root)) has no index.php or index.html, so Flock shows a page instead of the site until it does.")
+            Text("sites.root_no_index \(rootLabel(site.root))")
                 .font(.caption).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         case .ok:
             if site.rootSource == .isolated, site.rootPinnedHere {
                 HStack(spacing: 4) {
-                    Text("\(rootLabel(site.root)) is set here; the project sets \(rootLabel(site.rootPinned)) in .flockrc.")
-                    Button("Use .flockrc") {
+                    Text("sites.root_shadowed \(rootLabel(site.root)) \(rootLabel(site.rootPinned))")
+                    Button("sites.use_flockrc") {
                         Task { await store.perform { _ = try await $0.updateSite(site.name, SiteChange(root: "")) } }
                     }
                     .buttonStyle(.link)
@@ -829,26 +849,26 @@ struct SitesPane: View {
                 .font(.caption).foregroundStyle(.orange)
             }
         }
-        Text("The folder Flock serves the site from. One picked here applies on this machine only; pin it (\(Image(systemName: "pin"))) to write it into .flockrc for everyone.")
+        Text("sites.folder_flock_serves_the_site \(Image(systemName: "pin"))")
             .font(.caption).foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)
     }
 
     /// "src/www", or "Project folder" for ".".
-    private func rootLabel(_ root: String) -> String { root == "." ? "Project folder" : root }
+    private func rootLabel(_ root: String) -> String { root == "." ? String(localized: "sites.project_folder_badge") : root }
 
     /// What runs the site's PHP (PHP-FPM or FrankenPHP); on FrankenPHP also its mode (classic or
     /// Laravel Octane), its state, Restart and its log.
     @ViewBuilder
     private func serverFields(_ site: Status.Site) -> some View {
         let store = model.settings
-        field("Runs on") {
-            Picker("Server", selection: Binding(
+        field("sites.runs_on") {
+            Picker("sites.server", selection: Binding(
                 get: { site.server },
                 set: { server in Task { await store.perform { _ = try await $0.updateSite(site.name, SiteChange(server: server.rawValue)) } } }
             )) {
-                Text("PHP-FPM").tag(Status.Server.fastcgi)
-                Text("FrankenPHP").tag(Status.Server.frankenphp)
+                Text("common.php_fpm").tag(Status.Server.fastcgi)
+                Text("common.frankenphp").tag(Status.Server.frankenphp)
                     .disabled(!site.supportsFrankenPHP && site.server != .frankenphp)
             }
             .labelsHidden()
@@ -856,24 +876,24 @@ struct SitesPane: View {
         }
 
         if site.server == .frankenphp {
-            field("Mode") {
-                Picker("Mode", selection: Binding(
+            field("debugger.mode") {
+                Picker("debugger.mode", selection: Binding(
                     get: { site.worker },
                     set: { worker in Task { await store.perform { _ = try await $0.updateSite(site.name, SiteChange(worker: worker.rawValue)) } } }
                 )) {
-                    Text("Classic").tag(Status.Worker.classic)
-                    Text("Laravel Octane").tag(Status.Worker.octane)
+                    Text("sites.classic").tag(Status.Worker.classic)
+                    Text("common.laravel_octane").tag(Status.Worker.octane)
                         .disabled(!site.octaneAvailable && site.worker != .octane)
                 }
                 .labelsHidden()
                 .fixedSize()
-                .help(site.octaneAvailable ? "" : "Install Laravel Octane in the project (composer require laravel/octane) to use worker mode.")
+                .help(site.octaneAvailable ? "" : String(localized: "sites.octane_tooltip"))
             }
 
             frankenPHPState(site)
 
             HStack(spacing: 8) {
-                Button("Restart") {
+                Button("menu.restart") {
                     restarting = site.name
                     Task {
                         await store.perform { _ = try await $0.restartSite(site.name) }
@@ -881,8 +901,8 @@ struct SitesPane: View {
                     }
                 }
                 .disabled(site.frankenPHP?.state != .running || restarting == site.name)
-                .help("Restart FrankenPHP, e.g. so Octane's workers load changed code")
-                Button("Show Log") {
+                .help("sites.restart_frankenphp_tooltip")
+                Button("sites.show_log") {
                     model.logs.requested = .service(frankenPHPLog(site))
                     openWindow.activating(WindowID.logs)
                 }
@@ -894,8 +914,8 @@ struct SitesPane: View {
         }
 
         Text(site.server == .frankenphp && !site.octaneAvailable
-             ? "FrankenPHP needs PHP 8.2 or newer. Requests that ask for Xdebug still go to PHP-FPM. For worker mode, install Laravel Octane in the project (composer require laravel/octane)."
-             : "FrankenPHP needs PHP 8.2 or newer. Requests that ask for Xdebug still go to PHP-FPM.")
+             ? "sites.frankenphp_needs_php_8_2_or"
+             : "sites.frankenphp_needs_php_8_2")
             .font(.caption).foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)
     }
@@ -919,7 +939,7 @@ struct SitesPane: View {
                         }
                         Text(downloadingText(site, franken))
                     }
-                    Text("PHP-FPM serves the site until it's ready.")
+                    Text("sites.php_fpm_serves_the_site_until")
                         .foregroundStyle(.secondary)
                 }
                 .font(.caption)
@@ -931,7 +951,7 @@ struct SitesPane: View {
                             .foregroundStyle(.orange)
                             .textSelection(.enabled)
                     }
-                    Text("PHP-FPM serves the site meanwhile.")
+                    Text("sites.php_fpm_serves_the_site")
                         .foregroundStyle(.secondary)
                 }
                 .font(.caption)
@@ -944,15 +964,14 @@ struct SitesPane: View {
 
     /// "Running FrankenPHP 1.13.0 with PHP 8.4.14 · worker mode".
     private func runningText(_ site: Status.Site, _ franken: Status.SiteFrankenPHP) -> String {
-        let text = "Running FrankenPHP \(franken.version) with PHP \(franken.phpVersion)"
-        return site.worker == .octane ? text + " · worker mode" : text
+        let text = String(localized: "sites.frankenphp_running \(franken.version) \(franken.phpVersion)")
+        return site.worker == .octane ? text + " · " + String(localized: "sites.worker_mode_macos") : text
     }
 
     /// "Downloading FrankenPHP for PHP 8.4… 42%"; without a percentage while the size is unknown.
     private func downloadingText(_ site: Status.Site, _ franken: Status.SiteFrankenPHP) -> String {
-        let text = "Downloading FrankenPHP for PHP \(site.php)…"
-        guard let progress = franken.progress else { return text }
-        return "\(text) \(Int((progress * 100).rounded()))%"
+        guard let progress = franken.progress else { return String(localized: "sites.downloading_frankenphp \(site.php)") }
+        return String(localized: "sites.downloading_frankenphp_for_php \(site.php) \(String(Int((progress * 100).rounded())))")
     }
 
     /// The name of the site's FrankenPHP log, a service log in the Logs window.
@@ -963,14 +982,118 @@ struct SitesPane: View {
         return "frankenphp-\(site.name)"
     }
 
+    /// Laravel Reverb for the site: Run Reverb, then its state, the .env lines the app needs, Restart
+    /// and its output.
+    @ViewBuilder
+    private func reverbFields(_ site: Status.Site) -> some View {
+        let store = model.settings
+        let address = reverbAddress(site)
+        field("sites.reverb.run") {
+            Toggle("sites.reverb.run", isOn: Binding(
+                get: { site.reverb != nil },
+                set: { on in Task { await store.perform { _ = try await $0.updateSite(site.name, SiteChange(reverb: on)) } } }
+            ))
+            .labelsHidden()
+            .toggleStyle(.switch)
+            .controlSize(.small)
+            .disabled(!site.reverbAvailable && site.reverb == nil)
+        }
+
+        if let reverb = site.reverb {
+            reverbState(reverb, address: address)
+
+            if !reverb.env.isEmpty {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text("sites.reverb.env_needs")
+                            .font(.caption).foregroundStyle(.secondary)
+                        Button("common.copy") {
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(reverb.env.joined(separator: "\n"), forType: .string)
+                        }
+                        .controlSize(.small)
+                    }
+                    Text(reverb.env.joined(separator: "\n"))
+                        .font(.callout.monospaced())
+                        .textSelection(.enabled)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            HStack(spacing: 8) {
+                Button("menu.restart") {
+                    restartingReverb = site.name
+                    Task {
+                        await store.perform { _ = try await $0.restartReverb(site.name) }
+                        restartingReverb = nil
+                    }
+                }
+                .disabled(reverb.state != .running || restartingReverb == site.name)
+                .help("sites.reverb.restart_tooltip")
+                if restartingReverb == site.name {
+                    ProgressView().controlSize(.mini)
+                }
+            }
+            .controlSize(.small)
+
+            ServerOutput(log: reverb.log.isEmpty ? "reverb-\(site.name)" : reverb.log, live: reverb.state == .running)
+
+            Text("sites.reverb.footnote")
+                .font(.caption).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        } else {
+            (site.reverbAvailable ? Text("sites.reverb.explanation \(address)") : Text("sites.reverb.install"))
+                .font(.caption).foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    /// Where browsers reach the site's Reverb server: the site's address as a WebSocket one,
+    /// wss://acme.test/app (with its port when Flock serves another than 443), ws:// without HTTPS.
+    private func reverbAddress(_ site: Status.Site) -> String {
+        if let url = site.url {
+            if url.hasPrefix("https://") { return "wss://\(url.dropFirst(8))/app" }
+            if url.hasPrefix("http://") { return "ws://\(url.dropFirst(7))/app" }
+        }
+        return "\(site.secured ? "wss" : "ws")://\(site.domain)/app"
+    }
+
+    /// The Reverb server: running at its address, why it stopped, or why it can't run.
+    @ViewBuilder
+    private func reverbState(_ reverb: Status.SiteReverb, address: String) -> some View {
+        switch reverb.state {
+        case .running:
+            HStack(spacing: 6) {
+                StateDot(color: StateDot.running)
+                Text("sites.reverb.running_at \(address)").textSelection(.enabled)
+            }
+        case .failed:
+            HStack(spacing: 6) {
+                StateDot(color: StateDot.failed)
+                Text(reverb.problem.isEmpty ? String(localized: "sites.server.failed") : reverb.problem)
+                    .textSelection(.enabled)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        case .unavailable:
+            if !reverb.problem.isEmpty {
+                Label(reverb.problem, systemImage: "exclamationmark.triangle.fill")
+                    .font(.caption).foregroundStyle(.orange)
+                    .textSelection(.enabled)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        case .unknown:
+            EmptyView()
+        }
+    }
+
     /// Notes when versions disagree: an isolation over the project's pin, .flockrc over .nvmrc.
     @ViewBuilder
     private func hints(_ site: Status.Site) -> some View {
         let store = model.settings
         if site.phpSource == .isolated, !site.phpPinned.isEmpty, site.phpPinned != site.php {
             HStack(spacing: 4) {
-                Text("PHP \(site.php) is isolated here; the project pins \(site.phpPinned) in \(fileName(site.phpFile)).")
-                Button("Use \(fileName(site.phpFile))") {
+                Text("sites.php_version_is_isolated_here \(site.php) \(site.phpPinned) \(fileName(site.phpFile))")
+                Button("sites.use_file \(fileName(site.phpFile))") {
                     Task { await store.perform { _ = try await $0.updateSite(site.name, SiteChange(php: "")) } }
                 }
                 .buttonStyle(.link)
@@ -979,8 +1102,8 @@ struct SitesPane: View {
         }
         if site.nodeSource == .isolated, !site.nodePinned.isEmpty, major(site.nodePinned) != major(site.node ?? "") {
             HStack(spacing: 4) {
-                Text("Node \(site.node ?? "") is isolated here; the project pins \(site.nodePinned) in \(fileName(site.nodeFile)).")
-                Button("Use \(fileName(site.nodeFile))") {
+                Text("sites.node_version_is_isolated_here \(site.node ?? "") \(site.nodePinned) \(fileName(site.nodeFile))")
+                Button("sites.use_file \(fileName(site.nodeFile))") {
                     Task { await store.perform { _ = try await $0.updateSite(site.name, SiteChange(node: "")) } }
                 }
                 .buttonStyle(.link)
@@ -988,7 +1111,7 @@ struct SitesPane: View {
             .font(.caption).foregroundStyle(.orange)
         }
         if !site.nodeShadowed.isEmpty {
-            Text(".flockrc's Node \(site.nodePinned) wins over \(site.nodeShadowed).")
+            Text("sites.node_wins \(site.nodePinned) \(site.nodeShadowed)")
                 .font(.caption).foregroundStyle(.orange)
         }
     }
@@ -1004,31 +1127,31 @@ struct SitesPane: View {
             case .building, .starting, .unknown:
                 HStack(spacing: 8) {
                     ProgressView().controlSize(.small)
-                    Text(share.state == .building ? "Building assets…" : "Starting the tunnel…")
+                    Text(share.state == .building ? "sites.share.building" : "sites.share.starting")
                     Spacer(minLength: 8)
-                    Button("Stop") { stop() }
+                    Button("sites.share.stop") { stop() }
                 }
                 .font(.callout)
             case .running:
                 runningShare(site, share, stop: stop)
             case .failed:
                 VStack(alignment: .leading, spacing: 8) {
-                    Label(share.error ?? "Sharing failed.", systemImage: "exclamationmark.triangle.fill")
+                    Label(share.error ?? String(localized: "sites.sharing_failed"), systemImage: "exclamationmark.triangle.fill")
                         .foregroundStyle(.orange)
                         .textSelection(.enabled)
                         .fixedSize(horizontal: false, vertical: true)
                     HStack(spacing: 8) {
-                        Button("Try Again") { startShare(site.name, allow: share.allow, debug: share.debug) }
-                        Button("Dismiss") { stop() }
+                        Button("setup.try_again") { startShare(site.name, allow: share.allow, debug: share.debug) }
+                        Button("sites.share.dismiss") { stop() }
                     }
                 }
                 .font(.callout)
             }
         } else {
             VStack(alignment: .leading, spacing: 6) {
-                Button("Share…") { sharing = site.name }
+                Button("sites.share.share_ellipsis") { sharing = site.name }
                     .disabled(site.url == nil)
-                Text("Show the site at a temporary public address to preview work in progress, never for production. Visitors don't get debug pages, dumps or the dev tools.")
+                Text("sites.share.explanation")
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -1047,7 +1170,7 @@ struct SitesPane: View {
                         .lineLimit(1).truncationMode(.middle)
                         .textSelection(.enabled)
                 }
-                Button("Copy") {
+                Button("common.copy") {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(url, forType: .string)
                 }
@@ -1058,23 +1181,23 @@ struct SitesPane: View {
                     .resizable()
                     .interpolation(.high)
                     .frame(width: 160, height: 160)
-                    .accessibilityLabel("QR code of \(url)")
-                    .help("Right-click to copy or save the QR code, or drag it out")
+                    .accessibilityLabel("sites.qr_code_of_url \(url)")
+                    .help("sites.share.qr_tooltip")
                     .contextMenu {
-                        Button("Copy Image") { copyQR(data, image) }
-                        Button("Save Image…") { saveQR(data, site: site.name) }
+                        Button("sites.copy_image") { copyQR(data, image) }
+                        Button("sites.save_image") { saveQR(data, site: site.name) }
                     }
                     .onDrag { qrProvider(data, site: site.name) }
             }
             VStack(alignment: .leading, spacing: 2) {
                 if let expires = share.expiresAt {
-                    Text("Ends at \(expires.formatted(date: .omitted, time: .shortened))")
+                    Text("sites.share.ends_at \(expires.formatted(Date.FormatStyle(date: .omitted, time: .shortened).locale(AppLanguage.locale)))")
                 }
                 if !share.allow.isEmpty {
-                    Text("Only for: \(share.allow.joined(separator: ", "))")
+                    Text("sites.share.only_for \(share.allow.joined(separator: ", "))")
                 }
                 if share.debug {
-                    Text("Debug mode is on: visitors see stack traces")
+                    Text("sites.share.debug_on")
                 }
             }
             .font(.caption).foregroundStyle(.secondary)
@@ -1092,13 +1215,13 @@ struct SitesPane: View {
             }
             HStack(spacing: 8) {
                 if share.canRebuild {
-                    Button(share.rebuilding ? "Rebuilding…" : "Rebuild Assets") {
+                    Button(share.rebuilding ? "sites.share.rebuilding" : "sites.rebuild_assets") {
                         Task { await store.perform { _ = try await $0.rebuildShare(site: site.name) } }
                     }
                     .disabled(share.rebuilding)
-                    .help("Runs npm run build again, so visitors see your latest changes when they reload")
+                    .help("sites.runs_npm_run_build_again")
                 }
-                Button("Stop Sharing") { stop() }
+                Button("sites.stop_sharing") { stop() }
             }
         }
     }
@@ -1145,15 +1268,15 @@ struct SitesPane: View {
     private func boost(_ site: Status.Site) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(site.boost == .missing
-                 ? "The project uses Laravel Boost. Adding Flock to its guidelines tells AI agents that Flock serves the app and picks its PHP version."
-                 : "Flock's guideline in the project's Boost guidelines is outdated.")
+                 ? "sites.boost_missing"
+                 : "sites.boost_outdated")
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
-            Button(site.boost == .missing ? "Add Flock to its guidelines…" : "Update it…") {
+            Button(site.boost == .missing ? "sites.boost_add" : "sites.boost_update") {
                 confirm = ConfirmAction(
-                    title: site.boost == .missing ? "Add Flock to \(site.name)'s Boost guidelines?" : "Update Flock's guideline in \(site.name)?",
-                    button: site.boost == .missing ? "Add" : "Update",
-                    message: "Writes .ai/guidelines/flock.md in \(site.path) and runs php artisan boost:update, so AI agents know Flock serves the app and picks its PHP version. Commit it with the rest of .ai/guidelines. This changes files in your project.",
+                    title: site.boost == .missing ? String(localized: "sites.boost_add_question \(site.name)") : String(localized: "sites.boost_update_question \(site.name)"),
+                    button: site.boost == .missing ? String(localized: "common.add") : String(localized: "common.update"),
+                    message: String(localized: "sites.writes_ai_guidelines_flock_md \(site.path)"),
                     run: { [name = site.name] client in try await client.addBoostGuideline(site: name) })
             }
             .buttonStyle(.link)
@@ -1171,26 +1294,26 @@ struct SitesPane: View {
 
         return Menu {
             if canPinPHP {
-                Button("Pin PHP \(site.php) to Project…") {
+                Button("sites.pin_php_item \(site.php)") {
                     confirm = ConfirmAction(
-                        title: "Pin PHP \(site.php) to \(site.name)?", button: "Pin",
-                        message: "Writes php=\(site.php) to .flockrc in \(site.path). Commit it, and everyone using Flock on this project gets PHP \(site.php). This changes a file in your project.",
+                        title: String(localized: "sites.pin_php_question \(site.php) \(site.name)"), button: String(localized: "sites.pin"),
+                        message: String(localized: "sites.writes_php_version_to_flockrc \(site.php) \(site.path) \(site.php)"),
                         run: { [name = site.name, php = site.php] client in try await client.pin(site: name, tool: "php", version: php) })
                 }
             }
             if canPinNode {
-                Button("Pin Node \(nodeMajor) to Project…") {
+                Button("sites.pin_node_item \(nodeMajor)") {
                     confirm = ConfirmAction(
-                        title: "Pin Node \(nodeMajor) to \(site.name)?", button: "Pin",
-                        message: "Writes \(nodeMajor) to \(nodeFile) in \(site.path). Commit it, and Flock, nvm and other Node tools use Node \(nodeMajor) for this project. This changes a file in your project.",
+                        title: String(localized: "sites.pin_node_question \(nodeMajor) \(site.name)"), button: String(localized: "sites.pin"),
+                        message: String(localized: "sites.writes_version_to_file_in \(nodeMajor) \(nodeFile) \(site.path) \(nodeMajor)"),
                         run: { [name = site.name] client in try await client.pin(site: name, tool: "node", version: nodeMajor) })
                 }
             }
             if canPinRoot {
-                Button("Pin Document Root (\(rootLabel(site.root))) to Project…") {
+                Button("sites.pin_root_item \(rootLabel(site.root))") {
                     confirm = ConfirmAction(
-                        title: "Pin the document root \(rootLabel(site.root)) to \(site.name)?", button: "Pin",
-                        message: "Writes root=\(site.root) to .flockrc in \(site.path). Commit it, and everyone using Flock on this project serves it from \(rootLabel(site.root)). This changes a file in your project.",
+                        title: String(localized: "sites.pin_root_question \(rootLabel(site.root)) \(site.name)"), button: String(localized: "sites.pin"),
+                        message: String(localized: "sites.writes_root_value_to_flockrc \(site.root) \(site.path) \(rootLabel(site.root))"),
                         run: { [name = site.name, root = site.root] client in try await client.pin(site: name, tool: "root", version: root) })
                 }
             }
@@ -1198,26 +1321,26 @@ struct SitesPane: View {
                 Divider()
             }
             if site.phpPinnedHere {
-                Button("Unpin PHP (\(fileName(site.phpFile)))…") {
+                Button("sites.unpin_php_item \(fileName(site.phpFile))") {
                     confirm = ConfirmAction(
-                        title: "Unpin PHP from \(site.name)?", button: "Unpin",
-                        message: "Removes the PHP version from \(site.phpFile). The site then uses Flock's default PHP. This changes files in your project.",
+                        title: String(localized: "sites.unpin_php_question \(site.name)"), button: String(localized: "sites.unpin"),
+                        message: String(localized: "sites.removes_the_php_version_from \(site.phpFile)"),
                         run: { [name = site.name] client in try await client.unpin(site: name, tool: "php") })
                 }
             }
             if site.nodePinnedHere {
-                Button("Unpin Node (\(fileName(site.nodeFile)))…") {
+                Button("sites.unpin_node_item \(fileName(site.nodeFile))") {
                     confirm = ConfirmAction(
-                        title: "Unpin Node from \(site.name)?", button: "Unpin",
-                        message: "Removes the Node.js version from .flockrc and deletes .nvmrc / .node-version in \(site.path). The site then uses Flock's default Node.js. This changes files in your project.",
+                        title: String(localized: "sites.unpin_node_question \(site.name)"), button: String(localized: "sites.unpin"),
+                        message: String(localized: "sites.removes_the_node_js_version \(site.path)"),
                         run: { [name = site.name] client in try await client.unpin(site: name, tool: "node") })
                 }
             }
             if site.rootPinnedHere {
-                Button("Unpin Document Root (.flockrc)…") {
+                Button("sites.unpin_root_item") {
                     confirm = ConfirmAction(
-                        title: "Unpin the document root from \(site.name)?", button: "Unpin",
-                        message: "Removes root= from .flockrc in \(site.path). Flock then finds the document root itself. This changes files in your project.",
+                        title: String(localized: "sites.unpin_root_question \(site.name)"), button: String(localized: "sites.unpin"),
+                        message: String(localized: "sites.removes_root_from_flockrc_in \(site.path)"),
                         run: { [name = site.name] client in try await client.unpin(site: name, tool: "root") })
                 }
             }
@@ -1227,7 +1350,7 @@ struct SitesPane: View {
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .fixedSize()
-        .help("Pin versions and the document root to the project")
+        .help("sites.pin_menu_tooltip")
         .disabled(!canPinPHP && !canPinNode && !canPinRoot && !site.phpPinnedHere && !site.nodePinnedHere && !site.rootPinnedHere)
     }
 
@@ -1264,26 +1387,26 @@ private struct ShareSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Share \(site)").font(.headline)
+            Text("sites.share.title \(site)").font(.headline)
             VStack(alignment: .leading, spacing: 4) {
-                Text("Only these people (optional)")
-                TextField("colleague@acme.com, *@client.com", text: allowState.projectedValue)
+                Text("sites.share.allow_header")
+                TextField("sites.share.allow_placeholder", text: allowState.projectedValue)
                     .textFieldStyle(.roundedBorder)
             }
-            Text("Anyone with the link can open the site unless you list email addresses — Cloudflare then emails them a code. The link stops working after 8 hours or when you stop sharing.")
+            Text("sites.share.allow_explanation")
                 .font(.caption).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
             VStack(alignment: .leading, spacing: 4) {
-                Toggle("Show error details to visitors", isOn: debugState.projectedValue)
-                Text("Turns the app's debug mode on for this share, so visitors see stack traces. Only for people you trust.")
+                Toggle("sites.share.show_errors", isOn: debugState.projectedValue)
+                Text("sites.share.show_errors_explanation")
                     .font(.caption).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             HStack {
                 Spacer()
-                Button("Cancel", role: .cancel) { cancel() }
+                Button("common.cancel", role: .cancel) { cancel() }
                     .keyboardShortcut(.cancelAction)
-                Button("Share") { share(ShareStatus.parseAllow(allowState.wrappedValue), debugState.wrappedValue) }
+                Button("sites.share.share") { share(ShareStatus.parseAllow(allowState.wrappedValue), debugState.wrappedValue) }
                     .keyboardShortcut(.defaultAction)
             }
         }

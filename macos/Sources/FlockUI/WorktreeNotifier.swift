@@ -44,8 +44,8 @@ final class WorktreeNotifier: NSObject, UNUserNotificationCenterDelegate {
             }
             guard authorized == true else { return }
             let content = UNMutableNotificationContent()
-            content.title = "Setting up \(worktree.worktreeLabel) failed"
-            content.body = "\(worktree.parent ?? ""): \(worktree.worktree?.error ?? "see its log")"
+            content.title = String(localized: "worktrees.setup_failed_title \(worktree.worktreeLabel)")
+            content.body = "\(worktree.parent ?? ""): \(worktree.worktree?.error ?? String(localized: "worktrees.see_log"))"
             content.userInfo = ["site": worktree.name]
             try? await center.add(UNNotificationRequest(identifier: "worktree-\(worktree.name)", content: content, trigger: nil))
         }

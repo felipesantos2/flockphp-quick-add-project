@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"math/rand/v2"
 	"net"
 	"net/http"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -47,21 +49,39 @@ func shortTempDir(t *testing.T) string {
 	return dir
 }
 
+// The ports freePort has returned.
+var (
+	givenMu sync.Mutex
+	given   = map[int]bool{}
+)
+
 // freePort returns a port that's free for TCP and UDP: Caddy also listens for HTTP/3 over
-// UDP, and Windows can reserve 100-port ranges (e.g. Hyper-V/WSL) for one protocol only.
+// UDP, and Windows can reserve a port for UDP that's free for TCP. It never returns a port twice:
+// the OS can hand a closed port out again, and a daemon whose HTTP and DNS ports are the same
+// answers HTTP requests with DNS.
+//
+// It tries the port the OS picks first, then random ones: Windows picks ports in sequence and
+// reserves them for UDP in blocks, so once one is taken for UDP the next ones often are too.
 func freePort(t *testing.T) int {
 	t.Helper()
 
-	for range 500 {
-		ln, err := net.Listen("tcp", "127.0.0.1:0")
-		if err != nil {
-			t.Fatal(err)
+	givenMu.Lock()
+	defer givenMu.Unlock()
+	for try := range 200 {
+		port := 0
+		if try == 0 {
+			ln, err := net.Listen("tcp", "127.0.0.1:0")
+			if err != nil {
+				t.Fatal(err)
+			}
+			port = ln.Addr().(*net.TCPAddr).Port
+			ln.Close()
+		} else {
+			// Below the OS's own range (49152 and up on Windows), above Flock's (21000 and up).
+			port = 30000 + rand.IntN(15000)
 		}
-		port := ln.Addr().(*net.TCPAddr).Port
-		pc, err := net.ListenPacket("udp", "127.0.0.1:"+strconv.Itoa(port))
-		ln.Close()
-		if err == nil {
-			pc.Close()
+		if !given[port] && freeForBoth(port) {
+			given[port] = true
 
 			return port
 		}
@@ -69,6 +89,22 @@ func freePort(t *testing.T) int {
 	t.Fatal("no port is free for both TCP and UDP")
 
 	return 0
+}
+
+// freeForBoth reports whether a port is free for TCP and UDP on the loopback address.
+func freeForBoth(port int) bool {
+	ln, err := net.Listen("tcp", "127.0.0.1:"+strconv.Itoa(port))
+	if err != nil {
+		return false
+	}
+	defer ln.Close()
+	pc, err := net.ListenPacket("udp", "127.0.0.1:"+strconv.Itoa(port))
+	if err != nil {
+		return false
+	}
+	pc.Close()
+
+	return true
 }
 
 // testRoot writes a config.json that only uses free high ports.
@@ -94,17 +130,14 @@ func startDaemon(t *testing.T, root string) *api.Client {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	done := make(chan error, 1)
-	go func() {
-		defer close(done)
-		done <- Run(ctx, Config{Root: root, Version: "dev"})
-	}()
+	go func() { done <- Run(ctx, Config{Root: root, Version: "dev"}) }()
 	t.Cleanup(func() {
 		cancel()
 		<-done
 	})
 
 	client := api.NewClient(paths.Socket(root))
-	deadline := time.Now().Add(15 * time.Second)
+	deadline := time.Now().Add(5 * time.Second)
 	for {
 		if _, err := client.Status(context.Background()); err == nil {
 			return client
@@ -208,6 +241,28 @@ func TestReloadReportsSitesWithMissingPHP(t *testing.T) {
 	}
 	if len(status.Sites) != 1 || status.Sites[0].Problem != "PHP 7.0 is not installed" {
 		t.Fatalf("unexpected sites: %+v", status.Sites)
+	}
+}
+
+func TestReloadSaysWhyAnEnabledReverbServerCantRun(t *testing.T) {
+	root, cfg := testRoot(t, nil)
+	client := startDaemon(t, root)
+
+	cfg.Upsert(config.Site{Name: "app", Path: t.TempDir(), PHP: "7.0", Reverb: true, ReverbPort: freePort(t)})
+	if err := cfg.Save(root); err != nil {
+		t.Fatal(err)
+	}
+
+	status, err := client.Reload(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(status.Sites) != 1 {
+		t.Fatalf("unexpected sites: %+v", status.Sites)
+	}
+	// Without it `flock reverb` read the missing status as "Reverb is off" and suggested turning it on.
+	if r := status.Sites[0].Reverb; r == nil || r.State != api.ReverbUnavailable || r.Problem != "PHP 7.0 is not installed" {
+		t.Fatalf("reverb status: %+v", r)
 	}
 }
 
@@ -388,6 +443,22 @@ func TestProjectFilesFollowsTheConfiguredCaddyfile(t *testing.T) {
 	writeFile(t, configured, "header X-Configured yes\n")
 	if created := d.projectFiles(); created == named || !strings.Contains(created, configured) {
 		t.Fatalf("creating the configured file did not change the project fingerprint: %q", created)
+	}
+}
+
+func TestProjectFilesNoticesReverbBeingInstalled(t *testing.T) {
+	site := t.TempDir()
+	d := daemon{cfg: &config.Config{Sites: []config.Site{{Name: "app", Path: site}}}}
+	before := d.projectFiles()
+
+	// composer require laravel/reverb changes no file the fingerprint watches otherwise.
+	writeFile(t, filepath.Join(site, "artisan"), "")
+	if err := os.MkdirAll(filepath.Join(site, "vendor", "laravel", "reverb"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	writeFile(t, filepath.Join(site, "vendor", "laravel", "reverb", "composer.json"), "{}")
+	if d.projectFiles() == before {
+		t.Fatal("installing Reverb did not change the project fingerprint")
 	}
 }
 

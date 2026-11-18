@@ -187,4 +187,26 @@ public sealed class PreferencesTests
             Directory.Delete(directory.FullName, recursive: true);
         }
     }
+
+    [Fact]
+    public async Task LanguageFollowsTheSystemUntilChosen()
+    {
+        var directory = Directory.CreateTempSubdirectory("flock-preferences-");
+        try
+        {
+            var path = Path.Combine(directory.FullName, "tray.json");
+            // A file written before the Language preference existed.
+            await File.WriteAllTextAsync(path, "{\"Channel\":\"beta\"}");
+            Assert.Equal("system", (await new PreferencesService(path).LoadAsync()).Language);
+
+            await new PreferencesService(path).UpdateAsync(value => value with { Language = "cs" });
+
+            var saved = await new PreferencesService(path).LoadAsync();
+            Assert.Equal(("cs", "beta"), (saved.Language, saved.Channel));
+        }
+        finally
+        {
+            Directory.Delete(directory.FullName, recursive: true);
+        }
+    }
 }

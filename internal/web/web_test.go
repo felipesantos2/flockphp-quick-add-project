@@ -275,3 +275,39 @@ func TestCaddyfileRejectsRemoteClientsBeforeAnyHandler(t *testing.T) {
 		t.Fatalf("no routes in:\n%s", adapted)
 	}
 }
+
+func TestCaddyfileSendsReverbRequestsFirst(t *testing.T) {
+	cfg := testConfig()
+	cfg.Sites = []Site{
+		{Domain: "chat.test", Root: "/code/chat/public", FPM: []string{"unix//run/php84.sock"}, Reverb: "127.0.0.1:21001", DebugFPM: []string{"unix//run/php84-xdebug.sock"}},
+		{Domain: "octane.test", Root: "/code/octane/public", Proxy: "127.0.0.1:21002", Reverb: "127.0.0.1:21003"},
+	}
+
+	cf := Caddyfile(cfg)
+	json, _, err := caddyconfig.GetAdapter("caddyfile").Adapt([]byte(cf), nil)
+	if err != nil {
+		t.Fatalf("%v\n%s", err, cf)
+	}
+	for _, want := range []string{`"dial":"127.0.0.1:21001"`, `"dial":"127.0.0.1:21003"`, `"/apps/*"`, `query.auth_signature`} {
+		if !strings.Contains(string(json), want) {
+			t.Errorf("missing %s in:\n%s", want, json)
+		}
+	}
+	// Xdebug's handle block would win if it came first.
+	if strings.Index(cf, "handle @reverb") > strings.Index(cf, "handle @xdebug") {
+		t.Errorf("Reverb's route comes after Xdebug's:\n%s", cf)
+	}
+	if strings.Contains(Caddyfile(testConfig()), "@reverb") {
+		t.Error("a site without Reverb has its route")
+	}
+
+	// With custom handlers the site is a route, which keeps the written order: Reverb comes first.
+	cfg.Sites[0].Handlers = "handle /app/* {\n\trespond custom 200\n}\n"
+	cf = Caddyfile(cfg)
+	if _, _, err := caddyconfig.GetAdapter("caddyfile").Adapt([]byte(cf), nil); err != nil {
+		t.Fatalf("%v\n%s", err, cf)
+	}
+	if r, c := strings.Index(cf, "\t\thandle @reverb"), strings.Index(cf, "\t\thandle /app/*"); r < 0 || c < 0 || r > c {
+		t.Errorf("Reverb's route isn't ahead of the custom handlers in the route:\n%s", cf)
+	}
+}

@@ -9,6 +9,7 @@ use adw::prelude::*;
 use gtk::{gio, glib};
 
 use crate::api::Client;
+use crate::i18n::{self, tr, tr_noop};
 use crate::links::Link;
 use crate::model::AppModel;
 use crate::panes::{self, Data, Pane};
@@ -16,16 +17,16 @@ use crate::setup::SetupView;
 
 /// The panes in sidebar order: id, title, icon.
 const PANES: [(&str, &str, &str); 10] = [
-    ("general", "General", "emblem-system-symbolic"),
-    ("sites", "Sites", "dev.flock.Flock-sites-symbolic"),
+    ("general", tr_noop!("general.title"), "emblem-system-symbolic"),
+    ("sites", tr_noop!("settings.pane.sites"), "dev.flock.Flock-sites-symbolic"),
     ("php", "PHP", "utilities-terminal-symbolic"),
     ("node", "Node", "package-x-generic-symbolic"),
-    ("services", "Services", "network-server-symbolic"),
-    ("mail", "Mail", "mail-unread-symbolic"),
-    ("dumps", "Dumps", "applications-science-symbolic"),
-    ("debugger", "Debugger", "applications-engineering-symbolic"),
-    ("ai", "AI", "starred-symbolic"),
-    ("about", "About", "help-about-symbolic"),
+    ("services", tr_noop!("settings.pane.services"), "network-server-symbolic"),
+    ("mail", tr_noop!("services.category.mail"), "mail-unread-symbolic"),
+    ("dumps", tr_noop!("menu.dumps"), "applications-science-symbolic"),
+    ("debugger", tr_noop!("settings.pane.debugger"), "applications-engineering-symbolic"),
+    ("ai", tr_noop!("settings.pane.ai"), "starred-symbolic"),
+    ("about", tr_noop!("settings.pane.about"), "help-about-symbolic"),
 ];
 
 pub struct MainWindow {
@@ -42,6 +43,8 @@ pub struct MainWindow {
     banner: adw::Banner,
     unavailable: adw::StatusPage,
     unavailable_button: gtk::Button,
+    /// The Language setting under it, which doesn't need the daemon.
+    unavailable_language: adw::Bin,
     panes: Vec<(&'static str, Box<dyn Pane>)>,
     services: panes::services::ServicesPane,
     sites: panes::sites::SitesPane,
@@ -57,18 +60,18 @@ impl MainWindow {
         for (_, title, icon) in PANES {
             let row = gtk::Box::builder().spacing(12).margin_top(6).margin_bottom(6).margin_start(6).build();
             row.append(&gtk::Image::from_icon_name(icon));
-            row.append(&gtk::Label::new(Some(title)));
+            row.append(&gtk::Label::new(Some(i18n::translate(title))));
             sidebar.append(&row);
         }
         let title = adw::WindowTitle::new("Flock", "");
         let menu = gio::Menu::new();
         let windows = gio::Menu::new();
-        windows.append(Some("Mail"), Some("app.mail"));
-        windows.append(Some("Dumps"), Some("app.dumps"));
-        windows.append(Some("Logs"), Some("app.logs"));
+        windows.append(Some(tr!("services.category.mail")), Some("app.mail"));
+        windows.append(Some(tr!("menu.dumps")), Some("app.dumps"));
+        windows.append(Some(tr!("dumps.event_kind.logs")), Some("app.logs"));
         menu.append_section(None, &windows);
         let quit = gio::Menu::new();
-        quit.append(Some("Quit Flock"), Some("app.quit"));
+        quit.append(Some(tr!("menu.quit_flock")), Some("app.quit"));
         menu.append_section(None, &quit);
         let menu_button = gtk::MenuButton::builder().icon_name("open-menu-symbolic").menu_model(&menu).primary(true).build();
         let sidebar_header = adw::HeaderBar::builder().title_widget(&title).build();
@@ -78,7 +81,7 @@ impl MainWindow {
         sidebar_view.set_content(Some(&gtk::ScrolledWindow::builder().child(&sidebar).build()));
         let sidebar_page = adw::NavigationPage::new(&sidebar_view, "Flock");
 
-        let banner = adw::Banner::builder().button_label("Dismiss").use_markup(false).build();
+        let banner = adw::Banner::builder().button_label(tr!("sites.share.dismiss")).use_markup(false).build();
         let services = panes::services::ServicesPane::new(model.clone(), banner.clone());
         let sites = panes::sites::SitesPane::new(model.clone(), banner.clone());
         let panes: Vec<(&'static str, Box<dyn Pane>)> = vec![
@@ -98,7 +101,11 @@ impl MainWindow {
             stack.add_named(&pane.widget(), Some(id));
         }
         let unavailable_button = gtk::Button::builder().halign(gtk::Align::Center).css_classes(["pill", "suggested-action"]).build();
-        let unavailable = adw::StatusPage::builder().icon_name("network-server-symbolic").child(&unavailable_button).build();
+        let unavailable_language = adw::Bin::new();
+        let unavailable_body = gtk::Box::builder().orientation(gtk::Orientation::Vertical).spacing(36).build();
+        unavailable_body.append(&unavailable_button);
+        unavailable_body.append(&adw::Clamp::builder().maximum_size(480).child(&unavailable_language).build());
+        let unavailable = adw::StatusPage::builder().icon_name("network-server-symbolic").child(&unavailable_body).build();
         stack.add_named(&unavailable, Some("unavailable"));
 
         let body = gtk::Box::new(gtk::Orientation::Vertical, 0);
@@ -107,7 +114,7 @@ impl MainWindow {
         let content_view = adw::ToolbarView::new();
         content_view.add_top_bar(&adw::HeaderBar::new());
         content_view.set_content(Some(&body));
-        let content = adw::NavigationPage::new(&content_view, "General");
+        let content = adw::NavigationPage::new(&content_view, tr!("general.title"));
         let split = adw::NavigationSplitView::builder().sidebar(&sidebar_page).content(&content).build();
 
         let setup = SetupView::new(model.clone());
@@ -143,6 +150,7 @@ impl MainWindow {
             banner,
             unavailable,
             unavailable_button,
+            unavailable_language,
             panes,
             services,
             sites,
@@ -241,7 +249,7 @@ impl MainWindow {
     }
 
     fn show(&self, id: &str) {
-        let title = PANES.iter().find(|(pane, _, _)| *pane == id).map_or("", |p| p.1);
+        let title = PANES.iter().find(|(pane, _, _)| *pane == id).map_or("", |p| i18n::translate(p.1));
         self.content.set_title(title);
         self.stack.set_visible_child_name(id);
         self.render();
@@ -284,11 +292,15 @@ impl MainWindow {
         let status = self.model.status();
         let id = self.selected();
         if status.is_none() && id != "about" {
-            self.unavailable.set_title("Flock Is Not Running");
+            self.unavailable.set_title(tr!("settings.flock_is_not_running"));
             self.unavailable
-                .set_description(Some(&self.model.error().unwrap_or_else(|| "Start the daemon to change its settings.".to_owned())));
-            self.unavailable_button.set_label("Start Flock");
+                .set_description(Some(&self.model.error().unwrap_or_else(|| tr!("settings.start_daemon_to_change").to_owned())));
+            self.unavailable_button.set_label(tr!("menu.start_flock"));
             self.unavailable_button.set_sensitive(!self.model.is_restarting());
+            // Built again when the page shows, with the setting as it is now.
+            if self.stack.visible_child_name().as_deref() != Some("unavailable") {
+                self.unavailable_language.set_child(Some(&panes::general::language()));
+            }
             self.stack.set_visible_child_name("unavailable");
             return;
         }

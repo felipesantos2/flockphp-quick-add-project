@@ -1,5 +1,4 @@
 using Flock.Kit;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Flock.Tray.Settings;
@@ -7,47 +6,11 @@ namespace Flock.Tray.Settings;
 /// <summary>
 /// Git worktrees: the daemon serves each worktree of a site at &lt;branch&gt;.&lt;site&gt;.test and sets it
 /// up (dependencies, .env, installs, hooks, optionally a database of its own). A site lists its
-/// worktrees and creates new ones; a
-/// worktree shows its branch and folder, its database and its setup. Its PHP, Node.js, HTTPS and
-/// document root are its site's, so they are only shown here.
+/// worktrees and creates new ones; a worktree shows its branch and folder, its database and its setup
+/// (see WorktreeDetailViewModel). These are its dialogs and jobs.
 /// </summary>
 internal sealed partial class SitesPane
 {
-    // The database pickers' modes and their labels, in their order.
-    internal static readonly string[] DatabaseModes = [Status.WorktreeDatabase.Shared, Status.WorktreeDatabase.Copy, Status.WorktreeDatabase.Fresh];
-    internal static readonly string[] DatabaseChoices = ["The site's", "A copy of the site's", "A new, empty one"];
-
-    /// <summary>A site's worktrees (each selects it) and New Worktree.</summary>
-    private StackPanel Worktrees(Status.Site site)
-    {
-        var section = Section("Worktrees");
-        var worktrees = Model.Status?.WorktreesOf(site.Name) ?? [];
-        foreach (var worktree in worktrees)
-        {
-            var name = worktree.Name;
-            var link = Ui.Link(worktree.WorktreeLabel, () => Select(name));
-            link.Padding = new Thickness(0);
-            ToolTipService.SetToolTip(link, worktree.Path);
-            var domain = Ui.Caption(worktree.Domain, Ui.TertiaryText, wrap: false);
-            section.Children.Add(Ui.Spread(Ui.Row(8, link, domain), WorktreeSummary(worktree)));
-        }
-        if (worktrees.Count == 0)
-        {
-            section.Children.Add(Ui.Caption($"Every git worktree of the project is served at <branch>.{site.Domain}, with its own dependencies and .env.", Ui.TertiaryText));
-        }
-        section.Children.Add(Ui.Button("New Worktree…", () => Start(site.Name, () => NewWorktree(site)), glyph: Ui.GlyphAdd));
-        return section;
-    }
-
-    /// <summary>A worktree's state in its site's list: its setup, or its own database.</summary>
-    private static UIElement WorktreeSummary(Status.Site worktree) => worktree.Worktree switch
-    {
-        { IsBusy: true } setup => Ui.Row(6, new ProgressRing { Width = 12, Height = 12 }, Ui.Caption(setup.Step.Length > 0 ? setup.Step : "Setting up…", wrap: false)),
-        { IsFailed: true } => Ui.Caption("Setup failed", Ui.Critical, wrap: false),
-        { HasOwnDatabase: true } setup => Ui.Badge(setup.DbMode.Length > 0 ? setup.DbMode : "own database", Ui.Tone.Neutral),
-        _ => Ui.Row(0),
-    };
-
     /// <summary>Asks for the new worktree in a dialog, then creates it; a failure shows in the dialog.</summary>
     private async Task NewWorktree(Status.Site site)
     {
@@ -55,10 +18,10 @@ internal sealed partial class SitesPane
         var form = new NewWorktreeView(site);
         var dialog = new ContentDialog
         {
-            Title = $"New worktree of {site.Name}",
+            Title = Localization.Format(Strings.Worktrees_NewTitle, site.Name),
             Content = form,
-            PrimaryButtonText = "Create",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = Strings.Worktrees_Create,
+            CloseButtonText = Strings.Common_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             XamlRoot = Window.XamlRoot,
         };
@@ -75,7 +38,7 @@ internal sealed partial class SitesPane
             }
             args.Cancel = true;
             var (name, start, db) = (form.Branch, form.Start, form.Database);
-            job = new WorktreeJobView(dialog, Model, $"New Worktree of {site.Name}");
+            job = new WorktreeJobView(dialog, Model, Localization.Format(Strings.Worktrees_NewTitle, site.Name));
             run = job.RunAsync(cancellationToken => Model.Sites.CreateWorktreeAsync(site.Name, name, start, db, cancellationToken));
         };
         var load = form.LoadBranchesAsync(Model.Sites, token);
@@ -91,217 +54,53 @@ internal sealed partial class SitesPane
         }
     }
 
-    /// <summary>
-    /// The selected worktree: its branch, folder and address, its site's settings (read-only), its
-    /// database and its setup.
-    /// </summary>
-    private Border WorktreeDetail(Status.Site worktree)
-    {
-        var parent = worktree.Parent!;
-        var hasParent = Model.Status?.Sites.Any(s => s.Name == parent) == true;
-        var label = worktree.WorktreeLabel;
-        var panel = new StackPanel { Spacing = 20 };
-
-        // Header: branch, address and folder, and the worktree's actions.
-        var heading = Ui.Column(2, Ui.Row(8, Ui.Text(label, "SubtitleTextBlockStyle", wrap: false), Ui.Badge("Worktree", Ui.Tone.Neutral)));
-        if (worktree.Url is { } url)
-        {
-            var link = Ui.Link(url, () => Model.Open(worktree));
-            link.Padding = new Thickness(0);
-            heading.Children.Add(link);
-        }
-        var path = Ui.Caption(worktree.Path, Ui.TertiaryText, wrap: false);
-        ToolTipService.SetToolTip(path, worktree.Path);
-        heading.Children.Add(path);
-
-        var open = Ui.IconButton(Ui.GlyphOpen, $"Open {worktree.Url ?? worktree.Domain}", () => Model.Open(worktree));
-        open.IsEnabled = worktree.Url is not null;
-        var actions = Ui.Row(0, open, Ui.IconButton(Ui.GlyphDelete, "Remove worktree", () => Start(worktree.Name, () => RemoveWorktree(worktree))));
-        actions.VerticalAlignment = VerticalAlignment.Top;
-        var header = new Grid { ColumnSpacing = 8 };
-        header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        Grid.SetColumn(actions, 1);
-        header.Children.Add(heading);
-        header.Children.Add(actions);
-        panel.Children.Add(header);
-        if (worktree.Problem is { } problem)
-        {
-            panel.Children.Add(Warning(problem));
-        }
-
-        // Worktree: its branch, folder and site.
-        var folder = new Grid { ColumnSpacing = 4 };
-        folder.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        folder.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var folderText = Ui.Text(worktree.Path, wrap: false);
-        folderText.TextTrimming = TextTrimming.CharacterEllipsis;
-        folderText.VerticalAlignment = VerticalAlignment.Center;
-        ToolTipService.SetToolTip(folderText, worktree.Path);
-        var reveal = Ui.IconButton(Ui.GlyphFolder, "Show in Explorer", () => Model.Reveal(worktree.Path));
-        reveal.Padding = new Thickness(4);
-        Grid.SetColumn(reveal, 1);
-        folder.Children.Add(folderText);
-        folder.Children.Add(reveal);
-        UIElement address = worktree.Url is { } shown ? WorktreeLink(shown, () => Model.Open(worktree)) : Ui.Text(worktree.Domain, wrap: false);
-        UIElement site = hasParent ? WorktreeLink(parent, () => Select(parent)) : Ui.Text(parent, wrap: false);
-        panel.Children.Add(Section("Worktree",
-            Field("Branch", Ui.Text(worktree.Branch.Length > 0 ? worktree.Branch : "None (detached HEAD)", wrap: false)),
-            Field("Folder", folder),
-            Field("URL", address),
-            Field("Site", site)));
-
-        // Settings: the site's, so they are changed there.
-        var settings = Section("Settings");
-        if (!worktree.IsNode)
-        {
-            settings.Children.Add(Field("PHP", Ui.Text($"PHP {worktree.Php}", wrap: false)));
-        }
-        settings.Children.Add(Field("Node.js", Ui.Text(worktree.Node is { Length: > 0 } node ? $"Node {node}" : "None", wrap: false)));
-        settings.Children.Add(Field("HTTPS", Ui.Text(worktree.Secured ? "On" : "Off", wrap: false)));
-        settings.Children.Add(Ui.Caption(worktree.IsNode
-            ? $"Uses {parent}'s settings: Node.js and HTTPS (a version the branch pins applies too). Change them on {parent}."
-            : $"Uses {parent}'s settings: PHP, Node.js, HTTPS and the document root (versions the branch pins apply too). Change them on {parent}.", Ui.TertiaryText));
-        panel.Children.Add(settings);
-        if (worktree.IsNode)
-        {
-            panel.Children.Add(DevServer(worktree));
-        }
-
-        panel.Children.Add(WorktreeDatabase(worktree));
-        panel.Children.Add(WorktreeSetup(worktree));
-
-        var card = Ui.Card(panel, new Thickness(20, 16, 16, 20));
-        card.VerticalAlignment = VerticalAlignment.Top;
-        return card;
-    }
-
-    private static HyperlinkButton WorktreeLink(string text, Action onClick)
-    {
-        var link = Ui.Link(text, onClick);
-        link.Padding = new Thickness(0);
-        return link;
-    }
-
-    /// <summary>The worktree's database: the site's or its own, and a picker that switches it.</summary>
-    private StackPanel WorktreeDatabase(Status.Site worktree)
-    {
-        var setup = worktree.Worktree;
-        var picker = new ComboBox { MinWidth = 150, PlaceholderText = "Project default" };
-        foreach (var item in DatabaseChoices)
-        {
-            picker.Items.Add(item);
-        }
-        // A mode left to flock.yml is unknown here, unless the worktree uses the site's database.
-        var selected = Array.IndexOf(DatabaseModes, setup?.DbMode ?? "");
-        if (selected < 0 && setup is not { HasOwnDatabase: true })
-        {
-            selected = 0;
-        }
-        picker.SelectedIndex = selected;
-        picker.IsEnabled = setup is { IsBusy: false };
-        picker.SelectionChanged += (_, _) =>
-        {
-            if (picker.SelectedIndex < 0 || picker.SelectedIndex == selected)
-            {
-                return;
-            }
-            var mode = DatabaseModes[picker.SelectedIndex];
-            // Shown again once the daemon has switched it; until then, and when cancelled, the current one.
-            picker.SelectedIndex = selected;
-            Start(worktree.Name, () => SwitchDatabase(worktree, mode));
-        };
-        Ui.AutomationName(picker, "Database");
-        if (setup is null)
-        {
-            ToolTipService.SetToolTip(picker, "Set the worktree up first.");
-        }
-
-        var current = setup is { HasOwnDatabase: true } ? setup.Database : "The site's";
-        var section = Section("Database", Field("Current", Ui.Text(current, wrap: false, selectable: true)), Field("Database", picker));
-        section.Children.Add(Ui.Caption("With the site's database, migrations you run in the worktree change the site's too.", Ui.TertiaryText));
-        return section;
-    }
-
     /// <summary>Confirms switching the worktree's database (dropping its own), then switches it as the worktree's job.</summary>
     private async Task SwitchDatabase(Status.Site worktree, string mode)
     {
         var label = worktree.WorktreeLabel;
         var parent = worktree.Parent;
-        var what = mode switch
-        {
-            Status.WorktreeDatabase.Copy => $"a copy of {parent}'s database",
-            Status.WorktreeDatabase.Fresh => "an empty database",
-            _ => $"{parent}'s database",
-        };
         if (worktree.Worktree is { HasOwnDatabase: true } setup)
         {
-            if (!await Window.Confirm($"Drop {setup.Database}?", $"{label} then uses {what}. Its database {setup.Database} is dropped, with its data.", "Switch", destructive: true))
+            var dropped = mode switch
+            {
+                Status.WorktreeDatabase.Copy => Strings.Worktrees_DropDetailsCopy,
+                Status.WorktreeDatabase.Fresh => Strings.Worktrees_DropDetailsFresh,
+                _ => Strings.Worktrees_DropDetailsShared,
+            };
+            if (!await Window.Confirm(Localization.Format(Strings.Worktrees_DropQuestion, setup.Database), Localization.Format(dropped, label, parent, setup.Database),
+                    Strings.Worktrees_Switch, destructive: true))
             {
                 return;
             }
         }
         else
         {
-            var details = mode switch
+            var (question, details) = mode switch
             {
-                Status.WorktreeDatabase.Copy => "Flock copies the site's database and runs the branch's new migrations on it.",
-                Status.WorktreeDatabase.Fresh => "Flock creates an empty database and runs the migrations.",
-                _ => "Migrations you run in the worktree then change the site's database too.",
+                Status.WorktreeDatabase.Copy => (Strings.Worktrees_GiveCopyQuestion, Strings.Worktrees_GiveCopyDetails),
+                Status.WorktreeDatabase.Fresh => (Strings.Worktrees_GiveFreshQuestion, Strings.Worktrees_GiveFreshDetails),
+                _ => (Strings.Worktrees_GiveSharedQuestion, Strings.Worktrees_GiveSharedDetails),
             };
-            if (!await Window.Confirm($"Give {label} {what}?", details, "Switch"))
+            if (!await Window.Confirm(Localization.Format(question, label, parent), details, Strings.Worktrees_Switch))
             {
                 return;
             }
         }
-        await FollowJob($"Switching {label}'s Database", worktree.Path, token => Model.Sites.SwitchWorktreeDatabaseAsync(worktree.Name, worktree.Path, mode, token));
+        await FollowJob(Localization.Format(Strings.Worktrees_SwitchingDatabase, label), worktree.Path, token => Model.Sites.SwitchWorktreeDatabaseAsync(worktree.Name, worktree.Path, mode, token));
     }
 
-    /// <summary>The worktree's setup: queued, running (the step), set up or failed (why), with its log and Run Setup Again.</summary>
-    private StackPanel WorktreeSetup(Status.Site worktree)
+    /// <summary>Sets the worktree up (again: copies what's missing, installs, sets up the database and runs the hooks again).</summary>
+    private Task SetUpWorktree(Status.Site worktree, bool again) =>
+        FollowJob(Localization.Format(Strings.Worktrees_SettingUpTitle, worktree.WorktreeLabel), worktree.Path, token => Model.Sites.SetupWorktreeAsync(worktree.Name, worktree.Path, again, token));
+
+    /// <summary>The log of the worktree's setup, followed while it runs.</summary>
+    private Task ShowSetupLog(Status.Site worktree)
     {
-        var section = Section("Setup");
-        if (worktree.Worktree is not { } setup)
-        {
-            section.Children.Add(Ui.Caption("Flock serves this worktree, but hasn't set it up: its dependencies, .env and database are as they were."));
-            section.Children.Add(Ui.Button("Set Up", () => Start(worktree.Name, () => FollowJob($"Setting Up {worktree.WorktreeLabel}", worktree.Path,
-                token => Model.Sites.SetupWorktreeAsync(worktree.Name, worktree.Path, again: false, token)))));
-            return section;
-        }
-
-        if (setup.IsBusy)
-        {
-            var step = setup.State == Status.WorktreeState.Queued ? "Waiting for another setup to finish…"
-                : setup.Step.Length > 0 ? setup.Step + "…" : "Setting up…";
-            section.Children.Add(Ui.Caption(step, wrap: false));
-            section.Children.Add(new ProgressBar { IsIndeterminate = true, HorizontalAlignment = HorizontalAlignment.Left, Width = 320 });
-        }
-        else if (setup.IsFailed)
-        {
-            section.Children.Add(Warning(setup.Error.Length > 0 ? setup.Error : "The setup failed."));
-            section.Children.Add(Ui.Caption("The worktree is still served."));
-        }
-        else
-        {
-            section.Children.Add(Ui.Row(6, Ui.StatusDot(true), Ui.Caption("Set up", wrap: false)));
-        }
-
-        var buttons = Ui.Row(8);
-        if (setup.Log.Length > 0)
-        {
-            var name = worktree.Name;
-            var log = setup.Log;
-            buttons.Children.Add(Ui.Button("Show Log", () => Start("log:" + name, () => JobLogDialog.ShowAsync(Window, $"Setup of {worktree.WorktreeLabel}",
-                token => Model.Client.ServiceLogAsync(log, 400, token),
-                () => Model.Status?.Sites.FirstOrDefault(s => s.Name == name)?.Worktree?.IsBusy == true))));
-        }
-        var again = Ui.Button("Run Setup Again", () => Start(worktree.Name, () => FollowJob($"Setting Up {worktree.WorktreeLabel}", worktree.Path,
-            token => Model.Sites.SetupWorktreeAsync(worktree.Name, worktree.Path, again: true, token))),
-            tooltip: "Copy what's missing, install, set up the database and run the hooks again");
-        again.IsEnabled = !setup.IsBusy;
-        buttons.Children.Add(again);
-        section.Children.Add(buttons);
-        return section;
+        var name = worktree.Name;
+        var log = worktree.Worktree?.Log ?? "";
+        return JobLogDialog.ShowAsync(Window, Localization.Format(Strings.Worktrees_SetupLogTitle, worktree.WorktreeLabel),
+            token => Model.Client.ServiceLogAsync(log, 400, token),
+            () => Model.Status?.Sites.FirstOrDefault(s => s.Name == name)?.Worktree?.IsBusy == true);
     }
 
     /// <summary>Starts a job of the worktree at path (its error, or null) and follows it in a progress dialog.</summary>
@@ -315,24 +114,28 @@ internal sealed partial class SitesPane
     private async Task RemoveWorktree(Status.Site worktree)
     {
         var label = worktree.WorktreeLabel;
-        var details = $"Flock runs its before_delete hook and deletes {worktree.Path}"
-            + (worktree.Worktree is { HasOwnDatabase: true } setup ? $" and its database {setup.Database}." : ".")
-            + (worktree.Branch.Length > 0 ? $" The branch {worktree.Branch} stays." : "");
-        if (!await Window.Confirm($"Remove {label}?", details, "Remove", destructive: true))
+        var details = worktree.Worktree is { HasOwnDatabase: true } setup
+            ? Localization.Format(Strings.Worktrees_RemoveDetailsDatabase, worktree.Path, setup.Database)
+            : Localization.Format(Strings.Worktrees_RemoveDetails, worktree.Path);
+        if (worktree.Branch.Length > 0)
+        {
+            details += " " + Localization.Format(Strings.Worktrees_BranchStays, worktree.Branch);
+        }
+        if (!await Window.Confirm(Localization.Format(Strings.Common_RemoveQuestion, label), details, Strings.Common_Remove, destructive: true))
         {
             return;
         }
         var error = await Model.Sites.RemoveWorktreeAsync(worktree.Name, worktree.Path, force: false);
         if (error is not null)
         {
-            if (!await Window.Confirm($"Couldn't remove {label}", error, "Remove Anyway", destructive: true))
+            if (!await Window.Confirm(Localization.Format(Strings.Worktrees_CouldNotRemove, label), error, Strings.Worktrees_RemoveAnyway, destructive: true))
             {
                 return;
             }
             error = await Model.Sites.RemoveWorktreeAsync(worktree.Name, worktree.Path, force: true);
             if (error is not null)
             {
-                await Ui.Inform(Window.XamlRoot, $"Couldn't remove {label}", error);
+                await Ui.Inform(Window.XamlRoot, Localization.Format(Strings.Worktrees_CouldNotRemove, label), error);
                 return;
             }
         }
@@ -341,8 +144,4 @@ internal sealed partial class SitesPane
             Select(parent);
         }
     }
-
-    // Windows paths: either slash, any case.
-    private static bool SamePath(string a, string b) =>
-        string.Equals(a.Replace('/', '\\').TrimEnd('\\'), b.Replace('/', '\\').TrimEnd('\\'), StringComparison.OrdinalIgnoreCase);
 }

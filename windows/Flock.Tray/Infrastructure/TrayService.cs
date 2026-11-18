@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Flock.Kit;
 using Microsoft.Extensions.Logging;
 
 namespace Flock.Tray.Infrastructure;
@@ -452,7 +453,7 @@ public sealed class TrayService : ITrayIcon, IDisposable
         logger?.LogError(error, "Tray operation {Operation} failed.", operation);
         try
         {
-            Failure?.Invoke($"The Flock notification icon could not complete {operation}.");
+            Failure?.Invoke(Localization.Format(Strings.Menu_Failure, operation));
         }
         catch (Exception callbackError)
         {

@@ -39,7 +39,7 @@ struct PostgresDetail: View {
                         ServiceInfo(service: service)
                     }
                 } else {
-                    DetailHeader(title: "PostgreSQL", symbol: "cylinder.split.1x2.fill", color: .blue, status: "Loading…")
+                    DetailHeader(title: "PostgreSQL", symbol: "cylinder.split.1x2.fill", color: .blue, status: String(localized: "common.loading"))
                     ProgressView().frame(maxWidth: .infinity).padding(.top, 30)
                 }
             }
@@ -57,22 +57,22 @@ struct PostgresDetail: View {
         .sheet(item: extensionsState.projectedValue) { major in
             PostgresExtensionsSheet(major: major.major)
         }
-        .alert("Also install the extensions of PostgreSQL \(store.postgres?.active ?? "")?",
+        .alert("services.postgres.also_install_the_extensions_of \(store.postgres?.active ?? "")",
                isPresented: Binding(get: { installWithState.wrappedValue != nil }, set: { if !$0 { installWithState.wrappedValue = nil } }),
                presenting: installWithState.wrappedValue) { target in
             let id = target.major
             let extensions = store.postgres?.activeMajor?.extensions ?? []
-            Button("Install with Extensions") {
+            Button("services.postgres.install_with_extensions") {
                 Task { await store.performOnPostgres(id, .installing) { try await $0.installPostgres(id, extensions: extensions) } }
             }
             .keyboardShortcut(.defaultAction)
-            Button("PostgreSQL Only") {
+            Button("services.postgres.postgresql_only") {
                 Task { await store.performOnPostgres(id, .installing) { try await $0.installPostgres(id) } }
             }
-            Button("Cancel", role: .cancel) {}
+            Button("common.cancel", role: .cancel) {}
         } message: { target in
             let names = PostgresExtensions.titles(store.postgres?.activeMajor?.extensions ?? [])
-            Text("\(names) for PostgreSQL \(target.major), where they're available for it. You can change this later under Extensions….")
+            Text("services.postgres.extensions_for_postgresql_version_where \(names) \(target.major)")
         }
     }
 
@@ -96,17 +96,17 @@ struct PostgresDetail: View {
             return model.settings.busy(busy).describe(busy.major)
         }
         guard let active = versions.activeMajor else {
-            return versions.hasInstalled ? "No version selected" : "Not installed"
+            return versions.hasInstalled ? String(localized: "services.postgres.no_version_selected") : String(localized: "common.not_installed")
         }
-        let state = versions.running ? "Running" : (versions.enabled ? "Not running" : "Stopped")
-        return "\(state) · PostgreSQL \(active.major) on port \(versions.port)"
+        let state = versions.running ? String(localized: "sites.proxy.running") : (versions.enabled ? String(localized: "sites.proxy.not_running") : String(localized: "services.postgres.stopped"))
+        return "\(state) · " + String(localized: "services.postgres.postgresql_on_port \(active.major) \(String(versions.port))")
     }
 
     // MARK: Versions
 
     private func versionList(_ versions: PostgresVersions) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            DetailSectionTitle(title: "Versions") {
+            DetailSectionTitle(title: "versions.versions") {
                 CheckForUpdatesLine(checkedAt: versions.checkedAt, error: versions.checkError, disabled: locked) {
                     await model.settings.checkForUpdates()
                 }
@@ -132,12 +132,12 @@ struct PostgresDetail: View {
             .card(padding: 0)
 
             if !versions.checkError.isEmpty {
-                Label("Couldn't check for new releases: \(versions.checkError)", systemImage: "exclamationmark.triangle")
+                Label("services.postgres.couldnt_check_for_new_releases \(versions.checkError)", systemImage: "exclamationmark.triangle")
                     .font(.caption).foregroundStyle(.secondary)
                     .lineLimit(2)
                     .help(versions.checkError)
             }
-            Text("Installed versions stay side by side. One runs at a time; each keeps its own databases, and updates within a version keep them.")
+            Text("services.postgres.side_by_side")
                 .font(.caption).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -146,16 +146,16 @@ struct PostgresDetail: View {
     private func switchAlert(_ target: PostgresMajor) -> Alert {
         let current = model.settings.postgres?.active ?? ""
         let own = target.hasData
-            ? "PostgreSQL \(target.major) uses its own databases."
-            : "PostgreSQL \(target.major) starts with a new, empty set of databases."
+            ? String(localized: "services.postgres.postgresql_version_uses_its_own \(target.major)")
+            : String(localized: "services.postgres.postgresql_version_starts_with_a \(target.major)")
         let message = current.isEmpty
             ? own
-            : "PostgreSQL \(current) stops; its databases stay but aren't available until you switch back. \(own)"
+            : String(localized: "services.postgres.postgresql_stops_its_databases_stay \(current)") + " " + own
         let id = target.major
         return Alert(
-            title: Text("Switch to PostgreSQL \(target.major)?"),
+            title: Text("services.postgres.switch_to_postgresql_version \(target.major)"),
             message: Text(message),
-            primaryButton: .default(Text("Switch")) {
+            primaryButton: .default(Text("worktrees.switch")) {
                 Task { await model.settings.performOnPostgres(id, .switching) { try await $0.activatePostgres(id) } }
             },
             secondaryButton: .cancel()
@@ -165,7 +165,7 @@ struct PostgresDetail: View {
     // MARK: Command-line tools
 
     private var commandLineTools: some View {
-        Label("psql, pg_dump and the other command-line tools come with PostgreSQL. In Terminal, Flock uses those of the newest installed version, which work with every version above and with remote servers.",
+        Label("services.postgres.psql_pg_dump_and_the",
               systemImage: "terminal")
             .font(.caption).foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)
@@ -177,10 +177,10 @@ extension PostgresMajor.Busy {
     func describe(_ major: String) -> String {
         switch self {
         case .idle: ""
-        case .installing: "Installing PostgreSQL \(major)…"
-        case .updating: "Updating PostgreSQL \(major)…"
-        case .switching: "Switching to PostgreSQL \(major)…"
-        case .uninstalling: "Uninstalling PostgreSQL \(major)…"
+        case .installing: String(localized: "services.postgres.installing_postgresql_version \(major)")
+        case .updating: String(localized: "services.postgres.updating_postgresql_version \(major)")
+        case .switching: String(localized: "services.postgres.switching_to_postgresql_version \(major)")
+        case .uninstalling: String(localized: "services.postgres.uninstalling_postgresql_version \(major)")
         case let .other(raw): "\(raw.prefix(1).uppercased())\(raw.dropFirst()) PostgreSQL \(major)…"
         }
     }
@@ -189,10 +189,10 @@ extension PostgresMajor.Busy {
     var short: String {
         switch self {
         case .idle: ""
-        case .installing: "Installing…"
-        case .updating: "Updating…"
-        case .switching: "Switching…"
-        case .uninstalling: "Uninstalling…"
+        case .installing: String(localized: "common.installing")
+        case .updating: String(localized: "common.updating")
+        case .switching: String(localized: "common.switching")
+        case .uninstalling: String(localized: "common.uninstalling")
         case let .other(raw): "\(raw.prefix(1).uppercased())\(raw.dropFirst())…"
         }
     }
@@ -211,26 +211,26 @@ private struct ActiveServerCard: View {
 
         VStack(alignment: .leading, spacing: 12) {
             HStack(alignment: .firstTextBaseline, spacing: 8) {
-                Text("PostgreSQL \(major.major)").font(.title2.weight(.semibold))
+                Text("common.postgresql_version \(major.major)").font(.title2.weight(.semibold))
                 Text(major.installed).font(.title3.monospacedDigit()).foregroundStyle(.secondary)
                 Spacer()
                 statePill(busy)
             }
 
-            fact("Databases", major.hasData ? Formats.bytes(major.dataSize) : "None yet")
+            fact("services.postgres.databases", major.hasData ? Formats.bytes(major.dataSize) : String(localized: "services.postgres.none_yet"))
 
             if !major.yanked.isEmpty {
-                Label(major.update ? "This build was withdrawn: \(major.yanked) — update to replace it" : "This build was withdrawn: \(major.yanked)",
+                Label(major.update ? "services.postgres.this_build_was_withdrawn_update \(major.yanked)" : "services.postgres.withdrawn \(major.yanked)",
                       systemImage: "exclamationmark.triangle.fill")
                     .font(.callout).foregroundStyle(.orange)
-                    .help("Flock replaces it as soon as a fixed build is published.")
+                    .help("services.postgres.withdrawn_tooltip")
             }
 
             if major.update, !major.latest.isEmpty {
                 Divider()
-                UpdateStrip(title: major.latest == major.installed ? "A new build of PostgreSQL \(major.latest) is available" : "PostgreSQL \(major.latest) is available",
-                            note: "Your databases stay; PostgreSQL restarts briefly.",
-                            help: "Installs \(major.latest) and restarts PostgreSQL \(major.major). Your databases stay.",
+                UpdateStrip(title: major.latest == major.installed ? String(localized: "services.postgres.new_build_of_postgresql_is \(major.latest)") : String(localized: "services.postgres.postgresql_is_available \(major.latest)"),
+                            note: String(localized: "services.postgres.your_databases_stay_postgresql_restarts"),
+                            help: String(localized: "services.postgres.installs_and_restarts_postgresql_your \(major.latest) \(major.major)"),
                             busy: busy == .updating, disabled: locked) {
                     let id = major.major
                     Task { await model.settings.performOnPostgres(id, .updating) { try await $0.updatePostgres(id) } }
@@ -246,15 +246,15 @@ private struct ActiveServerCard: View {
         if busy != .idle || switching {
             HStack(spacing: 5) {
                 ProgressView().controlSize(.mini)
-                Text(switching ? "Switching…" : busy.short)
+                Text(switching ? String(localized: "common.switching") : busy.short)
             }
             .font(.caption.weight(.medium)).foregroundStyle(.secondary)
         } else {
-            Badge(text: "Active")
+            Badge(text: "services.active")
         }
     }
 
-    private func fact(_ title: String, _ value: String) -> some View {
+    private func fact(_ title: LocalizedStringKey, _ value: String) -> some View {
         HStack(spacing: 6) {
             Text(title).foregroundStyle(.secondary)
             Text(value).monospacedDigit()
@@ -287,22 +287,22 @@ private struct PostgresMajorRow: View {
                     if major.isInstalled {
                         Text(major.installed).monospacedDigit()
                         if major.update, !major.latest.isEmpty {
-                            Text(major.latest == major.installed ? "→ new build" : "→ \(major.latest)").monospacedDigit().foregroundStyle(Color.accentColor)
-                                .help(major.latest == major.installed ? "A new build of PostgreSQL \(major.latest) is available" : "PostgreSQL \(major.latest) is available")
+                            Text(major.latest == major.installed ? "services.postgres.to_new_build" : "common.to_version \(major.latest)").monospacedDigit().foregroundStyle(Color.accentColor)
+                                .help(major.latest == major.installed ? "services.postgres.new_build_of_postgresql_is \(major.latest)" : "services.postgres.postgresql_is_available \(major.latest)")
                         }
                         if !major.yanked.isEmpty {
                             Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-                                .help("This build was withdrawn: \(major.yanked). Flock replaces it as soon as a fixed build is published.")
+                                .help("services.postgres.this_build_was_withdrawn_flock \(major.yanked)")
                         }
                     } else {
-                        Text("Not installed").foregroundStyle(.secondary)
+                        Text("common.not_installed").foregroundStyle(.secondary)
                     }
                     if major.prerelease {
-                        Badge(text: "Pre-release", color: .orange)
-                            .help("PostgreSQL \(major.latest) isn’t released yet — it may not work. Offered on the beta channel.")
+                        Badge(text: "versions.prerelease", color: .orange)
+                            .help("services.postgres.postgresql_isnt_released_yet_it \(major.latest)")
                     }
                     if major.active, major.isInstalled {
-                        Badge(text: "Active")
+                        Badge(text: "services.active")
                     }
                 }
                 .font(.callout)
@@ -331,13 +331,13 @@ private struct PostgresMajorRow: View {
                 .font(.caption)
                 .lineLimit(1)
                 .foregroundStyle(.secondary)
-                .help("Extensions installed for PostgreSQL \(major.major)")
+                .help("services.postgres.extensions_installed_for_postgresql \(major.major)")
         } else if !major.isInstalled && major.hasData {
-            Text("\(Formats.bytes(major.dataSize)) kept")
+            Text("services.postgres.kept \(Formats.bytes(major.dataSize))")
                 .font(.caption)
                 .lineLimit(1)
                 .foregroundStyle(.tertiary)
-                .help("The databases of PostgreSQL \(major.major) are kept. Install it again to use them.")
+                .help("services.postgres.databases_of_postgresql_are_kept \(major.major)")
         }
     }
 
@@ -345,59 +345,59 @@ private struct PostgresMajorRow: View {
     private var actions: some View {
         let store = model.settings
         if !major.isInstalled {
-            Button("Install", action: install)
+            Button("common.install", action: install)
             .controlSize(.small)
             .disabled(locked)
-            .help(major.latest.isEmpty ? "Downloads the newest PostgreSQL \(major.major)" : "Downloads PostgreSQL \(major.latest)")
+            .help(major.latest.isEmpty ? "services.postgres.downloads_the_newest_postgresql \(major.major)" : "services.postgres.downloads_postgresql \(major.latest)")
         } else {
             HStack(spacing: 4) {
                 // The active major's update is in the card above.
                 if major.update, !major.latest.isEmpty, !major.active {
                     // "Update": the row shows the version it goes to ("17.10 → 17.11").
-                    Button("Update") {
+                    Button("common.update") {
                         let id = major.major
                         Task { await store.performOnPostgres(id, .updating) { try await $0.updatePostgres(id) } }
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
                     .disabled(locked)
-                    .help("Installs \(major.latest) in place of \(major.installed). Your databases stay.")
+                    .help("services.postgres.update_tooltip \(major.latest) \(major.installed)")
                 }
                 if !major.active {
-                    Button("Switch…", action: switchTo)
+                    Button("services.switch_ellipsis", action: switchTo)
                         .controlSize(.small)
                         .disabled(locked)
-                        .help("Stops PostgreSQL \(activeMajor) and runs \(major.major) with its own databases")
+                        .help("services.postgres.stops_postgresql_and_runs_with \(activeMajor) \(major.major)")
                 }
                 // An icon, like ⋯: with Update and Switch, a third labelled button doesn't fit.
                 Button(action: extensions) {
                     Image(systemName: "puzzlepiece.extension")
                 }
                 .buttonStyle(.borderless)
-                .accessibilityLabel("Extensions")
-                .help("Extensions of PostgreSQL \(major.major): PostGIS, pgRouting, pgvector, TimescaleDB and your own")
+                .accessibilityLabel("services.postgres.extensions")
+                .help("services.postgres.extensions_of_postgresql_version_postgis \(major.major)")
                 Menu {
                     if major.update, !major.latest.isEmpty {
-                        Button("Update to \(major.latest)") {
+                        Button("general.update_to \(major.latest)") {
                             let id = major.major
                             Task { await store.performOnPostgres(id, .updating) { try await $0.updatePostgres(id) } }
                         }
-                        .help("Your databases stay")
+                        .help("services.postgres.your_databases_stay")
                     }
                     if !major.active {
-                        Button("Switch to PostgreSQL \(major.major)", action: switchTo)
+                        Button("services.postgres.switch_to_postgresql \(major.major)", action: switchTo)
                     }
                     if major.update || !major.active {
                         Divider()
                     }
-                    Button("Uninstall PostgreSQL \(major.major)…", role: .destructive, action: uninstall)
+                    Button("services.postgres.uninstall_postgresql \(major.major)", role: .destructive, action: uninstall)
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
                 .menuStyle(.borderlessButton)
                 .menuIndicator(.hidden)
                 .fixedSize()
-                .help("More")
+                .help("services.more")
                 .disabled(locked)
             }
         }
@@ -419,15 +419,15 @@ private struct EmptyPostgres: View {
         let kept = versions.majors.filter(\.hasData)
 
         if let installing {
-            InstallInvitation(symbol: "cylinder.split.1x2.fill", color: .blue, title: "Installing PostgreSQL \(installing.major)",
-                              message: "Downloading PostgreSQL \(installing.latest.isEmpty ? installing.major : installing.latest) and creating its first databases. This takes about a minute.") {
+            InstallInvitation(symbol: "cylinder.split.1x2.fill", color: .blue, title: String(localized: "services.postgres.installing_postgresql \(installing.major)"),
+                              message: String(localized: "services.postgres.downloading_postgresql_and_creating_its \(installing.latest.isEmpty ? installing.major : installing.latest)")) {
                 ProgressView().progressViewStyle(.linear).frame(maxWidth: 260)
             } footer: {
-                Text("It keeps going when you close this window.")
+                Text("common.it_keeps_going_when_you")
             }
         } else {
-            InstallInvitation(symbol: "cylinder.split.1x2.fill", color: .blue, title: "Install PostgreSQL",
-                              message: "The database for your Laravel apps. You can add other versions later; one runs at a time, and each keeps its own databases.") {
+            InstallInvitation(symbol: "cylinder.split.1x2.fill", color: .blue, title: String(localized: "services.postgres.install_postgresql"),
+                              message: String(localized: "services.postgres.database_for_your_laravel_apps")) {
                 ServiceInstallForm(
                     name: "PostgreSQL",
                     options: versions.majors.map { ServiceInstallForm.Option(id: $0.major, label: optionLabel($0), latest: $0.latest) },
@@ -439,7 +439,7 @@ private struct EmptyPostgres: View {
                 )
             } footer: {
                 if !kept.isEmpty {
-                    Text("Databases of PostgreSQL \(kept.map(\.major).joined(separator: ", ")) are still here — install that version to use them again.")
+                    Text("services.postgres.databases_of_postgresql_are_still \(kept.map(\.major).joined(separator: ", "))")
                 }
             }
         }
@@ -452,7 +452,7 @@ private struct EmptyPostgres: View {
     /// "17 (17.6)", or "17 (17.6) — your databases" when its databases are kept.
     private func optionLabel(_ major: PostgresMajor) -> String {
         let label = major.latest.isEmpty ? major.major : "\(major.major) (\(major.latest))"
-        return major.hasData ? label + " — your databases" : label
+        return major.hasData ? String(localized: "services.postgres.your_databases \(label)") : label
     }
 
     /// The port belongs to PostgreSQL, not to a version, so it is set before the install.
@@ -485,7 +485,7 @@ private struct UninstallPostgresSheet: View {
             HStack(alignment: .top, spacing: 12) {
                 SettingsIcon(symbol: "cylinder.split.1x2.fill", color: .blue, size: 40)
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Uninstall PostgreSQL \(major.major)?").font(.headline)
+                    Text("services.postgres.uninstall_postgresql_version \(major.major)").font(.headline)
                     Text(message)
                         .font(.callout).foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -494,10 +494,10 @@ private struct UninstallPostgresSheet: View {
 
             if major.hasData {
                 VStack(alignment: .leading, spacing: 4) {
-                    Toggle("Also delete its databases (\(Formats.bytes(major.dataSize)))", isOn: deleteDataState.projectedValue)
+                    Toggle("services.postgres.also_delete_databases \(Formats.bytes(major.dataSize))", isOn: deleteDataState.projectedValue)
                         .toggleStyle(.checkbox)
-                    Text(deleteData ? "Every database of PostgreSQL \(major.major) is deleted for good."
-                                    : "Its databases stay, so installing \(major.major) again brings them back.")
+                    Text(deleteData ? "services.postgres.every_database_of_postgresql_is \(major.major)"
+                                    : "services.postgres.its_databases_stay_so_installing \(major.major)")
                         .font(.caption)
                         .foregroundStyle(deleteData ? AnyShapeStyle(Color.red) : AnyShapeStyle(.secondary))
                         .padding(.leading, 20)
@@ -508,9 +508,9 @@ private struct UninstallPostgresSheet: View {
 
             HStack {
                 Spacer()
-                Button("Cancel", role: .cancel) { dismiss() }
+                Button("common.cancel", role: .cancel) { dismiss() }
                     .keyboardShortcut(.cancelAction)
-                Button(deleteData ? "Uninstall and Delete" : "Uninstall", role: .destructive) {
+                Button(deleteData ? "services.postgres.uninstall_and_delete" : "common.uninstall", role: .destructive) {
                     uninstall(deleteData)
                     dismiss()
                 }
@@ -525,12 +525,12 @@ private struct UninstallPostgresSheet: View {
 
     private var message: String {
         guard major.active else {
-            return "Removes the PostgreSQL \(major.installed) server."
+            return String(localized: "services.postgres.removes_the_postgresql_version_server \(major.installed)")
         }
         let next = versions?.majors.first { $0.isInstalled && $0.major != major.major }
         if let next {
-            return "PostgreSQL \(major.major) stops and Flock switches to PostgreSQL \(next.major) with its own databases."
+            return String(localized: "services.postgres.postgresql_version_stops_and_flock \(major.major) \(next.major)")
         }
-        return "PostgreSQL \(major.major) stops, and your sites can't use PostgreSQL until you install a version again."
+        return String(localized: "services.postgres.postgresql_version_stops_and_your \(major.major)")
     }
 }

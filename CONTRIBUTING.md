@@ -34,3 +34,13 @@ needs an approved issue like any other.
 
 The website shows the documentation of released versions only, so a change appears there with the
 next release. A pull request that adds or changes a feature should update its documentation too.
+
+## Translations
+
+The apps' texts live in [`lang/`](lang), a folder per language. A pull request that only adds or
+fixes translations needs no issue, like the docs: edit `lang/<code>/app.json`, or copy
+`lang/en/app.json` to start a new language, run `make i18n` and open a pull request.
+
+A pull request that adds or changes a text in an app needs only the English, in `lang/en/app.json`
+under a key; translations are welcome but not required. Changing a text's meaning needs a new
+key. [`lang/README.md`](lang/README.md) describes the format and the rules for keys.

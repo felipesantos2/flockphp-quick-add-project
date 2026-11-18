@@ -142,7 +142,7 @@ internal sealed class HtmlView : Grid
         {
             if (!IsReleased())
             {
-                shellError.Message = "Can't show HTML. The Microsoft Edge WebView2 Runtime is missing or failed to start.";
+                shellError.Message = Strings.App_NoWebView;
                 shellError.IsOpen = true;
                 App.Log(error);
             }
@@ -209,7 +209,7 @@ internal sealed class HtmlView : Grid
         {
             if (!IsReleased())
             {
-                await ShowHtmlErrorAsync("Can't show this message.");
+                await ShowHtmlErrorAsync(Strings.App_CannotShowMessage);
                 App.Log(error);
             }
         }
@@ -295,7 +295,7 @@ internal sealed class HtmlView : Grid
     {
         if (!IsReleased())
         {
-            shellError.Message = "Could not open this link.";
+            shellError.Message = Strings.App_CouldNotOpenLink;
             shellError.IsOpen = true;
         }
     }

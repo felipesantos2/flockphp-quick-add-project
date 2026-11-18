@@ -231,6 +231,34 @@ private func decode<T: Decodable>(_ type: T.Type, _ json: String) throws -> T {
     #expect(!legacy.supportsFrankenPHP && shop.supportsFrankenPHP)
 }
 
+@Test func decodesASitesReverb() throws {
+    let status = try decode(Status.self, """
+    {"version":"dev","pid":1,"started_at":"2026-10-13T14:10:01Z",
+     "sites":[{"name":"chat","domain":"chat.test","path":"/code/chat","php":"8.4","secured":true,"reverb_available":true,
+               "reverb":{"state":"running","port":23000,"env":["REVERB_HOST=chat.test","REVERB_PORT=443","REVERB_SCHEME=https"],"log":"reverb-chat"}},
+              {"name":"feed","domain":"feed.test","path":"/code/feed","php":"8.4","reverb_available":true,
+               "reverb":{"state":"failed","port":23001,"problem":"reverb:start exited: missing REVERB_APP_KEY","log":"reverb-feed"}},
+              {"name":"shop","domain":"shop.test","path":"/code/shop","php":"8.4","reverb_available":true},
+              {"name":"legacy","domain":"legacy.test","path":"/code/legacy","php":"8.1"}]}
+    """)
+
+    let chat = status.sites[0]
+    #expect(chat.reverbAvailable)
+    let reverb = try #require(chat.reverb)
+    #expect(reverb.state == .running && reverb.port == 23000 && reverb.log == "reverb-chat" && reverb.problem.isEmpty)
+    #expect(reverb.env == ["REVERB_HOST=chat.test", "REVERB_PORT=443", "REVERB_SCHEME=https"])
+
+    let feed = try #require(status.sites[1].reverb)
+    #expect(feed.state == .failed && feed.problem.contains("REVERB_APP_KEY") && feed.env.isEmpty)
+
+    // Installed but turned off, and a daemon from before Reverb.
+    #expect(status.sites[2].reverbAvailable && status.sites[2].reverb == nil)
+    #expect(!status.sites[3].reverbAvailable && status.sites[3].reverb == nil)
+
+    let odd = try decode(Status.SiteReverb.self, #"{"state":"something-new"}"#)
+    #expect(odd.state == .unknown && odd.port == 0 && odd.log.isEmpty)
+}
+
 @Test func decodesANodeSiteAndItsDevServer() throws {
     let status = try decode(Status.self, """
     {"version":"dev","pid":1,"started_at":"2026-10-13T14:10:01Z",

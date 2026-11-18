@@ -23,23 +23,23 @@ struct ServicesPane: View {
 
         VStack(alignment: .leading, spacing: 0) {
             HStack(alignment: .bottom, spacing: 12) {
-                PaneHeader(title: "Services", subtitle: "Databases, caches, search and the tools around your sites. Everything listens on 127.0.0.1 only.")
-                Picker("Show", selection: $filter) {
-                    Text("Installed").tag(ServiceFilter.installed)
-                    Text("All").tag(ServiceFilter.all)
+                PaneHeader(title: "settings.pane.services", subtitle: "services.subtitle")
+                Picker("services.show", selection: $filter) {
+                    Text("common.installed").tag(ServiceFilter.installed)
+                    Text("services.all").tag(ServiceFilter.all)
                 }
                 .pickerStyle(.segmented)
                 .labelsHidden()
                 .fixedSize()
                 .padding(.trailing, 20)
                 .padding(.bottom, 6)
-                .help("Show only installed services, or every service Flock offers")
+                .help("services.filter_tooltip")
             }
 
             HStack(spacing: 0) {
                 List(selection: Binding<Service.ID?>(get: { selected?.id }, set: { model.servicesSelection = $0 })) {
                     ForEach(categories(of: services), id: \.self) { category in
-                        Section(category) {
+                        Section(Self.title(of: category)) {
                             ForEach(services.filter { $0.category == category }) { service in
                                 ServiceRow(service: service, activity: activity(of: service), locked: locked(service)) {
                                     model.servicesSelection = service.id
@@ -59,15 +59,16 @@ struct ServicesPane: View {
                         Button {
                             filter = .all
                         } label: {
-                            Label("More Services…", systemImage: "plus.circle")
+                            Label("services.more_services", systemImage: "plus.circle")
                         }
                         .buttonStyle(.link)
                         .padding(.vertical, 4)
-                        .help("Show every service Flock offers: MySQL, Redis, Meilisearch and more")
+                        .help("services.show_every_service_flock_offers")
                     }
                 }
                 .listStyle(.inset)
-                .frame(width: 230)
+                // Wide enough for "Nainstalovat…" next to a name and its state.
+                .frame(width: 250)
 
                 Divider()
 
@@ -75,7 +76,7 @@ struct ServicesPane: View {
                     if let selected {
                         detail(selected)
                     } else {
-                        ContentUnavailableView("No services", systemImage: "server.rack")
+                        ContentUnavailableView("services.no_services", systemImage: "server.rack")
                     }
                 }
                 .frame(minWidth: 340, maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -86,24 +87,24 @@ struct ServicesPane: View {
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
         }
-        .confirmationDialog("Stop \(confirmStop?.name ?? "")?", isPresented: Binding(get: { confirmStop != nil }, set: { if !$0 { confirmStop = nil } }),
+        .confirmationDialog("services.stop_question \(confirmStop?.name ?? "")", isPresented: Binding(get: { confirmStop != nil }, set: { if !$0 { confirmStop = nil } }),
                             presenting: confirmStop) { service in
-            Button("Stop", role: .destructive) {
+            Button("sites.share.stop", role: .destructive) {
                 let id = service.id
                 Task { await store.performOnServices { try await $0.stopService(id) } }
             }
-            Button("Cancel", role: .cancel) {}
+            Button("common.cancel", role: .cancel) {}
         } message: { service in
-            Text("Your sites can't use \(service.name) until you start it again; it stays stopped after restarts.")
+            Text("services.your_sites_cant_use_service \(service.name)")
         }
         // A flock://install link (AppModel.handle): nothing installs until the user confirms here.
         .alert(linkRequest?.title ?? "", isPresented: Binding(get: { linkRequest != nil }, set: { if !$0 { model.pendingInstall = nil } }),
                presenting: linkRequest) { request in
             if let install = request.confirmation {
-                Button("Install") { self.install(install) }
-                Button("Cancel", role: .cancel) {}
+                Button("common.install") { self.install(install) }
+                Button("common.cancel", role: .cancel) {}
             } else {
-                Button("OK") {}
+                Button("common.ok") {}
             }
         } message: { request in
             Text(request.message)
@@ -190,6 +191,20 @@ struct ServicesPane: View {
         return store.isBusy || activity(of: service) == .working
     }
 
+    /// The categories come from the daemon in English; the ones Flock has are shown translated.
+    private static func title(of category: String) -> String {
+        switch category {
+        case "Core": String(localized: "services.category.core")
+        case "Database": String(localized: "services.category.database")
+        case "Cache & Queue": String(localized: "services.category.cache_queue")
+        case "Search": String(localized: "services.category.search")
+        case "Storage": String(localized: "services.category.storage")
+        case "Mail": String(localized: "services.category.mail")
+        case "Debugging": String(localized: "services.category.debugging")
+        default: category
+        }
+    }
+
     private func categories(of services: [Service]) -> [String] {
         let present = Set(services.map(\.category))
         let ordered = Self.categoryOrder.filter(present.contains)
@@ -221,10 +236,10 @@ private struct ServiceRow: View {
                     switch activity {
                     case .update:
                         Circle().fill(Color.accentColor).frame(width: 6, height: 6)
-                            .help("Update available")
+                            .help("versions.update_available")
                     case .failed:
                         Image(systemName: "exclamationmark.circle.fill").font(.caption).foregroundStyle(.red)
-                            .help("The last install failed")
+                            .help("services.last_install_failed")
                     case .none, .working:
                         EmptyView()
                     }
@@ -242,13 +257,14 @@ private struct ServiceRow: View {
                 ProgressView().controlSize(.small)
             } else if service.installed {
                 if service.stoppable {
-                    Button(service.running ? "Stop" : "Start", action: toggle)
+                    Button(service.running ? "sites.share.stop" : "services.start", action: toggle)
                         .controlSize(.small)
                         .disabled(locked)
                 }
             } else if service.isInstallable, service.available {
-                Button("Install…", action: select)
+                Button("services.install_ellipsis", action: select)
                     .controlSize(.small)
+                    .fixedSize()
             }
         }
         .padding(.vertical, 3)
@@ -259,17 +275,17 @@ private struct ServiceRow: View {
     private var detail: String {
         if !service.installed {
             guard service.isInstallable else { return "" }
-            return service.available ? "Not installed" : "Not available on macOS"
+            return service.available ? String(localized: "common.not_installed") : String(localized: "services.catalog.not_available_on_macos")
         }
         var parts: [String] = []
         if !service.version.isEmpty {
             parts.append(service.version)
         }
         if service.port > 0 {
-            parts.append("Port \(service.port)")
+            parts.append(String(localized: "services.port_number \(String(service.port))"))
         }
         if !service.running {
-            parts.append("Stopped")
+            parts.append(String(localized: "services.postgres.stopped"))
         }
         return parts.joined(separator: " · ")
     }
@@ -334,21 +350,21 @@ struct ServiceInfo: View {
             }
 
             if service.hasConfigurablePort {
-                row("Port") {
+                row("mail.port") {
                     Text(String(service.port)).monospacedDigit().foregroundStyle(.secondary)
-                    Button("Change…") { editingState.wrappedValue = true }
+                    Button("sites.change") { editingState.wrappedValue = true }
                         .controlSize(.small)
                 }
             } else if service.hasFixedPort {
-                row("Port") {
-                    Text(String(service.port) + " · set by `flock install`").monospacedDigit().foregroundStyle(.secondary)
+                row("mail.port") {
+                    Text(String(localized: "services.port_set_by_flock_install \(String(service.port))")).monospacedDigit().foregroundStyle(.secondary)
                 }
             }
 
             if service.isDatabase, let url = URL(string: service.url),
                let tablePlus = NSWorkspace.shared.urlForApplication(withBundleIdentifier: "com.tinyapp.TablePlus") {
-                row("TablePlus") {
-                    Button("Open") {
+                row("common.tableplus") {
+                    Button("common.open") {
                         NSWorkspace.shared.open([url], withApplicationAt: tablePlus, configuration: NSWorkspace.OpenConfiguration())
                     }
                     .controlSize(.small)
@@ -356,8 +372,8 @@ struct ServiceInfo: View {
             }
 
             if !service.log.isEmpty {
-                row("Log") {
-                    Button("Open") {
+                row("services.log") {
+                    Button("common.open") {
                         let file = FlockPaths.root.appendingPathComponent("log/\(service.log).log")
                         NSWorkspace.shared.open(file)
                     }
@@ -367,14 +383,14 @@ struct ServiceInfo: View {
 
             if !service.env.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Environment Variables").font(.subheadline.weight(.medium))
+                    Text("mail.environment_variables_title_case").font(.subheadline.weight(.medium))
                     CodeBlock(text: service.env)
                 }
             }
 
             if !service.url.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Connection").font(.subheadline.weight(.medium))
+                    Text("services.connection").font(.subheadline.weight(.medium))
                     CodeBlock(text: service.url)
                 }
             }
@@ -400,20 +416,20 @@ struct ServiceInfo: View {
         switch service.id {
         case "web":
             return service.running
-                ? "Caddy serves every site over HTTPS (https://app.\(tld)) with certificates from Flock's local certificate authority, which `flock install` trusts."
-                : "Sites don't open while the web server is down. Its log may tell why; `flock restart` starts it again."
+                ? String(localized: "services.web_running \(tld)")
+                : String(localized: "services.web_down")
         case "dns":
             if !dnsBroken {
-                return "macOS sends every name under .\(tld) here (/etc/resolver/\(tld), set up by `flock install`), so any subdomain of a site works (tenant1.app.\(tld), a.b.app.\(tld)) without adding it."
+                return String(localized: "services.macos_sends_every_name_under \(tld) \(tld) \(tld) \(tld)")
             }
-            let problem = service.problem.isEmpty ? "the DNS server isn't running" : service.problem
-            return "*.\(tld) doesn't resolve: \(problem). macOS has no hosts-file fallback, so sites don't open until it does; `flock install` sets /etc/resolver/\(tld) up again."
+            let problem = service.problem.isEmpty ? String(localized: "services.dns_server_isnt_running") : service.problem
+            return String(localized: "general.doesnt_resolve_macos_has_no \(tld) \(problem) \(tld)")
         default:
             return nil
         }
     }
 
-    private func row(_ title: String, @ViewBuilder trailing: () -> some View) -> some View {
+    private func row(_ title: LocalizedStringKey, @ViewBuilder trailing: () -> some View) -> some View {
         HStack {
             Text(title).font(.subheadline.weight(.medium))
             Spacer()
@@ -441,17 +457,17 @@ private struct PortSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("\(service.name) Port").font(.headline)
+            Text("services.service_port \(service.name)").font(.headline)
             Form {
-                TextField("Port", text: portState.projectedValue)
+                TextField("mail.port", text: portState.projectedValue)
             }
-            Text("Ports 1024–65535. Update the port in your projects' .env files too.")
+            Text("services.port_details")
                 .font(.caption).foregroundStyle(.secondary)
             HStack {
                 Spacer()
-                Button("Cancel", role: .cancel) { dismiss() }
+                Button("common.cancel", role: .cancel) { dismiss() }
                     .keyboardShortcut(.cancelAction)
-                Button("Save") {
+                Button("common.save") {
                     if let port {
                         save(port)
                     }

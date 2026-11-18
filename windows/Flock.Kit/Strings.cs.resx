@@ -1,0 +1,2467 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generated from lang/ by tools/i18n: edit lang/*/app.json, then run make i18n. -->
+<root>
+    <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+        <xsd:element name="root" msdata:IsDataSet="true">
+            <xsd:complexType>
+                <xsd:choice maxOccurs="unbounded">
+                    <xsd:element name="data">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
+                            <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+                            <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="resheader">
+                        <xsd:complexType>
+                            <xsd:sequence>
+                                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                            </xsd:sequence>
+                            <xsd:attribute name="name" type="xsd:string" use="required" />
+                        </xsd:complexType>
+                    </xsd:element>
+                </xsd:choice>
+            </xsd:complexType>
+        </xsd:element>
+    </xsd:schema>
+    <resheader name="resmimetype">
+        <value>text/microsoft-resx</value>
+    </resheader>
+    <resheader name="version">
+        <value>2.0</value>
+    </resheader>
+    <resheader name="reader">
+        <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <resheader name="writer">
+        <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    </resheader>
+    <data name="About_AlsoDeleteData" xml:space="preserve">
+        <value>Smazat také nastavení a databáze mých webů</value>
+    </data>
+    <data name="About_App" xml:space="preserve">
+        <value>Aplikace</value>
+    </data>
+    <data name="About_DaemonNotRunning" xml:space="preserve">
+        <value>neběží</value>
+    </data>
+    <data name="About_DataFolder" xml:space="preserve">
+        <value>Složka s daty</value>
+    </data>
+    <data name="About_DiscordDescription" xml:space="preserve">
+        <value>Ptejte se, sdílejte zpětnou vazbu a sledujte, co chystáme.</value>
+    </data>
+    <data name="About_Documentation" xml:space="preserve">
+        <value>Dokumentace Flocku</value>
+    </data>
+    <data name="About_FoundBug" xml:space="preserve">
+        <value>Našli jste chybu?</value>
+    </data>
+    <data name="About_FoundBugDescription" xml:space="preserve">
+        <value>Otevře nové issue na GitHubu s vyplněnými verzemi.</value>
+    </data>
+    <data name="About_Join" xml:space="preserve">
+        <value>Připojit se</value>
+    </data>
+    <data name="About_License" xml:space="preserve">
+        <value>Licence</value>
+    </data>
+    <data name="About_LicenseDescription" xml:space="preserve">
+        <value>Copyright © Guava s.r.o. Licencováno pod AGPL-3.0.</value>
+    </data>
+    <data name="About_NotInstalledWithSetup" xml:space="preserve">
+        <value>Toto sestavení Flocku nebylo nainstalováno pomocí Flock-Setup.exe. Spusťte v terminálu `flock uninstall` a smažte složku aplikace.</value>
+    </data>
+    <data name="About_ReportIssue" xml:space="preserve">
+        <value>Nahlásit problém</value>
+    </data>
+    <data name="About_Sponsor" xml:space="preserve">
+        <value>Sponzorovat</value>
+    </data>
+    <data name="About_StarOnGithub" xml:space="preserve">
+        <value>Dát hvězdičku na GitHubu</value>
+    </data>
+    <data name="About_Support" xml:space="preserve">
+        <value>Podpořte Flock</value>
+    </data>
+    <data name="About_SupportDescription" xml:space="preserve">
+        <value>Flock je zdarma a open source, navždy. Sponzorství pomáhá udržet jeho vývoj.</value>
+    </data>
+    <data name="About_Tagline" xml:space="preserve">
+        <value>Nativní lokální vývojové prostředí pro Laravel.</value>
+    </data>
+    <data name="About_Uninstall" xml:space="preserve">
+        <value>Odinstalace</value>
+    </data>
+    <data name="About_UninstallDescription" xml:space="preserve">
+        <value>Zastaví Flock a odebere ho z tohoto počítače. Vaše weby, databáze a nastavení zůstanou zachovány.</value>
+    </data>
+    <data name="About_UninstallDetails" xml:space="preserve">
+        <value>Flock se zastaví a odebere z proměnné PATH spolu se svými verzemi PHP a Node.js, certifikáty, logy a mezipamětí. Windows požádá o oprávnění k odebrání pomocníka pro soubor hosts a důvěryhodného certifikátu Flocku.</value>
+    </data>
+    <data name="About_UninstallFlock" xml:space="preserve">
+        <value>Odinstalovat Flock</value>
+    </data>
+    <data name="About_UninstallFlockEllipsis" xml:space="preserve">
+        <value>Odinstalovat Flock…</value>
+    </data>
+    <data name="About_UninstallKeeps" xml:space="preserve">
+        <value>Nastavení vašich webů a databáze PostgreSQL a Redis zůstanou v {0}, takže po přeinstalaci navážete, kde jste skončili — pokud je také nesmažete:</value>
+    </data>
+    <data name="About_UninstallQuestion" xml:space="preserve">
+        <value>Odinstalovat Flock?</value>
+    </data>
+    <data name="Ai_AddToSettings" xml:space="preserve">
+        <value>Přidejte toto do nastavení MCP daného klienta.</value>
+    </data>
+    <data name="Ai_AddedOnce" xml:space="preserve">
+        <value>Stačí přidat jednou a Flock funguje v každém projektu. Po přidání Flocku klienta restartujte nebo znovu načtěte jeho MCP servery.</value>
+    </data>
+    <data name="Ai_Clients" xml:space="preserve">
+        <value>AI klienti</value>
+    </data>
+    <data name="Ai_FlockAdded" xml:space="preserve">
+        <value>Flock je přidán</value>
+    </data>
+    <data name="Ai_OtherClients" xml:space="preserve">
+        <value>Další klienti</value>
+    </data>
+    <data name="Ai_Subtitle" xml:space="preserve">
+        <value>Umožněte AI agentům jako Claude Code a Cursor pracovat s Flockem: s URL a verzemi PHP vašich webů, logy, dumpy a poštou i s instalací verzí a služeb.</value>
+    </data>
+    <data name="App_CannotShowMessage" xml:space="preserve">
+        <value>Tuto zprávu nelze zobrazit.</value>
+    </data>
+    <data name="App_Conflict_AnswersFor" xml:space="preserve">
+        <value>odpovídá za {0} ({1})</value>
+    </data>
+    <data name="App_Conflict_Both" xml:space="preserve">
+        <value>{0} a {1}</value>
+    </data>
+    <data name="App_Conflict_Detail" xml:space="preserve">
+        <value>{0} {1}.</value>
+    </data>
+    <data name="App_Conflict_Port" xml:space="preserve">
+        <value>port {0} ({1})</value>
+    </data>
+    <data name="App_Conflict_Quit" xml:space="preserve">
+        <value>Ukončete {0}</value>
+    </data>
+    <data name="App_Conflict_Uses" xml:space="preserve">
+        <value>používá {0}</value>
+    </data>
+    <data name="App_CouldNotOpen" xml:space="preserve">
+        <value>Tuto položku se nepodařilo otevřít.</value>
+    </data>
+    <data name="App_CouldNotOpenConnection" xml:space="preserve">
+        <value>Toto databázové připojení se nepodařilo otevřít.</value>
+    </data>
+    <data name="App_CouldNotOpenLink" xml:space="preserve">
+        <value>Tento odkaz se nepodařilo otevřít.</value>
+    </data>
+    <data name="App_CouldNotRelaunch" xml:space="preserve">
+        <value>Flock se nepodařilo znovu spustit: {0}</value>
+    </data>
+    <data name="App_CouldNotRestart" xml:space="preserve">
+        <value>Flock se nepodařilo restartovat ({0}).</value>
+    </data>
+    <data name="App_CouldNotReveal" xml:space="preserve">
+        <value>Tuto položku se nepodařilo zobrazit v Průzkumníkovi.</value>
+    </data>
+    <data name="App_CouldNotRun" xml:space="preserve">
+        <value>Nepodařilo se spustit {0}: {1}</value>
+    </data>
+    <data name="App_CouldNotStart" xml:space="preserve">
+        <value>Flock se nepodařilo spustit</value>
+    </data>
+    <data name="App_CouldNotStartDetails" xml:space="preserve">
+        <value>{0}
+
+Podrobnosti najdete v %LocalAppData%\Flock\tray.log.</value>
+    </data>
+    <data name="App_DidNotStart" xml:space="preserve">
+        <value>Proces se nespustil.</value>
+    </data>
+    <data name="App_EmptyAnswer" xml:space="preserve">
+        <value>prázdná odpověď z {0}</value>
+    </data>
+    <data name="App_HttpStatus" xml:space="preserve">
+        <value>Flock odpověděl kódem HTTP {0}</value>
+    </data>
+    <data name="App_NoWebView" xml:space="preserve">
+        <value>HTML nelze zobrazit. Microsoft Edge WebView2 Runtime chybí nebo se nepodařilo spustit.</value>
+    </data>
+    <data name="App_NotRunning" xml:space="preserve">
+        <value>Flock neběží</value>
+    </data>
+    <data name="App_OutcomeUnknown" xml:space="preserve">
+        <value>Spojení selhalo. Změna se možná provedla; před dalším pokusem obnovte její stav.</value>
+    </data>
+    <data name="App_Timeout" xml:space="preserve">
+        <value>Flock na {0} {1} neodpověděl včas</value>
+    </data>
+    <data name="App_UnexpectedAnswer" xml:space="preserve">
+        <value>Neočekávaná odpověď z {0}: {1}</value>
+    </data>
+    <data name="Common_Add" xml:space="preserve">
+        <value>Přidat</value>
+    </data>
+    <data name="Common_Cancel" xml:space="preserve">
+        <value>Zrušit</value>
+    </data>
+    <data name="Common_Canceled" xml:space="preserve">
+        <value>Zrušeno.</value>
+    </data>
+    <data name="Common_Choose" xml:space="preserve">
+        <value>Vybrat…</value>
+    </data>
+    <data name="Common_Close" xml:space="preserve">
+        <value>Zavřít</value>
+    </data>
+    <data name="Common_Copy" xml:space="preserve">
+        <value>Kopírovat</value>
+    </data>
+    <data name="Common_Done" xml:space="preserve">
+        <value>Hotovo</value>
+    </data>
+    <data name="Common_Downloading" xml:space="preserve">
+        <value>Stahuje se…</value>
+    </data>
+    <data name="Common_EmptyParenthesized" xml:space="preserve">
+        <value>(prázdné)</value>
+    </data>
+    <data name="Common_FlockNotRunning" xml:space="preserve">
+        <value>Flock neběží</value>
+    </data>
+    <data name="Common_Hide" xml:space="preserve">
+        <value>Skrýt</value>
+    </data>
+    <data name="Common_Install" xml:space="preserve">
+        <value>Nainstalovat</value>
+    </data>
+    <data name="Common_Installed" xml:space="preserve">
+        <value>Nainstalováno</value>
+    </data>
+    <data name="Common_Installing" xml:space="preserve">
+        <value>Instaluje se…</value>
+    </data>
+    <data name="Common_List_And" xml:space="preserve">
+        <value>{0} a {1}</value>
+    </data>
+    <data name="Common_List_Separator" xml:space="preserve">
+        <value>, </value>
+    </data>
+    <data name="Common_Loading" xml:space="preserve">
+        <value>Načítá se…</value>
+    </data>
+    <data name="Common_MoreActions" xml:space="preserve">
+        <value>Další akce</value>
+    </data>
+    <data name="Common_NotInstalled" xml:space="preserve">
+        <value>Nenainstalováno</value>
+    </data>
+    <data name="Common_Ok" xml:space="preserve">
+        <value>OK</value>
+    </data>
+    <data name="Common_Open" xml:space="preserve">
+        <value>Otevřít</value>
+    </data>
+    <data name="Common_OpenInBrowser" xml:space="preserve">
+        <value>Otevřít v prohlížeči</value>
+    </data>
+    <data name="Common_OpenTarget" xml:space="preserve">
+        <value>Otevřít {0}</value>
+    </data>
+    <data name="Common_Remove" xml:space="preserve">
+        <value>Odebrat</value>
+    </data>
+    <data name="Common_RemoveQuestion" xml:space="preserve">
+        <value>Odebrat {0}?</value>
+    </data>
+    <data name="Common_RemoveTarget" xml:space="preserve">
+        <value>Odebrat {0}</value>
+    </data>
+    <data name="Common_Retry" xml:space="preserve">
+        <value>Zkusit znovu</value>
+    </data>
+    <data name="Common_Save" xml:space="preserve">
+        <value>Uložit</value>
+    </data>
+    <data name="Common_ShowInExplorer" xml:space="preserve">
+        <value>Zobrazit v Průzkumníkovi</value>
+    </data>
+    <data name="Common_Size_Bytes_few" xml:space="preserve">
+        <value>{0} bajty</value>
+    </data>
+    <data name="Common_Size_Bytes_one" xml:space="preserve">
+        <value>{0} bajt</value>
+    </data>
+    <data name="Common_Size_Bytes_other" xml:space="preserve">
+        <value>{0} bajtů</value>
+    </data>
+    <data name="Common_Switching" xml:space="preserve">
+        <value>Přepíná se…</value>
+    </data>
+    <data name="Common_Time_HourAgo" xml:space="preserve">
+        <value>před hodinou</value>
+    </data>
+    <data name="Common_Time_HoursAgo_few" xml:space="preserve">
+        <value>před {0} hodinami</value>
+    </data>
+    <data name="Common_Time_HoursAgo_one" xml:space="preserve">
+        <value>před {0} hodinou</value>
+    </data>
+    <data name="Common_Time_HoursAgo_other" xml:space="preserve">
+        <value>před {0} hodinami</value>
+    </data>
+    <data name="Common_Time_JustNow" xml:space="preserve">
+        <value>právě teď</value>
+    </data>
+    <data name="Common_Time_MinuteAgo" xml:space="preserve">
+        <value>před minutou</value>
+    </data>
+    <data name="Common_Time_MinutesAgo_few" xml:space="preserve">
+        <value>před {0} minutami</value>
+    </data>
+    <data name="Common_Time_MinutesAgo_one" xml:space="preserve">
+        <value>před {0} minutou</value>
+    </data>
+    <data name="Common_Time_MinutesAgo_other" xml:space="preserve">
+        <value>před {0} minutami</value>
+    </data>
+    <data name="Common_Time_Yesterday" xml:space="preserve">
+        <value>včera</value>
+    </data>
+    <data name="Common_TryAgain" xml:space="preserve">
+        <value>Zkusit znovu</value>
+    </data>
+    <data name="Common_Uninstall" xml:space="preserve">
+        <value>Odinstalovat</value>
+    </data>
+    <data name="Common_UninstallEllipsis" xml:space="preserve">
+        <value>Odinstalovat…</value>
+    </data>
+    <data name="Common_Uninstalling" xml:space="preserve">
+        <value>Odinstalovává se…</value>
+    </data>
+    <data name="Common_Update" xml:space="preserve">
+        <value>Aktualizovat</value>
+    </data>
+    <data name="Common_Updating" xml:space="preserve">
+        <value>Aktualizuje se…</value>
+    </data>
+    <data name="Common_View" xml:space="preserve">
+        <value>Zobrazit</value>
+    </data>
+    <data name="Common_Working" xml:space="preserve">
+        <value>Pracuje se…</value>
+    </data>
+    <data name="Debugger_Availability" xml:space="preserve">
+        <value>Dostupnost</value>
+    </data>
+    <data name="Debugger_Available" xml:space="preserve">
+        <value>K dispozici</value>
+    </data>
+    <data name="Debugger_BreakpointsInPhpstorm" xml:space="preserve">
+        <value>Breakpointy v PhpStormu</value>
+    </data>
+    <data name="Debugger_ClientPort" xml:space="preserve">
+        <value>Port klienta</value>
+    </data>
+    <data name="Debugger_ConnectIde" xml:space="preserve">
+        <value>Připojte své IDE</value>
+    </data>
+    <data name="Debugger_DebuggingNow" xml:space="preserve">
+        <value>Právě se ladí</value>
+    </data>
+    <data name="Debugger_DetectBreakpoints" xml:space="preserve">
+        <value>Rozpoznávat breakpointy z PhpStormu</value>
+    </data>
+    <data name="Debugger_DetectBreakpointsDescription" xml:space="preserve">
+        <value>Dokud má projekt v PhpStormu breakpointy, ladí se každý požadavek na jeho web.</value>
+    </data>
+    <data name="Debugger_DetectRequests" xml:space="preserve">
+        <value>Rozpoznávat požadavky na Xdebug</value>
+    </data>
+    <data name="Debugger_DetectRequestsDescription" xml:space="preserve">
+        <value>Xdebug se načte jen pro požadavky, které o něj žádají, takže vše ostatní zůstane rychlé.</value>
+    </data>
+    <data name="Debugger_Mode" xml:space="preserve">
+        <value>Režim</value>
+    </data>
+    <data name="Debugger_NotInBuild" xml:space="preserve">
+        <value>V tomto sestavení není</value>
+    </data>
+    <data name="Debugger_StartSession" xml:space="preserve">
+        <value>Spusťte relaci</value>
+    </data>
+    <data name="Debugger_StartSessionDescription" xml:space="preserve">
+        <value>Nastavte breakpoint v PhpStormu a zapněte naslouchání ladicím spojením, použijte rozšíření prohlížeče Xdebug, nebo přidejte do URL ?XDEBUG_TRIGGER=1. Na příkazové řádce spusťte `flock debug artisan …`.</value>
+    </data>
+    <data name="Debugger_Subtitle" xml:space="preserve">
+        <value>Krokujte požadavky a příkazy pomocí Xdebugu.</value>
+    </data>
+    <data name="Dumps_Capture" xml:space="preserve">
+        <value>Zachytávat dumpy</value>
+    </data>
+    <data name="Dumps_CaptureDescription" xml:space="preserve">
+        <value>Po vypnutí uvidíte dumpy opět na stránce.</value>
+    </data>
+    <data name="Dumps_CaptureDumps" xml:space="preserve">
+        <value>Zachytávat dumpy</value>
+    </data>
+    <data name="Dumps_CaptureKindsTooltip" xml:space="preserve">
+        <value>Co se zachytává kromě dump() a dd()</value>
+    </data>
+    <data name="Dumps_CaptureShort" xml:space="preserve">
+        <value>Zachytávat</value>
+    </data>
+    <data name="Dumps_CaptureTooltip" xml:space="preserve">
+        <value>Zachytávat výstup dump() a dd() z vašich webů a příkazů artisan</value>
+    </data>
+    <data name="Dumps_CaptureUnavailable" xml:space="preserve">
+        <value>Zachytávání není k dispozici: PHP {0}</value>
+    </data>
+    <data name="Dumps_Captured" xml:space="preserve">
+        <value>Zachyceno</value>
+    </data>
+    <data name="Dumps_Capturing" xml:space="preserve">
+        <value>Zachytává se</value>
+    </data>
+    <data name="Dumps_ClearDetails" xml:space="preserve">
+        <value>Smažou se všechny zachycené dumpy, dotazy, logy, pohledy a úlohy ze všech webů a příkazů.</value>
+    </data>
+    <data name="Dumps_ClearQuestion" xml:space="preserve">
+        <value>Vymazat všechny dumpy?</value>
+    </data>
+    <data name="Dumps_Editor" xml:space="preserve">
+        <value>Editor</value>
+    </data>
+    <data name="Dumps_EditorTooltip" xml:space="preserve">
+        <value>Editor, který se otevře po kliknutí na soubor a řádek dumpu</value>
+    </data>
+    <data name="Dumps_EmptyCaptureOff" xml:space="preserve">
+        <value>Zachytávání je vypnuté — zapněte ho a výstup dump() a dd() se bude shromažďovat zde.</value>
+    </data>
+    <data name="Dumps_EmptyCapturing" xml:space="preserve">
+        <value>Zde se objeví výstup dump() a dd(), dotazy, logy, pohledy a úlohy z vašich webů a příkazů artisan.</value>
+    </data>
+    <data name="Dumps_EventKind_Jobs" xml:space="preserve">
+        <value>Úlohy</value>
+    </data>
+    <data name="Dumps_EventKind_Logs" xml:space="preserve">
+        <value>Logy</value>
+    </data>
+    <data name="Dumps_EventKind_Queries" xml:space="preserve">
+        <value>Dotazy</value>
+    </data>
+    <data name="Dumps_EventKind_Requests" xml:space="preserve">
+        <value>Požadavky</value>
+    </data>
+    <data name="Dumps_EventKind_Views" xml:space="preserve">
+        <value>Pohledy</value>
+    </data>
+    <data name="Dumps_LatestOnly" xml:space="preserve">
+        <value>Jen poslední požadavek</value>
+    </data>
+    <data name="Dumps_LatestOnlyTooltip" xml:space="preserve">
+        <value>Zobrazit jen poslední požadavek nebo příkaz</value>
+    </data>
+    <data name="Dumps_NoneMatching" xml:space="preserve">
+        <value>Žádné odpovídající dumpy</value>
+    </data>
+    <data name="Dumps_NoneYet" xml:space="preserve">
+        <value>Zatím žádné dumpy</value>
+    </data>
+    <data name="Dumps_Open" xml:space="preserve">
+        <value>Otevřít dumpy</value>
+    </data>
+    <data name="Dumps_OpenFilesIn" xml:space="preserve">
+        <value>Otevírat soubory v</value>
+    </data>
+    <data name="Dumps_SearchPlaceholder" xml:space="preserve">
+        <value>Hledat v dumpech</value>
+    </data>
+    <data name="Dumps_ShowInPageToo" xml:space="preserve">
+        <value>Zobrazovat dump() i na stránce</value>
+    </data>
+    <data name="Dumps_Sources" xml:space="preserve">
+        <value>Zdrojové soubory</value>
+    </data>
+    <data name="Dumps_StartCapturing" xml:space="preserve">
+        <value>Spustit zachytávání</value>
+    </data>
+    <data name="Dumps_Subtitle" xml:space="preserve">
+        <value>Posílejte výstup dump() a dd() do Flocku místo do stránky nebo terminálu — bez úprav vašich projektů.</value>
+    </data>
+    <data name="Dumps_Timeline_Job" xml:space="preserve">
+        <value>Úloha</value>
+    </data>
+    <data name="Dumps_Timeline_Query" xml:space="preserve">
+        <value>Dotaz</value>
+    </data>
+    <data name="Dumps_Timeline_View" xml:space="preserve">
+        <value>Pohled</value>
+    </data>
+    <data name="General_AddProjectFolders" xml:space="preserve">
+        <value>Přidat složky projektů…</value>
+    </data>
+    <data name="General_AddProjectFoldersTitle" xml:space="preserve">
+        <value>Přidat složky projektů</value>
+    </data>
+    <data name="General_AppLanguage" xml:space="preserve">
+        <value>Jazyk aplikace</value>
+    </data>
+    <data name="General_AppLanguageDescription" xml:space="preserve">
+        <value>Jazyk oken, nabídek a oznámení Flocku.</value>
+    </data>
+    <data name="General_Beta" xml:space="preserve">
+        <value>Beta verze</value>
+    </data>
+    <data name="General_BetaDescription" xml:space="preserve">
+        <value>Získávejte nové verze Flocku, PHP a služeb dříve, včetně předběžných verzí. Nemusí ještě fungovat.</value>
+    </data>
+    <data name="General_CheckForUpdates" xml:space="preserve">
+        <value>Vyhledat aktualizace</value>
+    </data>
+    <data name="General_CouldNotChangeStartup" xml:space="preserve">
+        <value>Nastavení spouštění se nepodařilo změnit: {0}</value>
+    </data>
+    <data name="General_Daemon" xml:space="preserve">
+        <value>Démon</value>
+    </data>
+    <data name="General_Data" xml:space="preserve">
+        <value>Data</value>
+    </data>
+    <data name="General_Domain" xml:space="preserve">
+        <value>Doména</value>
+    </data>
+    <data name="General_DomainHostsOnly" xml:space="preserve">
+        <value>Překládají se jen domény webů a domény k nim přidané (soubor hosts).</value>
+    </data>
+    <data name="General_DomainHostsOnlyBecause" xml:space="preserve">
+        <value>Překládají se jen domény webů a domény k nim přidané (soubor hosts): {0}.</value>
+    </data>
+    <data name="General_DomainWildcard" xml:space="preserve">
+        <value>Všechny názvy včetně libovolných subdomén překládá DNS server Flocku. Domény webů jsou navíc i v souboru hosts.</value>
+    </data>
+    <data name="General_Experimental" xml:space="preserve">
+        <value>Experimentální kanál: nabízí i balíčky, které ještě nebyly vydány. Zpět přepnete příkazem `flock channel stable`.</value>
+    </data>
+    <data name="General_Folder" xml:space="preserve">
+        <value>Složka</value>
+    </data>
+    <data name="General_Language" xml:space="preserve">
+        <value>Jazyk</value>
+    </data>
+    <data name="General_LanguageRestartNote" xml:space="preserve">
+        <value>Flock použije nový jazyk po restartu.</value>
+    </data>
+    <data name="General_LanguageSystem" xml:space="preserve">
+        <value>Podle systému</value>
+    </data>
+    <data name="General_Network" xml:space="preserve">
+        <value>Síť</value>
+    </data>
+    <data name="General_NoProjectFolders" xml:space="preserve">
+        <value>Žádné složky projektů</value>
+    </data>
+    <data name="General_OpenAtSignIn" xml:space="preserve">
+        <value>Spouštět Flock po přihlášení</value>
+    </data>
+    <data name="General_OpenAtSignInDescription" xml:space="preserve">
+        <value>Po přihlášení zobrazí ikonu Flocku v oznamovací oblasti. Samotný démon se po přihlášení spouští vždy.</value>
+    </data>
+    <data name="General_Pid" xml:space="preserve">
+        <value>PID {0}</value>
+    </data>
+    <data name="General_Ports" xml:space="preserve">
+        <value>Weby používají porty {0} (HTTP) a {1} (HTTPS) nastavené v config.json, takže jejich adresy obsahují port.</value>
+    </data>
+    <data name="General_Process" xml:space="preserve">
+        <value>Proces</value>
+    </data>
+    <data name="General_ProjectFolders" xml:space="preserve">
+        <value>Složky projektů</value>
+    </data>
+    <data name="General_ProjectFoldersDescription" xml:space="preserve">
+        <value>Každá složka uvnitř složky projektů se obsluhuje jako &lt;složka&gt;.{0} — stejně jako po `flock park`.</value>
+    </data>
+    <data name="General_RelaunchFlock" xml:space="preserve">
+        <value>Znovu spustit Flock</value>
+    </data>
+    <data name="General_ReleaseNotes" xml:space="preserve">
+        <value>Poznámky k verzi</value>
+    </data>
+    <data name="General_RemoveProjectFolderDetails" xml:space="preserve">
+        <value>Její podsložky přestanou fungovat jako weby. Z disku se nic nesmaže.</value>
+    </data>
+    <data name="General_RemoveProjectFolderQuestion" xml:space="preserve">
+        <value>Odebrat {0} ze složek projektů?</value>
+    </data>
+    <data name="General_Restart" xml:space="preserve">
+        <value>Restart</value>
+    </data>
+    <data name="General_RestartDaemon" xml:space="preserve">
+        <value>Restartovat démona</value>
+    </data>
+    <data name="General_RestartDescription" xml:space="preserve">
+        <value>Restartuje démona a všechny služby, které spouští.</value>
+    </data>
+    <data name="General_Restarting" xml:space="preserve">
+        <value>Restartuje se…</value>
+    </data>
+    <data name="General_Startup" xml:space="preserve">
+        <value>Spouštění</value>
+    </data>
+    <data name="General_Status" xml:space="preserve">
+        <value>Stav</value>
+    </data>
+    <data name="General_Subtitle" xml:space="preserve">
+        <value>Démon Flocku provozuje na pozadí vaše weby, PHP a služby.</value>
+    </data>
+    <data name="General_Title" xml:space="preserve">
+        <value>Obecné</value>
+    </data>
+    <data name="General_UpdateTo" xml:space="preserve">
+        <value>Aktualizovat na {0}</value>
+    </data>
+    <data name="General_Updates" xml:space="preserve">
+        <value>Aktualizace</value>
+    </data>
+    <data name="General_UpdatesNeedVersion" xml:space="preserve">
+        <value>Aktualizace vyžadují verzi, například 1.0.0. Pro vyzkoušení aktualizací nastavte při sestavení InformationalVersion.</value>
+    </data>
+    <data name="General_Version" xml:space="preserve">
+        <value>Verze</value>
+    </data>
+    <data name="General_VersionNumber" xml:space="preserve">
+        <value>Verze {0}</value>
+    </data>
+    <data name="General_ViewOnGithub" xml:space="preserve">
+        <value>Zobrazit na GitHubu</value>
+    </data>
+    <data name="Links_Install_AlreadyInstalledMessage" xml:space="preserve">
+        <value>Najdete ho v Nastavení → {0}.</value>
+    </data>
+    <data name="Links_Install_AlreadyInstalledTitle" xml:space="preserve">
+        <value>Už je nainstalováno: {0}</value>
+    </data>
+    <data name="Links_Install_InstallMessage" xml:space="preserve">
+        <value>Odkaz žádá Flock o instalaci {0} {1}. {2}</value>
+    </data>
+    <data name="Links_Install_InstallTitle" xml:space="preserve">
+        <value>Nainstalovat {0} {1}?</value>
+    </data>
+    <data name="Links_Install_InstallingMessage" xml:space="preserve">
+        <value>Průběh uvidíte v Nastavení → {0}.</value>
+    </data>
+    <data name="Links_Install_InstallingTitle" xml:space="preserve">
+        <value>{0} se už instaluje</value>
+    </data>
+    <data name="Links_Install_NewerFlock" xml:space="preserve">
+        <value>Odkaz je možná určený pro novější Flock. Aktualizujte Flock a zkuste to znovu.</value>
+    </data>
+    <data name="Links_Install_NoBuild" xml:space="preserve">
+        <value>Pro tento počítač není k dispozici žádné sestavení, nebo je odkaz určený pro novější Flock.</value>
+    </data>
+    <data name="Links_Install_PurposeNode" xml:space="preserve">
+        <value>Projekty, které ho používají, dostanou node, npm a npx hned po instalaci.</value>
+    </data>
+    <data name="Links_Install_PurposePhp" xml:space="preserve">
+        <value>Weby, které ho používají, začnou fungovat hned po instalaci.</value>
+    </data>
+    <data name="Links_Install_PurposeService" xml:space="preserve">
+        <value>Běží na 127.0.0.1 pro vaše weby.</value>
+    </data>
+    <data name="Links_Install_UnavailableMessage" xml:space="preserve">
+        <value>Flock ho na této platformě nedokáže spustit.</value>
+    </data>
+    <data name="Links_Install_UnavailableTitle" xml:space="preserve">
+        <value>{0} není na tomto počítači k dispozici</value>
+    </data>
+    <data name="Links_Install_UnknownTitle" xml:space="preserve">
+        <value>Flock nenabízí {0}</value>
+    </data>
+    <data name="Links_Secure_AlreadySecuredMessage" xml:space="preserve">
+        <value>Web běží na https://{0}.</value>
+    </data>
+    <data name="Links_Secure_AlreadySecuredTitle" xml:space="preserve">
+        <value>Web {0} už je zabezpečený</value>
+    </data>
+    <data name="Links_Secure_SecureMessage" xml:space="preserve">
+        <value>Odkaz žádá Flock o zabezpečení {0}. Web dostane certifikát, kterému tento počítač už důvěřuje.</value>
+    </data>
+    <data name="Links_Secure_SecureTitle" xml:space="preserve">
+        <value>Obsluhovat web {0} přes HTTPS?</value>
+    </data>
+    <data name="Links_Secure_UnknownMessage" xml:space="preserve">
+        <value>Nejdřív web přidejte v Nastavení → Weby.</value>
+    </data>
+    <data name="Links_Secure_UnknownTitle" xml:space="preserve">
+        <value>Flock nemá web s názvem {0}</value>
+    </data>
+    <data name="Logs_AutoRefresh" xml:space="preserve">
+        <value>Automaticky obnovovat</value>
+    </data>
+    <data name="Logs_Clear" xml:space="preserve">
+        <value>Vymazat</value>
+    </data>
+    <data name="Logs_ClearDetails" xml:space="preserve">
+        <value>Laravel logy ve složce storage\logs webu {0} se vyprázdní. Tuto akci nelze vrátit zpět.</value>
+    </data>
+    <data name="Logs_ClearQuestion" xml:space="preserve">
+        <value>Vymazat log webu {0}?</value>
+    </data>
+    <data name="Logs_CouldNotLoad" xml:space="preserve">
+        <value>Log se nepodařilo načíst</value>
+    </data>
+    <data name="Logs_Details" xml:space="preserve">
+        <value>Podrobnosti</value>
+    </data>
+    <data name="Logs_Level" xml:space="preserve">
+        <value>Úroveň</value>
+    </data>
+    <data name="Logs_LevelsTooltip" xml:space="preserve">
+        <value>Úrovně Laravel logu webu, které se mají zobrazit</value>
+    </data>
+    <data name="Logs_NoEntries" xml:space="preserve">
+        <value>Žádné záznamy v logu</value>
+    </data>
+    <data name="Logs_NoEntriesDetails" xml:space="preserve">
+        <value>Složka storage\logs webu {0} je prázdná.</value>
+    </data>
+    <data name="Logs_NoMatching" xml:space="preserve">
+        <value>Žádné odpovídající záznamy</value>
+    </data>
+    <data name="Logs_NoMatchingDetails" xml:space="preserve">
+        <value>Hledání a úrovni neodpovídá nic z posledních záznamů.</value>
+    </data>
+    <data name="Logs_NoMatchingLines" xml:space="preserve">
+        <value>(žádné odpovídající řádky)</value>
+    </data>
+    <data name="Logs_PickLog" xml:space="preserve">
+        <value>Vyberte log</value>
+    </data>
+    <data name="Logs_SearchPlaceholder" xml:space="preserve">
+        <value>Hledat ve zprávách a kontextu</value>
+    </data>
+    <data name="Logs_ServicesHeading" xml:space="preserve">
+        <value>SLUŽBY</value>
+    </data>
+    <data name="Logs_SitesHeading" xml:space="preserve">
+        <value>WEBY</value>
+    </data>
+    <data name="Mail_CatchDescription" xml:space="preserve">
+        <value>Přidejte tyto řádky do souboru .env svého projektu:</value>
+    </data>
+    <data name="Mail_CatchTitle" xml:space="preserve">
+        <value>Zachytávejte poštu své aplikace</value>
+    </data>
+    <data name="Mail_Caught" xml:space="preserve">
+        <value>Zachycené e-maily</value>
+    </data>
+    <data name="Mail_ClearAll" xml:space="preserve">
+        <value>Vymazat vše</value>
+    </data>
+    <data name="Mail_CouldNotLoad" xml:space="preserve">
+        <value>Zprávu se nepodařilo načíst</value>
+    </data>
+    <data name="Mail_CouldNotLoadRaw" xml:space="preserve">
+        <value>Zdroj zprávy se nepodařilo načíst</value>
+    </data>
+    <data name="Mail_DeleteAll" xml:space="preserve">
+        <value>Smazat vše</value>
+    </data>
+    <data name="Mail_DeleteAllQuestion" xml:space="preserve">
+        <value>Smazat veškerou zachycenou poštu?</value>
+    </data>
+    <data name="Mail_Detail_Cc" xml:space="preserve">
+        <value>Kopie</value>
+    </data>
+    <data name="Mail_Detail_Date" xml:space="preserve">
+        <value>Datum</value>
+    </data>
+    <data name="Mail_Detail_From" xml:space="preserve">
+        <value>Od</value>
+    </data>
+    <data name="Mail_Detail_Headers" xml:space="preserve">
+        <value>Hlavičky</value>
+    </data>
+    <data name="Mail_Detail_Inbox" xml:space="preserve">
+        <value>Schránka</value>
+    </data>
+    <data name="Mail_Detail_Raw" xml:space="preserve">
+        <value>Zdroj</value>
+    </data>
+    <data name="Mail_Detail_Text" xml:space="preserve">
+        <value>Text</value>
+    </data>
+    <data name="Mail_Detail_To" xml:space="preserve">
+        <value>Komu</value>
+    </data>
+    <data name="Mail_EnvironmentVariables" xml:space="preserve">
+        <value>Proměnné prostředí</value>
+    </data>
+    <data name="Mail_Host" xml:space="preserve">
+        <value>Hostitel</value>
+    </data>
+    <data name="Mail_NoHtmlPart" xml:space="preserve">
+        <value>Bez části HTML</value>
+    </data>
+    <data name="Mail_NoMail" xml:space="preserve">
+        <value>Žádná pošta</value>
+    </data>
+    <data name="Mail_NoMailDescription" xml:space="preserve">
+        <value>Posílejte poštu na {0}. MAIL_USERNAME určuje schránku.</value>
+    </data>
+    <data name="Mail_NoMessageSelected" xml:space="preserve">
+        <value>Není vybrána žádná zpráva</value>
+    </data>
+    <data name="Mail_NoSubject" xml:space="preserve">
+        <value>(bez předmětu)</value>
+    </data>
+    <data name="Mail_NoTextPart" xml:space="preserve">
+        <value>(bez textové části)</value>
+    </data>
+    <data name="Mail_Open" xml:space="preserve">
+        <value>Otevřít poštu</value>
+    </data>
+    <data name="Mail_Port" xml:space="preserve">
+        <value>Port</value>
+    </data>
+    <data name="Mail_Refresh" xml:space="preserve">
+        <value>Obnovit</value>
+    </data>
+    <data name="Mail_SaveAttachment" xml:space="preserve">
+        <value>Uložit…</value>
+    </data>
+    <data name="Mail_SmtpServer" xml:space="preserve">
+        <value>Server SMTP</value>
+    </data>
+    <data name="Mail_Subtitle" xml:space="preserve">
+        <value>Flock zachytí každý e-mail, který vaše aplikace odešlou — nic neopustí váš počítač.</value>
+    </data>
+    <data name="Mail_UsernameInbox" xml:space="preserve">
+        <value>MAIL_USERNAME určuje schránku, takže každý projekt má svou vlastní.</value>
+    </data>
+    <data name="Menu_CaptureDumps" xml:space="preserve">
+        <value>Zachytávat dumpy</value>
+    </data>
+    <data name="Menu_Down" xml:space="preserve">
+        <value>nefunguje</value>
+    </data>
+    <data name="Menu_Dumps" xml:space="preserve">
+        <value>Dumpy</value>
+    </data>
+    <data name="Menu_Failure" xml:space="preserve">
+        <value>Ikona Flocku v oznamovací oblasti nemohla dokončit operaci {0}.</value>
+    </data>
+    <data name="Menu_HideWorktrees" xml:space="preserve">
+        <value>Skrýt worktrees</value>
+    </data>
+    <data name="Menu_Logs" xml:space="preserve">
+        <value>Logy</value>
+    </data>
+    <data name="Menu_Mail" xml:space="preserve">
+        <value>Pošta</value>
+    </data>
+    <data name="Menu_NoSites" xml:space="preserve">
+        <value>Zatím žádné weby — spusťte `flock link` nebo `flock park`, nebo přidejte web v Nastavení.</value>
+    </data>
+    <data name="Menu_NotSetUp" xml:space="preserve">
+        <value>Flock zatím není pro tohoto uživatele nastavený.</value>
+    </data>
+    <data name="Menu_OpenFlock" xml:space="preserve">
+        <value>Otevřít Flock</value>
+    </data>
+    <data name="Menu_QuitFlock" xml:space="preserve">
+        <value>Ukončit Flock</value>
+    </data>
+    <data name="Menu_Restart" xml:space="preserve">
+        <value>Restartovat</value>
+    </data>
+    <data name="Menu_RestartFlock" xml:space="preserve">
+        <value>Restartovat Flock</value>
+    </data>
+    <data name="Menu_Restarted" xml:space="preserve">
+        <value>(restartováno {0}×)</value>
+    </data>
+    <data name="Menu_SetUpFlock" xml:space="preserve">
+        <value>Nastavit Flock…</value>
+    </data>
+    <data name="Menu_Settings" xml:space="preserve">
+        <value>Nastavení…</value>
+    </data>
+    <data name="Menu_SharedAt" xml:space="preserve">
+        <value>Sdíleno na {0}</value>
+    </data>
+    <data name="Menu_ShowWorktrees_few" xml:space="preserve">
+        <value>Zobrazit {0} worktrees</value>
+    </data>
+    <data name="Menu_ShowWorktrees_one" xml:space="preserve">
+        <value>Zobrazit {0} worktree</value>
+    </data>
+    <data name="Menu_ShowWorktrees_other" xml:space="preserve">
+        <value>Zobrazit {0} worktrees</value>
+    </data>
+    <data name="Menu_SiteDomainsOnly" xml:space="preserve">
+        <value>jen domény webů</value>
+    </data>
+    <data name="Menu_StartFlock" xml:space="preserve">
+        <value>Spustit Flock</value>
+    </data>
+    <data name="Menu_Status_NeedsAttention" xml:space="preserve">
+        <value>Vyžaduje pozornost</value>
+    </data>
+    <data name="Menu_Status_NotRunning" xml:space="preserve">
+        <value>Neběží</value>
+    </data>
+    <data name="Menu_Status_NotSetUp" xml:space="preserve">
+        <value>Nenastaveno</value>
+    </data>
+    <data name="Menu_Status_Running" xml:space="preserve">
+        <value>Běží</value>
+    </data>
+    <data name="Menu_Status_Updating" xml:space="preserve">
+        <value>Aktualizuje se…</value>
+    </data>
+    <data name="Menu_Stopped" xml:space="preserve">
+        <value>zastaveno</value>
+    </data>
+    <data name="Menu_Up" xml:space="preserve">
+        <value>běží</value>
+    </data>
+    <data name="Menu_UpdateAvailable" xml:space="preserve">
+        <value>K dispozici je Flock {0}</value>
+    </data>
+    <data name="Menu_UpdateTo" xml:space="preserve">
+        <value>Aktualizovat na {0}…</value>
+    </data>
+    <data name="Menu_Updating" xml:space="preserve">
+        <value>Flock se aktualizuje…</value>
+    </data>
+    <data name="Menu_VersionOnPort" xml:space="preserve">
+        <value>{0} na 127.0.0.1:{1}</value>
+    </data>
+    <data name="Menu_Web" xml:space="preserve">
+        <value>Web</value>
+    </data>
+    <data name="Menu_WorkersUp" xml:space="preserve">
+        <value>běží {0} z {1} workerů</value>
+    </data>
+    <data name="Node_DownloadingAndInstalling" xml:space="preserve">
+        <value>Stahuje se a instaluje…</value>
+    </data>
+    <data name="Node_Footnote" xml:space="preserve">
+        <value>Oficiální sestavení Node.js, nejnovější vydání každé hlavní verze. Projektu, který má verzi uvedenou v .nvmrc, Flock tuto hlavní verzi nabídne, když v něm spustíte node, npm nebo npx. Globální balíčky patří k řadě Node a přečkají její aktualizace; balíčky výchozí verze jsou v proměnné PATH.</value>
+    </data>
+    <data name="Node_NoVersions" xml:space="preserve">
+        <value>Zatím nejsou k zobrazení žádné verze Node.js.</value>
+    </data>
+    <data name="Node_Subtitle" xml:space="preserve">
+        <value>node, npm a npx se řídí souborem .nvmrc / .node-version projektu, pak verzí webu a nakonec výchozí verzí.</value>
+    </data>
+    <data name="Node_UninstallDetails" xml:space="preserve">
+        <value>Odeberou se i jeho globální balíčky npm. Projekty a weby, které používají Node {0}, budou používat výchozí verzi, dokud ho znovu nenainstalujete.</value>
+    </data>
+    <data name="Node_Uninstalling" xml:space="preserve">
+        <value>Odinstalovává se…</value>
+    </data>
+    <data name="Node_UpdateNpm" xml:space="preserve">
+        <value>Aktualizovat npm</value>
+    </data>
+    <data name="Node_UpdatingNpm" xml:space="preserve">
+        <value>Aktualizuje se npm…</value>
+    </data>
+    <data name="Php_OpenIni" xml:space="preserve">
+        <value>Otevřít php.ini</value>
+    </data>
+    <data name="Php_RevealIni" xml:space="preserve">
+        <value>Zobrazit php.ini v Průzkumníkovi</value>
+    </data>
+    <data name="Php_Subtitle" xml:space="preserve">
+        <value>Každá nainstalovaná verze má vlastní skupinu PHP workerů. Weby používají výchozí verzi, pokud nemají připnutou jinou.</value>
+    </data>
+    <data name="Php_UninstallDetails" xml:space="preserve">
+        <value>Odebere se i jeho php.ini. Weby připnuté k PHP {0} přestanou fungovat, dokud nevyberete jinou verzi.</value>
+    </data>
+    <data name="Php_UninstallFrankenDetails" xml:space="preserve">
+        <value>Weby, které běží na FrankenPHP s touto verzí, bude obsluhovat PHP-CGI, dokud se FrankenPHP samo znovu nestáhne.</value>
+    </data>
+    <data name="Php_UninstallFrankenQuestion" xml:space="preserve">
+        <value>Odinstalovat FrankenPHP pro PHP {0}?</value>
+    </data>
+    <data name="Services_Active" xml:space="preserve">
+        <value>Aktivní</value>
+    </data>
+    <data name="Services_All" xml:space="preserve">
+        <value>Všechny</value>
+    </data>
+    <data name="Services_AlsoDeleteData" xml:space="preserve">
+        <value>Smazat také jeho data</value>
+    </data>
+    <data name="Services_CannotRunOnWindows" xml:space="preserve">
+        <value>Flock nedokáže ve Windows spustit {0}.</value>
+    </data>
+    <data name="Services_Catalog_NoLongerInstalled" xml:space="preserve">
+        <value>{0} už není nainstalováno.</value>
+    </data>
+    <data name="Services_Catalog_ServiceGone" xml:space="preserve">
+        <value>Služba {0} už není k dispozici.</value>
+    </data>
+    <data name="Services_Catalog_Unavailable" xml:space="preserve">
+        <value>{0} není k dispozici.</value>
+    </data>
+    <data name="Services_Catalog_UpdateRejected" xml:space="preserve">
+        <value>Aktualizace {0} byla odmítnuta, protože probíhá jiná operace.</value>
+    </data>
+    <data name="Services_Catalog_UpdateUnfinished" xml:space="preserve">
+        <value>Aktualizace {0} nebyla dokončena.</value>
+    </data>
+    <data name="Services_Category_CacheQueue" xml:space="preserve">
+        <value>Mezipaměť a fronty</value>
+    </data>
+    <data name="Services_Category_Core" xml:space="preserve">
+        <value>Základní</value>
+    </data>
+    <data name="Services_Category_Database" xml:space="preserve">
+        <value>Databáze</value>
+    </data>
+    <data name="Services_Category_Debugging" xml:space="preserve">
+        <value>Ladění</value>
+    </data>
+    <data name="Services_Category_Mail" xml:space="preserve">
+        <value>Pošta</value>
+    </data>
+    <data name="Services_Category_Search" xml:space="preserve">
+        <value>Vyhledávání</value>
+    </data>
+    <data name="Services_Category_Storage" xml:space="preserve">
+        <value>Úložiště</value>
+    </data>
+    <data name="Services_Connection" xml:space="preserve">
+        <value>Připojení</value>
+    </data>
+    <data name="Services_DaemonDoesNotOffer" xml:space="preserve">
+        <value>Tento démon Flocku nenabízí {0}. Aktualizujte Flock a zkuste to znovu.</value>
+    </data>
+    <data name="Services_DataComesBack" xml:space="preserve">
+        <value>Jeho data tu stále jsou a vrátí se.</value>
+    </data>
+    <data name="Services_DataSize" xml:space="preserve">
+        <value>{0} dat</value>
+    </data>
+    <data name="Services_DataStays" xml:space="preserve">
+        <value>Jeho data zůstanou, pokud je níže nesmažete; po opětovné instalaci {0} se znovu použijí.</value>
+    </data>
+    <data name="Services_DeletedDataGone" xml:space="preserve">
+        <value>Smazaná data nelze obnovit.</value>
+    </data>
+    <data name="Services_DnsDown" xml:space="preserve">
+        <value>Dokud DNS server neběží, wildcard subdomény se nepřekládají. Domény webů dál fungují přes soubor hosts.</value>
+    </data>
+    <data name="Services_DnsRunning" xml:space="preserve">
+        <value>Windows sem posílá všechny názvy pod .{0}, takže jakákoli subdoména webu funguje, aniž byste ji přidávali.</value>
+    </data>
+    <data name="Services_Downloads" xml:space="preserve">
+        <value>Stáhne {0}.</value>
+    </data>
+    <data name="Services_DownloadsNewest" xml:space="preserve">
+        <value>Stáhne nejnovější vydání.</value>
+    </data>
+    <data name="Services_FilterTooltip" xml:space="preserve">
+        <value>Zobrazit jen nainstalované služby, nebo všechny, které Flock nabízí</value>
+    </data>
+    <data name="Services_HostsInstalled" xml:space="preserve">
+        <value>Pomocník Flocku pro soubor hosts do něj zapisuje doménu každého webu i přidané domény.</value>
+    </data>
+    <data name="Services_HostsMissing" xml:space="preserve">
+        <value>Pomocník pro soubor hosts není nainstalovaný, takže domény webů místo toho používají DNS pravidlo Flocku.</value>
+    </data>
+    <data name="Services_InstallEllipsis" xml:space="preserve">
+        <value>Nainstalovat…</value>
+    </data>
+    <data name="Services_InstallLog" xml:space="preserve">
+        <value>Log instalace {0}</value>
+    </data>
+    <data name="Services_InstallName" xml:space="preserve">
+        <value>Nainstalovat {0}</value>
+    </data>
+    <data name="Services_InstallUpdatesQuestion_few" xml:space="preserve">
+        <value>Nainstalovat {0} aktualizace pro {1}?</value>
+    </data>
+    <data name="Services_InstallUpdatesQuestion_one" xml:space="preserve">
+        <value>Nainstalovat {0} aktualizaci pro {1}?</value>
+    </data>
+    <data name="Services_InstallUpdatesQuestion_other" xml:space="preserve">
+        <value>Nainstalovat {0} aktualizací pro {1}?</value>
+    </data>
+    <data name="Services_Installed" xml:space="preserve">
+        <value>Nainstalované</value>
+    </data>
+    <data name="Services_InstallingFailed" xml:space="preserve">
+        <value>Instalace {0} selhala</value>
+    </data>
+    <data name="Services_InstallingTarget" xml:space="preserve">
+        <value>Instaluje se {0}</value>
+    </data>
+    <data name="Services_KeepsRunning" xml:space="preserve">
+        <value>{0} poběží, dokud nepřepnete.</value>
+    </data>
+    <data name="Services_More" xml:space="preserve">
+        <value>Další</value>
+    </data>
+    <data name="Services_NewBuildAvailable" xml:space="preserve">
+        <value>Je k dispozici nové sestavení {0}</value>
+    </data>
+    <data name="Services_NoData" xml:space="preserve">
+        <value>Neobsahuje žádná data.</value>
+    </data>
+    <data name="Services_NoDetails" xml:space="preserve">
+        <value>Flock neuvedl žádné podrobnosti; víc možná prozradí log.</value>
+    </data>
+    <data name="Services_NoServices" xml:space="preserve">
+        <value>Žádné služby</value>
+    </data>
+    <data name="Services_NoVersions" xml:space="preserve">
+        <value>Flock pro tento počítač nenabízí žádné verze {0}.</value>
+    </data>
+    <data name="Services_NotOnThisComputer" xml:space="preserve">
+        <value>{0} není na tomto počítači k dispozici.</value>
+    </data>
+    <data name="Services_NotOnWindows" xml:space="preserve">
+        <value>Není k dispozici ve Windows</value>
+    </data>
+    <data name="Services_PortDetails" xml:space="preserve">
+        <value>Porty 1024–65535. Změňte port také v souborech .env svých projektů.</value>
+    </data>
+    <data name="Services_PortEllipsis" xml:space="preserve">
+        <value>Port…</value>
+    </data>
+    <data name="Services_PortNumber" xml:space="preserve">
+        <value>Port {0}</value>
+    </data>
+    <data name="Services_PortTaken" xml:space="preserve">
+        <value>Port {0} je obsazený, proto Flock navrhuje {1}.</value>
+    </data>
+    <data name="Services_PortTitle" xml:space="preserve">
+        <value>Port služby {0}</value>
+    </data>
+    <data name="Services_Postgres_ActiveVersion" xml:space="preserve">
+        <value>Aktivní verze</value>
+    </data>
+    <data name="Services_Postgres_AlsoDeleteDatabases" xml:space="preserve">
+        <value>Smazat také jeho databáze ({0})</value>
+    </data>
+    <data name="Services_Postgres_ClientTools" xml:space="preserve">
+        <value>psql, pg_dump a další nástroje příkazové řádky jsou součástí PostgreSQL. V terminálu Flock používá ty z nejnovější nainstalované verze, které fungují se všemi verzemi výše i se vzdálenými servery.</value>
+    </data>
+    <data name="Services_Postgres_CreatingCluster" xml:space="preserve">
+        <value>Stahuje se a vytváří databázový cluster…</value>
+    </data>
+    <data name="Services_Postgres_DatabasesComeBack" xml:space="preserve">
+        <value>Jeho databáze tu stále jsou a vrátí se.</value>
+    </data>
+    <data name="Services_Postgres_DatabasesKept" xml:space="preserve">
+        <value>Databáze PostgreSQL {0} tu stále jsou — po opětovné instalaci této verze se znovu použijí.</value>
+    </data>
+    <data name="Services_Postgres_DatabasesStay" xml:space="preserve">
+        <value>Jeho databáze zůstanou, pokud je níže nesmažete; po opětovné instalaci {0} se znovu použijí.</value>
+    </data>
+    <data name="Services_Postgres_DeletedDatabasesGone" xml:space="preserve">
+        <value>Smazané databáze nelze obnovit.</value>
+    </data>
+    <data name="Services_Postgres_Description" xml:space="preserve">
+        <value>Databáze pro vaše aplikace. Další verze můžete přidat později; běží vždy jen jedna a každá má vlastní databáze.</value>
+    </data>
+    <data name="Services_Postgres_FirstInstallDetails" xml:space="preserve">
+        <value>Stahuje se server a vytváří se jeho databázový cluster. Potrvá to minutu nebo dvě; okno mezitím můžete zavřít.</value>
+    </data>
+    <data name="Services_Postgres_Loading" xml:space="preserve">
+        <value>Načítají se verze PostgreSQL…</value>
+    </data>
+    <data name="Services_Postgres_NewBuildUpdateBelow" xml:space="preserve">
+        <value>Je k dispozici nové sestavení {0} — aktualizujte ho níže; vaše databáze zůstanou.</value>
+    </data>
+    <data name="Services_Postgres_NoDatabases" xml:space="preserve">
+        <value>Neobsahuje žádné databáze.</value>
+    </data>
+    <data name="Services_Postgres_NoneActive" xml:space="preserve">
+        <value>Žádná verze není aktivní. PostgreSQL spustíte přepnutím na některou z nainstalovaných verzí níže.</value>
+    </data>
+    <data name="Services_Postgres_SideBySide" xml:space="preserve">
+        <value>Nainstalované verze zůstávají vedle sebe. Běží vždy jen jedna; každá má vlastní databáze, které zůstanou zachovány i při aktualizacích v rámci verze.</value>
+    </data>
+    <data name="Services_Postgres_StartsEmpty" xml:space="preserve">
+        <value>Začne s novým, prázdným databázovým clusterem.</value>
+    </data>
+    <data name="Services_Postgres_StaysActive" xml:space="preserve">
+        <value>{0} zůstane aktivní, dokud nepřepnete.</value>
+    </data>
+    <data name="Services_Postgres_Stopped" xml:space="preserve">
+        <value>Zastaveno</value>
+    </data>
+    <data name="Services_Postgres_SwitchDetails" xml:space="preserve">
+        <value>PostgreSQL {0} se zastaví; jeho databáze zůstanou, ale nebudou k dispozici, dokud nepřepnete zpět. {1} používá vlastní databáze.</value>
+    </data>
+    <data name="Services_Postgres_UninstallLast" xml:space="preserve">
+        <value>PostgreSQL {0} se zastaví; dokud znovu nenainstalujete nějakou verzi, žádný PostgreSQL nepoběží.</value>
+    </data>
+    <data name="Services_Postgres_Uninstalling" xml:space="preserve">
+        <value>Odinstalovává se {0}…</value>
+    </data>
+    <data name="Services_Postgres_UpdateBelow" xml:space="preserve">
+        <value>Je k dispozici {0} — aktualizujte níže; vaše databáze zůstanou.</value>
+    </data>
+    <data name="Services_Postgres_UpdateTooltip" xml:space="preserve">
+        <value>Nainstaluje {0} místo {1}. Vaše databáze zůstanou.</value>
+    </data>
+    <data name="Services_Postgres_UpdateTooltipRestart" xml:space="preserve">
+        <value>Nainstaluje {0} místo {1}. Vaše databáze zůstanou; PostgreSQL se na chvíli restartuje.</value>
+    </data>
+    <data name="Services_Postgres_Withdrawn" xml:space="preserve">
+        <value>Toto sestavení bylo vyřazeno: {0}</value>
+    </data>
+    <data name="Services_Postgres_WithdrawnTooltip" xml:space="preserve">
+        <value>Flock ho nahradí, jakmile vyjde opravené sestavení.</value>
+    </data>
+    <data name="Services_Reinstall" xml:space="preserve">
+        <value>Přeinstalovat {0}</value>
+    </data>
+    <data name="Services_Releases_Available" xml:space="preserve">
+        <value>k dispozici {0}</value>
+    </data>
+    <data name="Services_Releases_BytesOfData_few" xml:space="preserve">
+        <value>{0} bajty dat</value>
+    </data>
+    <data name="Services_Releases_BytesOfData_one" xml:space="preserve">
+        <value>{0} bajt dat</value>
+    </data>
+    <data name="Services_Releases_BytesOfData_other" xml:space="preserve">
+        <value>{0} bajtů dat</value>
+    </data>
+    <data name="Services_Releases_DataKept" xml:space="preserve">
+        <value>data zachována</value>
+    </data>
+    <data name="Services_Releases_DatabasesKept_few" xml:space="preserve">
+        <value>databáze zachovány ({0} bajty)</value>
+    </data>
+    <data name="Services_Releases_DatabasesKept_one" xml:space="preserve">
+        <value>databáze zachovány ({0} bajt)</value>
+    </data>
+    <data name="Services_Releases_DatabasesKept_other" xml:space="preserve">
+        <value>databáze zachovány ({0} bajtů)</value>
+    </data>
+    <data name="Services_Releases_HasData" xml:space="preserve">
+        <value>obsahuje data</value>
+    </data>
+    <data name="Services_Releases_InstallAllUpdates" xml:space="preserve">
+        <value>Nainstalovat všechny aktualizace ({0})</value>
+    </data>
+    <data name="Services_Releases_InstallUpdate" xml:space="preserve">
+        <value>Nainstalovat aktualizaci</value>
+    </data>
+    <data name="Services_Releases_LoadingPostgres" xml:space="preserve">
+        <value>Načítají se vydání PostgreSQL…</value>
+    </data>
+    <data name="Services_Releases_LoadingServices" xml:space="preserve">
+        <value>Načítají se vydání služeb…</value>
+    </data>
+    <data name="Services_Releases_NewBuildAvailable" xml:space="preserve">
+        <value>k dispozici nové sestavení</value>
+    </data>
+    <data name="Services_Releases_Prerelease" xml:space="preserve">
+        <value>{0} je předběžná verze</value>
+    </data>
+    <data name="Services_Releases_Unavailable" xml:space="preserve">
+        <value>Není k dispozici</value>
+    </data>
+    <data name="Services_Releases_UpToDate" xml:space="preserve">
+        <value>aktuální</value>
+    </data>
+    <data name="Services_Releases_Withdrawn" xml:space="preserve">
+        <value>vyřazeno: {0}</value>
+    </data>
+    <data name="Services_RunsForSites" xml:space="preserve">
+        <value>Běží na 127.0.0.1 pro vaše weby.</value>
+    </data>
+    <data name="Services_ShowLastLog" xml:space="preserve">
+        <value>Zobrazit poslední log</value>
+    </data>
+    <data name="Services_SideBySide" xml:space="preserve">
+        <value>Nainstalované verze zůstávají vedle sebe. Běží vždy jen jedna; každá má vlastní data, která zůstanou zachována i při aktualizacích v rámci verze.</value>
+    </data>
+    <data name="Services_Start" xml:space="preserve">
+        <value>Spustit</value>
+    </data>
+    <data name="Services_Started" xml:space="preserve">
+        <value>zahájeno {0}</value>
+    </data>
+    <data name="Services_StartsEmpty" xml:space="preserve">
+        <value>{0} začne s prázdnými daty.</value>
+    </data>
+    <data name="Services_StopDetails" xml:space="preserve">
+        <value>Aplikace, které ji používají, se nepřipojí, dokud ji znovu nespustíte.</value>
+    </data>
+    <data name="Services_StopQuestion" xml:space="preserve">
+        <value>Zastavit {0}?</value>
+    </data>
+    <data name="Services_Subtitle" xml:space="preserve">
+        <value>Databáze, mezipaměti, vyhledávání a nástroje kolem vašich webů. Vše naslouchá jen na 127.0.0.1.</value>
+    </data>
+    <data name="Services_SwitchDetails" xml:space="preserve">
+        <value>{0} se zastaví; jeho data zůstanou, ale nepoužijí se, dokud nepřepnete zpět.</value>
+    </data>
+    <data name="Services_SwitchEllipsis" xml:space="preserve">
+        <value>Přepnout…</value>
+    </data>
+    <data name="Services_SwitchQuestion" xml:space="preserve">
+        <value>Přepnout na {0}?</value>
+    </data>
+    <data name="Services_UninstallLast" xml:space="preserve">
+        <value>{0} se zastaví; vaše weby nebudou moci {1} používat, dokud znovu nenainstalujete nějakou verzi.</value>
+    </data>
+    <data name="Services_UninstallNext" xml:space="preserve">
+        <value>{0} se zastaví a aktivní verzí se stane {1}.</value>
+    </data>
+    <data name="Services_UninstallQuestion" xml:space="preserve">
+        <value>Odinstalovat {0}?</value>
+    </data>
+    <data name="Services_UpdateTooltip" xml:space="preserve">
+        <value>Nainstaluje {0} místo {1}. Vaše data zůstanou.</value>
+    </data>
+    <data name="Services_UpdateTooltipRestart" xml:space="preserve">
+        <value>Nainstaluje {0} místo {1}. Vaše data zůstanou; {2} se na chvíli restartuje.</value>
+    </data>
+    <data name="Services_UpdatesKeepData" xml:space="preserve">
+        <value>Aktualizace vaše data zachovají.</value>
+    </data>
+    <data name="Services_UpdatingFailed" xml:space="preserve">
+        <value>Aktualizace {0} selhala</value>
+    </data>
+    <data name="Services_UpdatingTarget" xml:space="preserve">
+        <value>Aktualizuje se {0}</value>
+    </data>
+    <data name="Services_UsesOwnData" xml:space="preserve">
+        <value>{0} používá vlastní data.</value>
+    </data>
+    <data name="Services_VersionAvailable" xml:space="preserve">
+        <value>K dispozici je {0}</value>
+    </data>
+    <data name="Services_WebDown" xml:space="preserve">
+        <value>Dokud webový server neběží, weby se neotevřou. Proč, může prozradit jeho log; `flock restart` ho znovu spustí.</value>
+    </data>
+    <data name="Services_WebRunning" xml:space="preserve">
+        <value>Caddy obsluhuje každý web přes HTTPS (https://app.{0}) s certifikáty od místní certifikační autority Flocku, kterou `flock install` přidá mezi důvěryhodné.</value>
+    </data>
+    <data name="Services_Withdrawn" xml:space="preserve">
+        <value>Vyřazeno: {0}</value>
+    </data>
+    <data name="Services_WithdrawnTooltip" xml:space="preserve">
+        <value>Toto sestavení bylo vyřazeno. Flock ho nahradí, jakmile vyjde opravené sestavení.</value>
+    </data>
+    <data name="Services_WithdrawnUpdate" xml:space="preserve">
+        <value>Vyřazeno: {0} — nahraďte ho aktualizací</value>
+    </data>
+    <data name="Settings_CouldNotShow" xml:space="preserve">
+        <value>Nastavení se nepodařilo zobrazit</value>
+    </data>
+    <data name="Settings_CouldNotShowDetails" xml:space="preserve">
+        <value>Zkuste to znovu, nebo vyberte jinou stránku nastavení.</value>
+    </data>
+    <data name="Settings_Editor_None" xml:space="preserve">
+        <value>Neodkazovat</value>
+    </data>
+    <data name="Settings_Pane_About" xml:space="preserve">
+        <value>O aplikaci</value>
+    </data>
+    <data name="Settings_Pane_Ai" xml:space="preserve">
+        <value>AI</value>
+    </data>
+    <data name="Settings_Pane_Debugger" xml:space="preserve">
+        <value>Debugger</value>
+    </data>
+    <data name="Settings_Pane_Dumps" xml:space="preserve">
+        <value>Dumpy</value>
+    </data>
+    <data name="Settings_Pane_General" xml:space="preserve">
+        <value>Obecné</value>
+    </data>
+    <data name="Settings_Pane_Mail" xml:space="preserve">
+        <value>Pošta</value>
+    </data>
+    <data name="Settings_Pane_Services" xml:space="preserve">
+        <value>Služby</value>
+    </data>
+    <data name="Settings_Pane_Sites" xml:space="preserve">
+        <value>Weby</value>
+    </data>
+    <data name="Settings_SaveCanceled" xml:space="preserve">
+        <value>Uložení předvoleb bylo zrušeno.</value>
+    </data>
+    <data name="Settings_StartDaemonToChange" xml:space="preserve">
+        <value>Pro změnu nastavení spusťte démona.</value>
+    </data>
+    <data name="Settings_WindowTitle" xml:space="preserve">
+        <value>Nastavení Flocku</value>
+    </data>
+    <data name="Setup_AdminPrompt" xml:space="preserve">
+        <value>Windows za chvíli požádá o oprávnění správce.</value>
+    </data>
+    <data name="Setup_Background" xml:space="preserve">
+        <value>Běží na pozadí</value>
+    </data>
+    <data name="Setup_BackgroundDescription" xml:space="preserve">
+        <value>Démon Flocku obsluhuje vaše weby a služby a spouští se při každém přihlášení.</value>
+    </data>
+    <data name="Setup_BothInstalled" xml:space="preserve">
+        <value>{0} a {1} jsou nainstalované</value>
+    </data>
+    <data name="Setup_CheckAgain" xml:space="preserve">
+        <value>Zkontrolovat znovu</value>
+    </data>
+    <data name="Setup_CheckingPorts" xml:space="preserve">
+        <value>Kontrolují se porty Flocku…</value>
+    </data>
+    <data name="Setup_CouldNotChangeStartup" xml:space="preserve">
+        <value>Nastavení spouštění se nepodařilo změnit: {0}. Najdete ho také v Nastavení → Obecné.</value>
+    </data>
+    <data name="Setup_CouldNotInstall" xml:space="preserve">
+        <value>{0} se nepodařilo nainstalovat. Zkuste to znovu v Nastavení → {1}.</value>
+    </data>
+    <data name="Setup_CouldNotInstallBecause" xml:space="preserve">
+        <value>{0} se nepodařilo nainstalovat: {1}. Zkuste to znovu v Nastavení → {2}.</value>
+    </data>
+    <data name="Setup_Declined" xml:space="preserve">
+        <value>Žádost Windows o oprávnění byla zamítnuta. Flock běží, ale dokud ji nepovolíte, weby *.test se nebudou překládat a HTTPS nebude důvěryhodné.</value>
+    </data>
+    <data name="Setup_DidNotFinish" xml:space="preserve">
+        <value>Nastavení nebylo dokončeno</value>
+    </data>
+    <data name="Setup_Failed" xml:space="preserve">
+        <value>Něco se pokazilo. Co přesně, uvádí výstup níže; můžete to zkusit znovu.</value>
+    </data>
+    <data name="Setup_InstalledWhenDownloadable" xml:space="preserve">
+        <value>{0} se nainstaluje, jakmile ho Flock bude moci stáhnout.</value>
+    </data>
+    <data name="Setup_InstalledWhenDownloadableBoth" xml:space="preserve">
+        <value>{0} se nainstalují, jakmile je Flock bude moci stáhnout.</value>
+    </data>
+    <data name="Setup_Installing" xml:space="preserve">
+        <value>Instaluje se {0}…</value>
+    </data>
+    <data name="Setup_Intro" xml:space="preserve">
+        <value>Flock na tomto počítači provozuje vaše weby v Laravelu, PHP, poštu a databáze. Nastavení zabere jen chvilku:</value>
+    </data>
+    <data name="Setup_LinkProject" xml:space="preserve">
+        <value>Propojte projekt</value>
+    </data>
+    <data name="Setup_LinkProjectDescription" xml:space="preserve">
+        <value>V projektu v Laravelu spusťte `flock link`: web pak najdete na http://&lt;složka&gt;.test. `flock secure` přidá HTTPS.</value>
+    </data>
+    <data name="Setup_NewTerminal" xml:space="preserve">
+        <value>Otevřete nový terminál</value>
+    </data>
+    <data name="Setup_NewTerminalDescription" xml:space="preserve">
+        <value>Terminály, které už byly otevřené, mají stále starou PATH.</value>
+    </data>
+    <data name="Setup_NextSteps" xml:space="preserve">
+        <value>Další kroky</value>
+    </data>
+    <data name="Setup_NoBundledCli" xml:space="preserve">
+        <value>Toto sestavení Flocku neobsahuje CLI — spusťte v terminálu `flock install`.</value>
+    </data>
+    <data name="Setup_NotNow" xml:space="preserve">
+        <value>Teď ne</value>
+    </data>
+    <data name="Setup_OpenAtSignIn" xml:space="preserve">
+        <value>Otevírat Flock po přihlášení</value>
+    </data>
+    <data name="Setup_OpenSettings" xml:space="preserve">
+        <value>Otevřít nastavení</value>
+    </data>
+    <data name="Setup_PhpAndNode" xml:space="preserve">
+        <value>PHP a Node.js</value>
+    </data>
+    <data name="Setup_PhpAndNodeDescription" xml:space="preserve">
+        <value>Flock jako výchozí nainstaluje nejnovější PHP a Node.js LTS. Další verze nainstalujete v Nastavení → PHP a Node.</value>
+    </data>
+    <data name="Setup_QuitOthers" xml:space="preserve">
+        <value>Nejdřív ukončete jiná lokální prostředí</value>
+    </data>
+    <data name="Setup_QuitOthersDescription" xml:space="preserve">
+        <value>Flock tyto porty potřebuje pro sebe, ale používají je jiné programy. Kdyby běžely oba, nefungoval by ani jeden.</value>
+    </data>
+    <data name="Setup_Ready" xml:space="preserve">
+        <value>Flock je připravený</value>
+    </data>
+    <data name="Setup_SetUpFlock" xml:space="preserve">
+        <value>Nastavit Flock</value>
+    </data>
+    <data name="Setup_SettingUp" xml:space="preserve">
+        <value>Nastavuje se Flock…</value>
+    </data>
+    <data name="Setup_Star" xml:space="preserve">
+        <value>Flock je zdarma a open source. Pokud se vám líbí, [hvězdička na GitHubu](https://github.com/flock-php/flock) pomůže ostatním ho najít.</value>
+    </data>
+    <data name="Setup_Terminal" xml:space="preserve">
+        <value>Terminál</value>
+    </data>
+    <data name="Setup_TerminalDescription" xml:space="preserve">
+        <value>Verze z Flocku budou v PATH na prvním místě. Po nastavení otevřete nový terminál.</value>
+    </data>
+    <data name="Setup_TerminalTitle" xml:space="preserve">
+        <value>php, composer a node v terminálu</value>
+    </data>
+    <data name="Setup_TrustedHttps" xml:space="preserve">
+        <value>Důvěryhodné HTTPS</value>
+    </data>
+    <data name="Setup_TrustedHttpsDescription" xml:space="preserve">
+        <value>Windows jednou požádá o oprávnění správce: pro malou službu, která přidává vaše weby do souboru hosts, a pro důvěryhodnost certifikátu Flocku.</value>
+    </data>
+    <data name="Setup_TrustedHttpsTitle" xml:space="preserve">
+        <value>Weby *.test s důvěryhodným HTTPS</value>
+    </data>
+    <data name="Setup_TryAgain" xml:space="preserve">
+        <value>Zkusit znovu</value>
+    </data>
+    <data name="Setup_TwoNames" xml:space="preserve">
+        <value>{0} a {1}</value>
+    </data>
+    <data name="Setup_UsedAsDefault" xml:space="preserve">
+        <value>Vaše weby a terminály ho budou používat jako výchozí.</value>
+    </data>
+    <data name="Setup_UsedAsDefaultsBoth" xml:space="preserve">
+        <value>Vaše weby a terminály je budou používat jako výchozí.</value>
+    </data>
+    <data name="Setup_Warning" xml:space="preserve">
+        <value>Upozornění</value>
+    </data>
+    <data name="Setup_Welcome" xml:space="preserve">
+        <value>Vítejte ve Flocku</value>
+    </data>
+    <data name="Sites_AddDomain" xml:space="preserve">
+        <value>Přidat doménu…</value>
+    </data>
+    <data name="Sites_AddDomainNoWildcard" xml:space="preserve">
+        <value>Wildcard subdomény na tomto počítači nefungují, takže přidejte každou, kterou používáte: zapíše se do souboru hosts. Celý název jako {0} přidá alias.</value>
+    </data>
+    <data name="Sites_AddDomainNoWildcardBecause" xml:space="preserve">
+        <value>Wildcard subdomény na tomto počítači nefungují ({0}), takže přidejte každou, kterou používáte: zapíše se do souboru hosts. Celý název jako {1} přidá alias.</value>
+    </data>
+    <data name="Sites_AddDomainPlaceholder" xml:space="preserve">
+        <value>tenant1, a.b nebo {0}</value>
+    </data>
+    <data name="Sites_AddDomainTitle" xml:space="preserve">
+        <value>Přidat doménu k webu {0}</value>
+    </data>
+    <data name="Sites_AddDomainWildcard_few" xml:space="preserve">
+        <value>Každá subdoména až {0} úrovně pod {1} už na tomto počítači funguje. Přidejte ji sem, aby fungovala i tam, kde wildcard DNS nefunguje (zapíše se do souboru hosts), nebo přidejte alias, například {2}.</value>
+    </data>
+    <data name="Sites_AddDomainWildcard_one" xml:space="preserve">
+        <value>Každá subdoména až {0} úroveň pod {1} už na tomto počítači funguje. Přidejte ji sem, aby fungovala i tam, kde wildcard DNS nefunguje (zapíše se do souboru hosts), nebo přidejte alias, například {2}.</value>
+    </data>
+    <data name="Sites_AddDomainWildcard_other" xml:space="preserve">
+        <value>Každá subdoména až {0} úrovní pod {1} už na tomto počítači funguje. Přidejte ji sem, aby fungovala i tam, kde wildcard DNS nefunguje (zapíše se do souboru hosts), nebo přidejte alias, například {2}.</value>
+    </data>
+    <data name="Sites_AddProxy" xml:space="preserve">
+        <value>Přidat proxy…</value>
+    </data>
+    <data name="Sites_AddProxyServerTooltip" xml:space="preserve">
+        <value>Obsluhovat vlastní server, např. dashboard nebo kontejner Dockeru, na doméně .test</value>
+    </data>
+    <data name="Sites_AddProxyTitle" xml:space="preserve">
+        <value>Přidat proxy</value>
+    </data>
+    <data name="Sites_AddSite" xml:space="preserve">
+        <value>Přidat web…</value>
+    </data>
+    <data name="Sites_AddToComposer" xml:space="preserve">
+        <value>Přidat do composer.json…</value>
+    </data>
+    <data name="Sites_Alias" xml:space="preserve">
+        <value>{0} (alias)</value>
+    </data>
+    <data name="Sites_BoostAdd" xml:space="preserve">
+        <value>Přidat Flock do pokynů…</value>
+    </data>
+    <data name="Sites_BoostAddQuestion" xml:space="preserve">
+        <value>Přidat Flock do pokynů Boost webu {0}?</value>
+    </data>
+    <data name="Sites_BoostDetails" xml:space="preserve">
+        <value>Zapíše .ai\guidelines\flock.md do {0} a spustí php artisan boost:update, aby AI agenti věděli, že aplikaci obsluhuje Flock a vybírá její verzi PHP. Commitněte ho se zbytkem .ai\guidelines. Tím se změní soubory ve vašem projektu.</value>
+    </data>
+    <data name="Sites_BoostMissing" xml:space="preserve">
+        <value>Projekt používá Laravel Boost. Přidáním Flocku do jeho pokynů se AI agenti dozvědí, že aplikaci obsluhuje Flock a vybírá její verzi PHP.</value>
+    </data>
+    <data name="Sites_BoostOutdated" xml:space="preserve">
+        <value>Pokyn Flocku v pokynech Boost projektu je zastaralý.</value>
+    </data>
+    <data name="Sites_BoostUpdate" xml:space="preserve">
+        <value>Aktualizovat…</value>
+    </data>
+    <data name="Sites_BoostUpdateQuestion" xml:space="preserve">
+        <value>Aktualizovat pokyn Flocku ve webu {0}?</value>
+    </data>
+    <data name="Sites_Change" xml:space="preserve">
+        <value>Změnit…</value>
+    </data>
+    <data name="Sites_ChangeAction" xml:space="preserve">
+        <value>Změnit</value>
+    </data>
+    <data name="Sites_ChangeRunning" xml:space="preserve">
+        <value>Jiná změna tohoto webu ještě probíhá. Zkuste to znovu, až skončí.</value>
+    </data>
+    <data name="Sites_ChangeUpstreamDetails" xml:space="preserve">
+        <value>Samotný port znamená 127.0.0.1; pro cokoli jiného zadejte hostitele a port (localhost:5173) nebo URL (https://127.0.0.1:8443).</value>
+    </data>
+    <data name="Sites_ChangeUpstreamTitle" xml:space="preserve">
+        <value>Změnit cíl proxy {0}</value>
+    </data>
+    <data name="Sites_ChangesAfile" xml:space="preserve">
+        <value>Tím se změní soubor ve vašem projektu.</value>
+    </data>
+    <data name="Sites_ChangesFiles" xml:space="preserve">
+        <value>Tím se změní soubory ve vašem projektu.</value>
+    </data>
+    <data name="Sites_ChooseFolder" xml:space="preserve">
+        <value>Vybrat složku…</value>
+    </data>
+    <data name="Sites_ChooseFolderInProject" xml:space="preserve">
+        <value>Vyberte složku v projektu</value>
+    </data>
+    <data name="Sites_ChooseFolderInProjectDetails" xml:space="preserve">
+        <value>{0} není ve složce {1}. Kořenová složka webu musí být složkou v projektu.</value>
+    </data>
+    <data name="Sites_Classic" xml:space="preserve">
+        <value>Klasický</value>
+    </data>
+    <data name="Sites_Command" xml:space="preserve">
+        <value>Příkaz</value>
+    </data>
+    <data name="Sites_Default" xml:space="preserve">
+        <value>Výchozí</value>
+    </data>
+    <data name="Sites_DefaultVersion" xml:space="preserve">
+        <value>Výchozí ({0})</value>
+    </data>
+    <data name="Sites_DevServer" xml:space="preserve">
+        <value>Vývojový server</value>
+    </data>
+    <data name="Sites_DevServerFirstVisit" xml:space="preserve">
+        <value>Flock spustí vývojový server při první návštěvě webu.</value>
+    </data>
+    <data name="Sites_DevServerFootnote" xml:space="preserve">
+        <value>Flock spustí skript dev projektu s jeho verzí Node.js, když někdo web navštíví, a po 30 minutách bez návštěv ho zastaví.</value>
+    </data>
+    <data name="Sites_DocumentRoot" xml:space="preserve">
+        <value>Kořenová složka webu</value>
+    </data>
+    <data name="Sites_Domains" xml:space="preserve">
+        <value>Domény</value>
+    </data>
+    <data name="Sites_DownloadingFrankenphp" xml:space="preserve">
+        <value>Stahuje se FrankenPHP pro PHP {0}…</value>
+    </data>
+    <data name="Sites_DownloadingFrankenphpForPhp" xml:space="preserve">
+        <value>Stahuje se FrankenPHP pro PHP {0}… {1} %</value>
+    </data>
+    <data name="Sites_ExtensionCanceled" xml:space="preserve">
+        <value>Požadavek na rozšíření byl zrušen.</value>
+    </data>
+    <data name="Sites_ExtensionMissing" xml:space="preserve">
+        <value>PHP {0} z Flocku ho neobsahuje</value>
+    </data>
+    <data name="Sites_ExtensionRequiredBy" xml:space="preserve">
+        <value>Vyžadováno balíčky: {0}</value>
+    </data>
+    <data name="Sites_ExtensionUsed" xml:space="preserve">
+        <value>Není vyžadováno, ale používá se: {0}</value>
+    </data>
+    <data name="Sites_ExtensionsFootnote" xml:space="preserve">
+        <value>Když je rozšíření vyžadované v composer.json, composer install odmítne server, který ho nemá, místo aby tam aplikace selhala.</value>
+    </data>
+    <data name="Sites_ExtensionsLaravel" xml:space="preserve">
+        <value>PHP {0} · aplikace v Laravelu</value>
+    </data>
+    <data name="Sites_ExtensionsNone" xml:space="preserve">
+        <value>Projekt nevyžaduje žádná rozšíření PHP.</value>
+    </data>
+    <data name="Sites_ExtensionsTitle" xml:space="preserve">
+        <value>Rozšíření PHP webu {0}</value>
+    </data>
+    <data name="Sites_FrankenphpFootnote" xml:space="preserve">
+        <value>FrankenPHP vyžaduje PHP 8.2 nebo novější. Požadavky, které žádají o Xdebug, dál jdou na PHP-CGI.</value>
+    </data>
+    <data name="Sites_FrankenphpFootnoteOctane" xml:space="preserve">
+        <value>FrankenPHP vyžaduje PHP 8.2 nebo novější. Požadavky, které žádají o Xdebug, dál jdou na PHP-CGI. Pro režim workerů nainstalujte do projektu Laravel Octane (composer require laravel/octane).</value>
+    </data>
+    <data name="Sites_FrankenphpRunning" xml:space="preserve">
+        <value>Běží FrankenPHP {0} s PHP {1}</value>
+    </data>
+    <data name="Sites_FrankenphpRunningWorker" xml:space="preserve">
+        <value>Běží FrankenPHP {0} s PHP {1} · režim workerů</value>
+    </data>
+    <data name="Sites_NoOutputYet" xml:space="preserve">
+        <value>Zatím žádný výstup.</value>
+    </data>
+    <data name="Sites_NoSites" xml:space="preserve">
+        <value>Žádné weby</value>
+    </data>
+    <data name="Sites_NoSitesDescription" xml:space="preserve">
+        <value>Přidejte sem jednotlivý web, nebo přidejte složku projektů v části Obecné.</value>
+    </data>
+    <data name="Sites_NodeWins" xml:space="preserve">
+        <value>Node {0} z .flockrc má přednost před {1}.</value>
+    </data>
+    <data name="Sites_NothingAnswersYet" xml:space="preserve">
+        <value>Na {0} zatím nic neodpovídá.</value>
+    </data>
+    <data name="Sites_OctaneTooltip" xml:space="preserve">
+        <value>Pro režim workerů nainstalujte do projektu Laravel Octane (composer require laravel/octane).</value>
+    </data>
+    <data name="Sites_OpenLog" xml:space="preserve">
+        <value>Otevřít log</value>
+    </data>
+    <data name="Sites_Output" xml:space="preserve">
+        <value>Výstup</value>
+    </data>
+    <data name="Sites_PhpCgiMeanwhile" xml:space="preserve">
+        <value>Mezitím web obsluhuje PHP-CGI.</value>
+    </data>
+    <data name="Sites_PhpCgiUntilReady" xml:space="preserve">
+        <value>Dokud nebude připraven, web obsluhuje PHP-CGI.</value>
+    </data>
+    <data name="Sites_PhpExtensions" xml:space="preserve">
+        <value>Rozšíření PHP</value>
+    </data>
+    <data name="Sites_Pin" xml:space="preserve">
+        <value>Připnout</value>
+    </data>
+    <data name="Sites_PinMenuTooltip" xml:space="preserve">
+        <value>Připnout verze a kořenovou složku k projektu</value>
+    </data>
+    <data name="Sites_PinNodeDetails" xml:space="preserve">
+        <value>Zapíše {0} do {1} v {2}. Commitněte ho a Flock, nvm i další nástroje pro Node budou pro tento projekt používat Node {0}.</value>
+    </data>
+    <data name="Sites_PinNodeItem" xml:space="preserve">
+        <value>Připnout Node {0} k projektu…</value>
+    </data>
+    <data name="Sites_PinNodeQuestion" xml:space="preserve">
+        <value>Připnout Node {0} k webu {1}?</value>
+    </data>
+    <data name="Sites_PinPhpDetails" xml:space="preserve">
+        <value>Zapíše php={0} do .flockrc v {1}. Commitněte ho a každý, kdo na tomto projektu používá Flock, dostane PHP {0}.</value>
+    </data>
+    <data name="Sites_PinPhpItem" xml:space="preserve">
+        <value>Připnout PHP {0} k projektu…</value>
+    </data>
+    <data name="Sites_PinPhpQuestion" xml:space="preserve">
+        <value>Připnout PHP {0} k webu {1}?</value>
+    </data>
+    <data name="Sites_PinRootDetails" xml:space="preserve">
+        <value>Zapíše root={0} do .flockrc v {1}. Commitněte ho a každý, kdo na tomto projektu používá Flock, ho bude obsluhovat z {2}.</value>
+    </data>
+    <data name="Sites_PinRootItem" xml:space="preserve">
+        <value>Připnout kořenovou složku ({0}) k projektu…</value>
+    </data>
+    <data name="Sites_PinRootQuestion" xml:space="preserve">
+        <value>Připnout kořenovou složku {0} k webu {1}?</value>
+    </data>
+    <data name="Sites_ProjectFolderBadge" xml:space="preserve">
+        <value>Složka projektu</value>
+    </data>
+    <data name="Sites_Proxies" xml:space="preserve">
+        <value>Proxy</value>
+    </data>
+    <data name="Sites_Proxy" xml:space="preserve">
+        <value>Proxy</value>
+    </data>
+    <data name="Sites_ProxyFootnoteCommands" xml:space="preserve">
+        <value>Každý požadavek se předá cíli i s hlavičkou Host, včetně přechodu na WebSocket (hot reload). Dokud neodpovídá, {0} zobrazuje stránku s touto informací.</value>
+    </data>
+    <data name="Sites_ProxyFootnoteNoCommands" xml:space="preserve">
+        <value>Každý požadavek se předá cíli i s hlavičkou Host, včetně přechodu na WebSocket (hot reload). Flock server nespouští, takže ho spusťte jako obvykle, nebo mu níže zadejte příkazy. Dokud neodpovídá, {0} zobrazuje stránku s touto informací.</value>
+    </data>
+    <data name="Sites_ProxyName" xml:space="preserve">
+        <value>Název</value>
+    </data>
+    <data name="Sites_Proxy_AddCommands" xml:space="preserve">
+        <value>Přidat příkazy…</value>
+    </data>
+    <data name="Sites_Proxy_AddCommandsTitle" xml:space="preserve">
+        <value>Přidat příkazy k {0}</value>
+    </data>
+    <data name="Sites_Proxy_CommandHelp" xml:space="preserve">
+        <value>Flock spustí spouštěcí příkaz, když kliknete na Spustit, a zobrazí jeho výstup. U příkazu, který spouští server na pozadí, jako docker compose up -d, přidejte příkaz, který ho zastaví.</value>
+    </data>
+    <data name="Sites_Proxy_Commands" xml:space="preserve">
+        <value>Příkazy</value>
+    </data>
+    <data name="Sites_Proxy_CommandsOptional" xml:space="preserve">
+        <value>Příkazy (volitelné)</value>
+    </data>
+    <data name="Sites_Proxy_CommandsTitle" xml:space="preserve">
+        <value>Příkazy pro {0}</value>
+    </data>
+    <data name="Sites_Proxy_NotRunning" xml:space="preserve">
+        <value>Neběží</value>
+    </data>
+    <data name="Sites_Proxy_NothingAnswers" xml:space="preserve">
+        <value>Na {0} nic neodpovídá. Spusťte tam server.</value>
+    </data>
+    <data name="Sites_Proxy_RemoveCommands" xml:space="preserve">
+        <value>Odebrat příkazy</value>
+    </data>
+    <data name="Sites_Proxy_Running" xml:space="preserve">
+        <value>Běží</value>
+    </data>
+    <data name="Sites_Proxy_StartInSettings" xml:space="preserve">
+        <value>{0}. Spusťte ho v Nastavení → Weby.</value>
+    </data>
+    <data name="Sites_Proxy_StopCommandHint" xml:space="preserve">
+        <value>Jen pro server, který běží na pozadí, jako docker compose up -d.</value>
+    </data>
+    <data name="Sites_RemoveDomainDetails" xml:space="preserve">
+        <value>{0} už nebude otevírat {1}.</value>
+    </data>
+    <data name="Sites_RemoveProxy" xml:space="preserve">
+        <value>Odebrat proxy</value>
+    </data>
+    <data name="Sites_RemoveProxyDetails" xml:space="preserve">
+        <value>Flock přestane obsluhovat {0}. Server na {1} poběží dál.</value>
+    </data>
+    <data name="Sites_RemoveSite" xml:space="preserve">
+        <value>Odebrat web</value>
+    </data>
+    <data name="Sites_RemoveSiteDetails" xml:space="preserve">
+        <value>{0} se přestane obsluhovat. Soubory projektu zůstanou, kde jsou.</value>
+    </data>
+    <data name="Sites_Require" xml:space="preserve">
+        <value>Vyžadovat</value>
+    </data>
+    <data name="Sites_RequireTooltip" xml:space="preserve">
+        <value>Spustí composer require ext-{0}:* ve složce {1}, což změní composer.json a composer.lock. Commitněte je s projektem.</value>
+    </data>
+    <data name="Sites_RestartFrankenphpTooltip" xml:space="preserve">
+        <value>Restartovat FrankenPHP, např. aby workery Octane načetly změněný kód</value>
+    </data>
+    <data name="Sites_Reverb_CantRun" xml:space="preserve">
+        <value>Reverb nelze spustit.</value>
+    </data>
+    <data name="Sites_Reverb_EnvNeeds" xml:space="preserve">
+        <value>Soubor .env aplikace potřebuje:</value>
+    </data>
+    <data name="Sites_Reverb_Explanation" xml:space="preserve">
+        <value>Flock pro web spouští php artisan reverb:start. Prohlížeče se k němu připojí na {0}, bez vlastního portu či certifikátu.</value>
+    </data>
+    <data name="Sites_Reverb_Footnote" xml:space="preserve">
+        <value>Spojení WebSocket pod /app a broadcasty Laravelu pod /apps jdou do Reverbu; všechny ostatní požadavky zůstávají aplikaci. Flock soubor .env projektu nemění. Po jeho změně znovu sestavte front-end.</value>
+    </data>
+    <data name="Sites_Reverb_Install" xml:space="preserve">
+        <value>Pro spouštění nainstalujte do projektu Laravel Reverb (php artisan install:broadcasting --reverb).</value>
+    </data>
+    <data name="Sites_Reverb_RestartTooltip" xml:space="preserve">
+        <value>Restartovat Reverb, např. aby načetl změněný kód</value>
+    </data>
+    <data name="Sites_Reverb_Run" xml:space="preserve">
+        <value>Spouštět Reverb</value>
+    </data>
+    <data name="Sites_Reverb_RunningAt" xml:space="preserve">
+        <value>Běží na {0}</value>
+    </data>
+    <data name="Sites_Root" xml:space="preserve">
+        <value>Kořen</value>
+    </data>
+    <data name="Sites_RootAutomatic" xml:space="preserve">
+        <value>Automaticky</value>
+    </data>
+    <data name="Sites_RootAutomaticFound" xml:space="preserve">
+        <value>Automaticky ({0})</value>
+    </data>
+    <data name="Sites_RootAutomaticNone" xml:space="preserve">
+        <value>Automaticky (nic nenalezeno)</value>
+    </data>
+    <data name="Sites_RootDefault" xml:space="preserve">
+        <value>Flock obsluhuje první ze složek public\, www\, web\ a webroot\, která obsahuje index.php, jinak složku projektu.</value>
+    </data>
+    <data name="Sites_RootFootnote" xml:space="preserve">
+        <value>Složka, ze které Flock web obsluhuje. Volba zde platí jen na tomto počítači; připnutím (…) ji zapíšete do .flockrc pro všechny.</value>
+    </data>
+    <data name="Sites_RootIsolated" xml:space="preserve">
+        <value>{0} je pro tento web nastaveno na tomto počítači.</value>
+    </data>
+    <data name="Sites_RootMissing" xml:space="preserve">
+        <value>Vyberte složku se souborem index.php aplikace, nebo vytvořte {0}.</value>
+    </data>
+    <data name="Sites_RootNoIndex" xml:space="preserve">
+        <value>{0} neobsahuje index.php ani index.html, takže Flock místo webu zobrazuje informační stránku, dokud tam nebudou.</value>
+    </data>
+    <data name="Sites_RootNotFound" xml:space="preserve">
+        <value>Nebyla nalezena žádná složka public\, www\, web\ ani webroot\ se souborem index.php, takže Flock místo webu zobrazuje informační stránku. Vyberte složku se souborem index.php aplikace.</value>
+    </data>
+    <data name="Sites_RootPinned" xml:space="preserve">
+        <value>Projekt nastavuje {0} v .flockrc.</value>
+    </data>
+    <data name="Sites_RootShadowed" xml:space="preserve">
+        <value>Zde je nastaveno {0}; projekt v .flockrc nastavuje {1}.</value>
+    </data>
+    <data name="Sites_RunsOn" xml:space="preserve">
+        <value>Běží na</value>
+    </data>
+    <data name="Sites_Secure" xml:space="preserve">
+        <value>Zabezpečit</value>
+    </data>
+    <data name="Sites_ServedOverHttps" xml:space="preserve">
+        <value>Obsluhováno přes HTTPS</value>
+    </data>
+    <data name="Sites_Server" xml:space="preserve">
+        <value>Server</value>
+    </data>
+    <data name="Sites_Server_Failed" xml:space="preserve">
+        <value>Selhalo</value>
+    </data>
+    <data name="Sites_Server_FailedBecause" xml:space="preserve">
+        <value>Selhalo: {0}</value>
+    </data>
+    <data name="Sites_Server_RunningOnPort" xml:space="preserve">
+        <value>Běží na portu {0}</value>
+    </data>
+    <data name="Sites_Server_Sleeping" xml:space="preserve">
+        <value>Spí · spustí se při další návštěvě</value>
+    </data>
+    <data name="Sites_Server_Starting" xml:space="preserve">
+        <value>Spouští se…</value>
+    </data>
+    <data name="Sites_Server_Stopped" xml:space="preserve">
+        <value>Zastaveno</value>
+    </data>
+    <data name="Sites_Server_StoppedBecause" xml:space="preserve">
+        <value>Zastaveno: {0}</value>
+    </data>
+    <data name="Sites_Server_Stopping" xml:space="preserve">
+        <value>Zastavuje se…</value>
+    </data>
+    <data name="Sites_ShareSection" xml:space="preserve">
+        <value>Sdílení</value>
+    </data>
+    <data name="Sites_Share_AllowExplanation" xml:space="preserve">
+        <value>Web může otevřít kdokoli s odkazem, pokud neuvedete e-mailové adresy — Cloudflare jim pak pošle kód e-mailem. Odkaz přestane fungovat po 8 hodinách nebo po ukončení sdílení.</value>
+    </data>
+    <data name="Sites_Share_AllowHeader" xml:space="preserve">
+        <value>Jen tito lidé (volitelné)</value>
+    </data>
+    <data name="Sites_Share_AllowPlaceholder" xml:space="preserve">
+        <value>kolega@acme.com, *@klient.cz</value>
+    </data>
+    <data name="Sites_Share_Building" xml:space="preserve">
+        <value>Sestavují se assety…</value>
+    </data>
+    <data name="Sites_Share_CopyImage" xml:space="preserve">
+        <value>Kopírovat obrázek</value>
+    </data>
+    <data name="Sites_Share_CouldNotSaveQr" xml:space="preserve">
+        <value>QR kód se nepodařilo uložit</value>
+    </data>
+    <data name="Sites_Share_DebugOn" xml:space="preserve">
+        <value>Ladicí režim je zapnutý: návštěvníci vidí výpisy zásobníku</value>
+    </data>
+    <data name="Sites_Share_Dismiss" xml:space="preserve">
+        <value>Zavřít</value>
+    </data>
+    <data name="Sites_Share_EndsAt" xml:space="preserve">
+        <value>Skončí v {0}</value>
+    </data>
+    <data name="Sites_Share_Explanation" xml:space="preserve">
+        <value>Zpřístupněte web na dočasné veřejné adrese k náhledu rozpracované práce, nikdy ne pro produkci. Návštěvníci neuvidí ladicí stránky, dumpy ani vývojářské nástroje.</value>
+    </data>
+    <data name="Sites_Share_OnlyFor" xml:space="preserve">
+        <value>Jen pro: {0}</value>
+    </data>
+    <data name="Sites_Share_PngImage" xml:space="preserve">
+        <value>Obrázek PNG</value>
+    </data>
+    <data name="Sites_Share_QrName" xml:space="preserve">
+        <value>QR kód adresy sdílení</value>
+    </data>
+    <data name="Sites_Share_QrTooltip" xml:space="preserve">
+        <value>Kliknutím pravým tlačítkem QR kód zkopírujete nebo uložíte, případně ho přetáhněte</value>
+    </data>
+    <data name="Sites_Share_Rebuild" xml:space="preserve">
+        <value>Znovu sestavit assety</value>
+    </data>
+    <data name="Sites_Share_RebuildTooltip" xml:space="preserve">
+        <value>Znovu sestavit assety (npm run build), aby návštěvníci po načtení stránky viděli vaše poslední změny</value>
+    </data>
+    <data name="Sites_Share_Rebuilding" xml:space="preserve">
+        <value>Znovu se sestavuje…</value>
+    </data>
+    <data name="Sites_Share_SaveImage" xml:space="preserve">
+        <value>Uložit obrázek…</value>
+    </data>
+    <data name="Sites_Share_Share" xml:space="preserve">
+        <value>Sdílet</value>
+    </data>
+    <data name="Sites_Share_ShareEllipsis" xml:space="preserve">
+        <value>Sdílet…</value>
+    </data>
+    <data name="Sites_Share_ShowErrors" xml:space="preserve">
+        <value>Zobrazovat návštěvníkům podrobnosti chyb</value>
+    </data>
+    <data name="Sites_Share_ShowErrorsExplanation" xml:space="preserve">
+        <value>Zapne pro toto sdílení ladicí režim aplikace, takže návštěvníci uvidí výpisy zásobníku. Jen pro lidi, kterým důvěřujete.</value>
+    </data>
+    <data name="Sites_Share_Starting" xml:space="preserve">
+        <value>Spouští se tunel…</value>
+    </data>
+    <data name="Sites_Share_Stop" xml:space="preserve">
+        <value>Zastavit</value>
+    </data>
+    <data name="Sites_Share_StopSharing" xml:space="preserve">
+        <value>Ukončit sdílení</value>
+    </data>
+    <data name="Sites_Share_Stopped" xml:space="preserve">
+        <value>Sdílení se zastavilo.</value>
+    </data>
+    <data name="Sites_Share_Title" xml:space="preserve">
+        <value>Sdílet {0}</value>
+    </data>
+    <data name="Sites_Shared" xml:space="preserve">
+        <value>Sdíleno</value>
+    </data>
+    <data name="Sites_ShowLog" xml:space="preserve">
+        <value>Zobrazit log</value>
+    </data>
+    <data name="Sites_Site" xml:space="preserve">
+        <value>Web</value>
+    </data>
+    <data name="Sites_State" xml:space="preserve">
+        <value>Stav</value>
+    </data>
+    <data name="Sites_SubdomainsOnlyHere" xml:space="preserve">
+        <value>Subdomény fungují, jen když je přidáte sem: {0}.</value>
+    </data>
+    <data name="Sites_Subtitle" xml:space="preserve">
+        <value>Weby přidané jednotlivě a každá složka uvnitř vašich složek projektů.</value>
+    </data>
+    <data name="Sites_Type" xml:space="preserve">
+        <value>Typ</value>
+    </data>
+    <data name="Sites_Unpin" xml:space="preserve">
+        <value>Odepnout</value>
+    </data>
+    <data name="Sites_UnpinNodeDetails" xml:space="preserve">
+        <value>Odebere verzi Node.js z .flockrc a smaže .nvmrc / .node-version v {0}. Web pak bude používat výchozí Node.js Flocku.</value>
+    </data>
+    <data name="Sites_UnpinNodeItem" xml:space="preserve">
+        <value>Odepnout Node ({0})…</value>
+    </data>
+    <data name="Sites_UnpinNodeQuestion" xml:space="preserve">
+        <value>Odepnout Node od webu {0}?</value>
+    </data>
+    <data name="Sites_UnpinPhpDetails" xml:space="preserve">
+        <value>Odebere verzi PHP z {0}. Web pak bude používat výchozí PHP Flocku.</value>
+    </data>
+    <data name="Sites_UnpinPhpItem" xml:space="preserve">
+        <value>Odepnout PHP ({0})…</value>
+    </data>
+    <data name="Sites_UnpinPhpQuestion" xml:space="preserve">
+        <value>Odepnout PHP od webu {0}?</value>
+    </data>
+    <data name="Sites_UnpinRootDetails" xml:space="preserve">
+        <value>Odebere root= z .flockrc v {0}. Flock pak kořenovou složku najde sám.</value>
+    </data>
+    <data name="Sites_UnpinRootItem" xml:space="preserve">
+        <value>Odepnout kořenovou složku (.flockrc)…</value>
+    </data>
+    <data name="Sites_UnpinRootQuestion" xml:space="preserve">
+        <value>Odepnout kořenovou složku od webu {0}?</value>
+    </data>
+    <data name="Sites_Upstream" xml:space="preserve">
+        <value>Cíl</value>
+    </data>
+    <data name="Sites_UpstreamPlaceholder" xml:space="preserve">
+        <value>Port, hostitel:port nebo URL</value>
+    </data>
+    <data name="Sites_UpstreamPlaceholderShort" xml:space="preserve">
+        <value>3000, hostitel:port nebo URL</value>
+    </data>
+    <data name="Sites_UpstreamPortMeans" xml:space="preserve">
+        <value>Samotný port znamená 127.0.0.1.</value>
+    </data>
+    <data name="Sites_Url" xml:space="preserve">
+        <value>URL</value>
+    </data>
+    <data name="Sites_UseFile" xml:space="preserve">
+        <value>Použít {0}</value>
+    </data>
+    <data name="Sites_UseFileVersion" xml:space="preserve">
+        <value>Podle {0} ({1})</value>
+    </data>
+    <data name="Sites_VersionDefault" xml:space="preserve">
+        <value>Web se řídí výchozí verzí {0} ve Flocku.</value>
+    </data>
+    <data name="Sites_VersionIsolated" xml:space="preserve">
+        <value>{0} je pro tento web nastaveno na tomto počítači (izolovaně).</value>
+    </data>
+    <data name="Sites_VersionPinned" xml:space="preserve">
+        <value>Projekt připíná {0} v {1}.</value>
+    </data>
+    <data name="Sites_VersionShadowed" xml:space="preserve">
+        <value>{0} je zde izolováno; projekt připíná {1} v {2}.</value>
+    </data>
+    <data name="Sites_VersionsFootnote" xml:space="preserve">
+        <value>Verze zvolená zde platí jen na tomto počítači. Chcete-li ji nastavit všem, kdo na projektu pracují, připněte ji (…): PHP se zapíše do .flockrc, Node.js do .nvmrc.</value>
+    </data>
+    <data name="Sites_VersionsFootnoteNode" xml:space="preserve">
+        <value>Verze zvolená zde platí jen na tomto počítači. Chcete-li ji nastavit všem, kdo na projektu pracují, připněte ji (…) do .nvmrc.</value>
+    </data>
+    <data name="Updates_ChecksumMismatch" xml:space="preserve">
+        <value>Stažený soubor neodpovídá kontrolnímu součtu.</value>
+    </data>
+    <data name="Updates_CouldNotUpdate" xml:space="preserve">
+        <value>Flock se nepodařilo aktualizovat</value>
+    </data>
+    <data name="Updates_CouldNotUpdateDetails" xml:space="preserve">
+        <value>{0}
+
+Můžete v terminálu spustit `flock install`, nebo Flock znovu nainstalovat.</value>
+    </data>
+    <data name="Updates_Downloading" xml:space="preserve">
+        <value>Stahuje se… {0}</value>
+    </data>
+    <data name="Updates_FileAccess" xml:space="preserve">
+        <value>Flock nemá přístup k souboru aktualizace.</value>
+    </data>
+    <data name="Updates_InstallerNotStarted" xml:space="preserve">
+        <value>Ověřený instalátor se nepodařilo spustit.</value>
+    </data>
+    <data name="Updates_Installing" xml:space="preserve">
+        <value>Instaluje se…</value>
+    </data>
+    <data name="Updates_Invalid" xml:space="preserve">
+        <value>Zdroj aktualizací není platný: {0}</value>
+    </data>
+    <data name="Updates_NoChecksum" xml:space="preserve">
+        <value>Zdroj aktualizací pro ni neuvádí kontrolní součet.</value>
+    </data>
+    <data name="Updates_NoneAvailable" xml:space="preserve">
+        <value>Žádná aktualizace není k dispozici.</value>
+    </data>
+    <data name="Updates_NotCompleted" xml:space="preserve">
+        <value>Aktualizaci se nepodařilo dokončit.</value>
+    </data>
+    <data name="Updates_ServerUnreachable" xml:space="preserve">
+        <value>Server s aktualizacemi není dostupný.</value>
+    </data>
+    <data name="Updates_SetupExited" xml:space="preserve">
+        <value>Aktualizace nebyla nainstalována (instalátor skončil s kódem {0}).</value>
+    </data>
+    <data name="Updates_TookTooLong" xml:space="preserve">
+        <value>Požadavek na aktualizaci trval příliš dlouho.</value>
+    </data>
+    <data name="Updates_UnknownPublisher" xml:space="preserve">
+        <value>Je podepsaný neznámým vydavatelem, ne {0}.</value>
+    </data>
+    <data name="Updates_UntrustedSignature" xml:space="preserve">
+        <value>Jeho podpis není důvěryhodný ({0}).</value>
+    </data>
+    <data name="Updates_WrongLength" xml:space="preserve">
+        <value>Stažený soubor má {0} bajtů místo {1}.</value>
+    </data>
+    <data name="Updates_WrongPublisher" xml:space="preserve">
+        <value>Je podepsaný subjektem {0}, ne {1}.</value>
+    </data>
+    <data name="Versions_CheckNow" xml:space="preserve">
+        <value>Zkontrolovat</value>
+    </data>
+    <data name="Versions_Checking" xml:space="preserve">
+        <value>Kontroluje se…</value>
+    </data>
+    <data name="Versions_CouldNotCheck" xml:space="preserve">
+        <value>Kontrola se nezdařila: {0}</value>
+    </data>
+    <data name="Versions_CouldNotCheckUpdates" xml:space="preserve">
+        <value>Aktualizace se nepodařilo vyhledat: {0}</value>
+    </data>
+    <data name="Versions_Default" xml:space="preserve">
+        <value>Výchozí</value>
+    </data>
+    <data name="Versions_DownloadFailed" xml:space="preserve">
+        <value>Stahování selhalo.</value>
+    </data>
+    <data name="Versions_DownloadingNode" xml:space="preserve">
+        <value>Stahuje se Node.js {0}…</value>
+    </data>
+    <data name="Versions_FrankenNotInstalled" xml:space="preserve">
+        <value>Nenainstalováno · stáhne se samo, až ho nějaký web použije</value>
+    </data>
+    <data name="Versions_LastChecked" xml:space="preserve">
+        <value>Naposledy zkontrolováno {0}</value>
+    </data>
+    <data name="Versions_LogTitle" xml:space="preserve">
+        <value>Log {0}</value>
+    </data>
+    <data name="Versions_MakeDefault" xml:space="preserve">
+        <value>Nastavit jako výchozí</value>
+    </data>
+    <data name="Versions_NewBuild" xml:space="preserve">
+        <value>K dispozici je nové sestavení</value>
+    </data>
+    <data name="Versions_NotChecked" xml:space="preserve">
+        <value>Zatím nezkontrolováno</value>
+    </data>
+    <data name="Versions_NpmAvailable" xml:space="preserve">
+        <value>k dispozici npm {0}</value>
+    </data>
+    <data name="Versions_Prerelease" xml:space="preserve">
+        <value>Předběžná verze</value>
+    </data>
+    <data name="Versions_ShowLastInstallLog" xml:space="preserve">
+        <value>Zobrazit log poslední instalace</value>
+    </data>
+    <data name="Versions_ShowLog" xml:space="preserve">
+        <value>Zobrazit log</value>
+    </data>
+    <data name="Versions_UpToDate" xml:space="preserve">
+        <value>Aktuální</value>
+    </data>
+    <data name="Versions_UpdateAvailable" xml:space="preserve">
+        <value>K dispozici je aktualizace</value>
+    </data>
+    <data name="Versions_Versions" xml:space="preserve">
+        <value>Verze</value>
+    </data>
+    <data name="Worktrees_BranchStays" xml:space="preserve">
+        <value>Větev {0} zůstane.</value>
+    </data>
+    <data name="Worktrees_CouldNotRemove" xml:space="preserve">
+        <value>{0} se nepodařilo odebrat</value>
+    </data>
+    <data name="Worktrees_Create" xml:space="preserve">
+        <value>Vytvořit</value>
+    </data>
+    <data name="Worktrees_Current" xml:space="preserve">
+        <value>Aktuální</value>
+    </data>
+    <data name="Worktrees_DatabaseCopy" xml:space="preserve">
+        <value>Kopie databáze webu</value>
+    </data>
+    <data name="Worktrees_DatabaseFresh" xml:space="preserve">
+        <value>Nová, prázdná</value>
+    </data>
+    <data name="Worktrees_DatabaseShared" xml:space="preserve">
+        <value>Databáze webu</value>
+    </data>
+    <data name="Worktrees_DetachedHead" xml:space="preserve">
+        <value>Žádná (odpojený HEAD)</value>
+    </data>
+    <data name="Worktrees_DropDetailsCopy" xml:space="preserve">
+        <value>{0} pak bude používat kopii databáze webu {1}. Jeho databáze {2} se smaže i s daty.</value>
+    </data>
+    <data name="Worktrees_DropDetailsFresh" xml:space="preserve">
+        <value>{0} pak bude používat prázdnou databázi. Jeho databáze {2} se smaže i s daty.</value>
+    </data>
+    <data name="Worktrees_DropDetailsShared" xml:space="preserve">
+        <value>{0} pak bude používat databázi webu {1}. Jeho databáze {2} se smaže i s daty.</value>
+    </data>
+    <data name="Worktrees_DropQuestion" xml:space="preserve">
+        <value>Smazat databázi {0}?</value>
+    </data>
+    <data name="Worktrees_Explanation" xml:space="preserve">
+        <value>Každý git worktree projektu se obsluhuje na &lt;větev&gt;.{0} s vlastními závislostmi a souborem .env.</value>
+    </data>
+    <data name="Worktrees_GiveCopyDetails" xml:space="preserve">
+        <value>Flock zkopíruje databázi webu a spustí na ní nové migrace z větve.</value>
+    </data>
+    <data name="Worktrees_GiveCopyQuestion" xml:space="preserve">
+        <value>Dát worktree {0} kopii databáze webu {1}?</value>
+    </data>
+    <data name="Worktrees_GiveFreshDetails" xml:space="preserve">
+        <value>Flock vytvoří prázdnou databázi a spustí migrace.</value>
+    </data>
+    <data name="Worktrees_GiveFreshQuestion" xml:space="preserve">
+        <value>Dát worktree {0} prázdnou databázi?</value>
+    </data>
+    <data name="Worktrees_GiveSharedDetails" xml:space="preserve">
+        <value>Migrace spuštěné ve worktree pak změní i databázi webu.</value>
+    </data>
+    <data name="Worktrees_GiveSharedQuestion" xml:space="preserve">
+        <value>Dát worktree {0} databázi webu {1}?</value>
+    </data>
+    <data name="Worktrees_IsSetUp" xml:space="preserve">
+        <value>Připraveno</value>
+    </data>
+    <data name="Worktrees_Job_CouldNotLoad" xml:space="preserve">
+        <value>Log se nepodařilo načíst.
+
+{0}</value>
+    </data>
+    <data name="Worktrees_Job_CouldNotLoadShort" xml:space="preserve">
+        <value>Log se nepodařilo načíst.</value>
+    </data>
+    <data name="Worktrees_Job_NoLogYet" xml:space="preserve">
+        <value>Zatím žádný log.</value>
+    </data>
+    <data name="Worktrees_Job_NoPath" xml:space="preserve">
+        <value>Flock neuvedl, kde worktree je.</value>
+    </data>
+    <data name="Worktrees_Job_Ready" xml:space="preserve">
+        <value>Připraveno</value>
+    </data>
+    <data name="Worktrees_Job_ReadyAt" xml:space="preserve">
+        <value>Připraveno na {0}</value>
+    </data>
+    <data name="Worktrees_Job_SeeLog" xml:space="preserve">
+        <value>viz log</value>
+    </data>
+    <data name="Worktrees_Job_SetupFailed" xml:space="preserve">
+        <value>Příprava selhala: {0}</value>
+    </data>
+    <data name="Worktrees_Job_Starting" xml:space="preserve">
+        <value>Spouští se…</value>
+    </data>
+    <data name="Worktrees_New" xml:space="preserve">
+        <value>Nový worktree…</value>
+    </data>
+    <data name="Worktrees_NewTitle" xml:space="preserve">
+        <value>Nový worktree webu {0}</value>
+    </data>
+    <data name="Worktrees_New_Branch" xml:space="preserve">
+        <value>Větev</value>
+    </data>
+    <data name="Worktrees_New_BranchPlaceholder" xml:space="preserve">
+        <value>název jako brave-otter</value>
+    </data>
+    <data name="Worktrees_New_CurrentBranch" xml:space="preserve">
+        <value>{0} (aktuální)</value>
+    </data>
+    <data name="Worktrees_New_CurrentCommit" xml:space="preserve">
+        <value>Aktuální commit</value>
+    </data>
+    <data name="Worktrees_New_Database" xml:space="preserve">
+        <value>Databáze</value>
+    </data>
+    <data name="Worktrees_New_DatabaseNote" xml:space="preserve">
+        <value>Ve vlastní databázi se spustí migrace. Výchozí nastavení projektu je to, co uvádí flock.yml, jinak nastavení webu.</value>
+    </data>
+    <data name="Worktrees_New_DefaultBranch" xml:space="preserve">
+        <value>{0} (výchozí)</value>
+    </data>
+    <data name="Worktrees_New_ExplainExisting" xml:space="preserve">
+        <value>Větev {0} už existuje, takže ji worktree použije. Flock ho vytvoří vedle webu {1}, připraví ho a bude ho obsluhovat na {2}.</value>
+    </data>
+    <data name="Worktrees_New_ExplainNew" xml:space="preserve">
+        <value>Flock vytvoří worktree vedle webu {0} na nové větvi {1}, připraví ho a bude ho obsluhovat na {2}.</value>
+    </data>
+    <data name="Worktrees_New_ExplainUnnamed" xml:space="preserve">
+        <value>Flock vytvoří worktree vedle webu {0} na nové větvi s vlastním názvem, připraví ho a bude ho obsluhovat na vlastní adrese.</value>
+    </data>
+    <data name="Worktrees_New_StartFrom" xml:space="preserve">
+        <value>Vycházet z</value>
+    </data>
+    <data name="Worktrees_None" xml:space="preserve">
+        <value>Žádný</value>
+    </data>
+    <data name="Worktrees_NotSetUp" xml:space="preserve">
+        <value>Flock tento worktree obsluhuje, ale nepřipravil ho: jeho závislosti, .env a databáze jsou tak, jak byly.</value>
+    </data>
+    <data name="Worktrees_Off" xml:space="preserve">
+        <value>Vypnuto</value>
+    </data>
+    <data name="Worktrees_On" xml:space="preserve">
+        <value>Zapnuto</value>
+    </data>
+    <data name="Worktrees_OwnDatabase" xml:space="preserve">
+        <value>vlastní databáze</value>
+    </data>
+    <data name="Worktrees_OwnDatabaseTooltip" xml:space="preserve">
+        <value>Vlastní databáze: {0}</value>
+    </data>
+    <data name="Worktrees_ProjectDefault" xml:space="preserve">
+        <value>Výchozí podle projektu</value>
+    </data>
+    <data name="Worktrees_Remove" xml:space="preserve">
+        <value>Odebrat worktree</value>
+    </data>
+    <data name="Worktrees_RemoveAnyway" xml:space="preserve">
+        <value>Přesto odebrat</value>
+    </data>
+    <data name="Worktrees_RemoveDetails" xml:space="preserve">
+        <value>Flock spustí jeho hook before_delete a smaže {0}.</value>
+    </data>
+    <data name="Worktrees_RemoveDetailsDatabase" xml:space="preserve">
+        <value>Flock spustí jeho hook before_delete a smaže {0} i jeho databázi {1}.</value>
+    </data>
+    <data name="Worktrees_RunAgain" xml:space="preserve">
+        <value>Znovu spustit přípravu</value>
+    </data>
+    <data name="Worktrees_RunAgainTooltip" xml:space="preserve">
+        <value>Zkopírovat, co chybí, nainstalovat, připravit databázi a znovu spustit hooky</value>
+    </data>
+    <data name="Worktrees_SeeLog" xml:space="preserve">
+        <value>viz jeho log</value>
+    </data>
+    <data name="Worktrees_SetUpAction" xml:space="preserve">
+        <value>Připravit</value>
+    </data>
+    <data name="Worktrees_SetUpFirst" xml:space="preserve">
+        <value>Nejdřív worktree připravte.</value>
+    </data>
+    <data name="Worktrees_SettingUp" xml:space="preserve">
+        <value>Připravuje se…</value>
+    </data>
+    <data name="Worktrees_SettingUpTitle" xml:space="preserve">
+        <value>Připravuje se {0}</value>
+    </data>
+    <data name="Worktrees_Settings" xml:space="preserve">
+        <value>Nastavení</value>
+    </data>
+    <data name="Worktrees_Setup" xml:space="preserve">
+        <value>Příprava</value>
+    </data>
+    <data name="Worktrees_SetupFailed" xml:space="preserve">
+        <value>Příprava selhala</value>
+    </data>
+    <data name="Worktrees_SetupFailedSentence" xml:space="preserve">
+        <value>Příprava selhala.</value>
+    </data>
+    <data name="Worktrees_SetupFailedTitle" xml:space="preserve">
+        <value>Příprava {0} se nezdařila</value>
+    </data>
+    <data name="Worktrees_SetupLogTitle" xml:space="preserve">
+        <value>Příprava {0}</value>
+    </data>
+    <data name="Worktrees_SharedDatabaseNote" xml:space="preserve">
+        <value>S databází webu změní migrace spuštěné ve worktree i databázi webu.</value>
+    </data>
+    <data name="Worktrees_StillServed" xml:space="preserve">
+        <value>Worktree se dál obsluhuje.</value>
+    </data>
+    <data name="Worktrees_Switch" xml:space="preserve">
+        <value>Přepnout</value>
+    </data>
+    <data name="Worktrees_SwitchingDatabase" xml:space="preserve">
+        <value>Přepíná se databáze worktree {0}</value>
+    </data>
+    <data name="Worktrees_UsesSiteSettings" xml:space="preserve">
+        <value>Používá nastavení webu {0}: PHP, Node.js, HTTPS a kořenovou složku (platí i verze připnuté ve větvi). Změníte je u webu {0}.</value>
+    </data>
+    <data name="Worktrees_UsesSiteSettingsNode" xml:space="preserve">
+        <value>Používá nastavení webu {0}: Node.js a HTTPS (platí i verze připnutá ve větvi). Změníte je u webu {0}.</value>
+    </data>
+    <data name="Worktrees_Waiting" xml:space="preserve">
+        <value>Čeká se na dokončení jiné přípravy…</value>
+    </data>
+    <data name="Worktrees_Worktree" xml:space="preserve">
+        <value>Worktree</value>
+    </data>
+    <data name="Worktrees_Worktrees" xml:space="preserve">
+        <value>Worktrees</value>
+    </data>
+</root>

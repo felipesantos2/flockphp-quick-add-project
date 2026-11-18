@@ -1,20 +1,18 @@
 using System.ComponentModel;
 using System.Security;
 using Flock.Kit;
-using Flock.Tray.Features.Update;
 using Flock.Tray.Infrastructure;
 using Flock.Tray.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 namespace Flock.Tray.Settings;
 
-internal sealed partial class GeneralPane : UserControl, ISettingsPane
+internal sealed partial class GeneralPane : ISettingsPane
 {
     private readonly bool loaded;
     private readonly RuntimeService model;
     private readonly GeneralViewModel viewModel;
     private readonly SettingsWindow window;
-    private string? selectedParked;
 
     public GeneralPane(SettingsWindow window, RuntimeService model)
     {
@@ -24,15 +22,14 @@ internal sealed partial class GeneralPane : UserControl, ISettingsPane
         viewModel = new GeneralViewModel(model);
         DataContext = viewModel;
         Startup.IsOn = Native.StartsAtSignIn;
-        model.UpdateService.Changed += UpdateChanged;
+        LanguageHost.Children.Add(LanguageSetting.Create(model.Preferences));
         viewModel.PropertyChanged += ViewModelChanged;
         loaded = true;
-        UpdateChanged();
         UpdateParked();
     }
 
-    public string Title => "General";
-    public string Subtitle => "The Flock daemon runs your sites, PHP and services in the background.";
+    public string Title => Strings.General_Title;
+    public string Subtitle => Strings.General_Subtitle;
     public UIElement Root => this;
     public bool ScrollsItself => false;
     public Task ActivateAsync(CancellationToken hidden)
@@ -44,7 +41,6 @@ internal sealed partial class GeneralPane : UserControl, ISettingsPane
 
     public Task ReleaseAsync()
     {
-        model.UpdateService.Changed -= UpdateChanged;
         viewModel.PropertyChanged -= ViewModelChanged;
         viewModel.Dispose();
         return Task.CompletedTask;
@@ -61,49 +57,31 @@ internal sealed partial class GeneralPane : UserControl, ISettingsPane
     private void UpdateParked()
     {
         var paths = viewModel.Config?.Parked ?? [];
-        NoParked.Visibility = paths.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        if (selectedParked is not null)
+        if (viewModel.SelectedParked is null)
+            return;
+
+        Parked.SelectedIndex = paths.IndexOf(viewModel.SelectedParked);
+
+        if (Parked.SelectedIndex < 0)
         {
-            Parked.SelectedIndex = paths.IndexOf(selectedParked);
-            if (Parked.SelectedIndex < 0)
-            {
-                selectedParked = null;
-            }
+            viewModel.SelectedParked = null;
         }
-        RemoveParked.IsEnabled = selectedParked is not null;
     }
 
-    private void UpdateChanged()
+    private async void ReleaseNotesClicked(object sender, RoutedEventArgs args)
     {
-        UpdateHost.Children.Clear();
-        var updater = model.UpdateService;
-        if (!updater.IsEnabled || UpdateService.Current is not { } current)
+        if (model.UpdateService.Available is not { } available)
         {
-            UpdateHost.Children.Add(Ui.Setting("Flock", "Updates need a version such as 1.0.0. Set InformationalVersion when building to test updates.", null));
             return;
         }
-        var idle = !updater.IsBusy;
-        var description = updater.Summary.Length > 0 ? $"Version {current} · {updater.Summary}" : $"Version {current}";
-        var button = updater.Available is { } update
-            ? Ui.Button($"Update to {update.Version}", () => _ = updater.InstallAsync(), true)
-            : Ui.Button("Check for Updates", () => _ = updater.CheckAsync(userInitiated: true));
-        button.IsEnabled = idle;
-        UIElement control = idle ? button : Ui.Row(12, new ProgressRing { Width = 16, Height = 16 }, button);
-        if (updater.Available is { } available && (available.Notes.Length > 0 || available.NotesUrl is not null) && idle)
+        if (available.Notes.Length > 0)
         {
-            control = Ui.Row(12, Ui.Link("Release Notes", async () =>
-            {
-                if (available.Notes.Length > 0)
-                {
-                    await ReleaseNotesAsync(available);
-                }
-                else if (available.NotesUrl is { } url)
-                {
-                    model.Open(url);
-                }
-            }), button);
+            await ReleaseNotesAsync(available);
         }
-        UpdateHost.Children.Add(Ui.Setting("Flock", description, control));
+        else if (available.NotesUrl is { } url)
+        {
+            model.Open(url);
+        }
     }
 
     private async Task ReleaseNotesAsync(UpdateFeed.Item update)
@@ -114,13 +92,17 @@ internal sealed partial class GeneralPane : UserControl, ISettingsPane
         {
             Title = $"Flock {update.Version}",
             Content = notes,
-            PrimaryButtonText = $"Update to {update.Version}",
-            SecondaryButtonText = update.NotesUrl is null ? "" : "View on GitHub",
-            CloseButtonText = "Close",
+            PrimaryButtonText = Localization.Format(Strings.General_UpdateTo, update.Version),
+            SecondaryButtonText = update.NotesUrl is null ? "" : Strings.General_ViewOnGithub,
+            CloseButtonText = Strings.Common_Close,
             DefaultButton = ContentDialogButton.Primary,
-            XamlRoot = XamlRoot
+            XamlRoot = XamlRoot,
+            Resources =
+            {
+                ["ContentDialogMaxWidth"] = 600.0
+            }
         };
-        dialog.Resources["ContentDialogMaxWidth"] = 600.0;
+
         ContentDialogResult result;
         try
         {
@@ -131,6 +113,8 @@ internal sealed partial class GeneralPane : UserControl, ISettingsPane
             await load;
             await notes.ReleaseAsync();
         }
+
+        // Close and Esc give None: nothing to do then.
         if (result == ContentDialogResult.Primary)
         {
             await model.UpdateService.InstallAsync();
@@ -166,17 +150,17 @@ internal sealed partial class GeneralPane : UserControl, ISettingsPane
         }
         catch (Exception e) when (e is UnauthorizedAccessException or SecurityException or IOException)
         {
-            model.ShowRuntimeError($"Could not change the startup setting: {e.Message}");
+            model.ShowRuntimeError(Localization.Format(Strings.General_CouldNotChangeStartup, e.Message));
         }
     }
 
     private async void BetaToggled(object sender, RoutedEventArgs args)
     {
-        if (loaded && Beta.IsOn != viewModel.IsBeta)
-        {
-            await viewModel.SetChannelCommand.ExecuteAsync(Beta.IsOn ? "beta" : "stable");
-            await model.UpdateService.CheckAsync(userInitiated: false);
-        }
+        if (!loaded || Beta.IsOn == viewModel.IsBeta)
+            return;
+
+        await viewModel.SetChannelCommand.ExecuteAsync(Beta.IsOn ? "beta" : "stable");
+        await model.UpdateService.CheckAsync(userInitiated: false);
     }
 
     private void ShowRoot(object sender, RoutedEventArgs args)
@@ -184,15 +168,9 @@ internal sealed partial class GeneralPane : UserControl, ISettingsPane
         model.Reveal(viewModel.Config?.Root ?? "");
     }
 
-    private void ParkedSelectionChanged(object sender, SelectionChangedEventArgs args)
-    {
-        selectedParked = Parked.SelectedItem as string;
-        RemoveParked.IsEnabled = selectedParked is not null;
-    }
-
     private async void AddParkedClicked(object sender, RoutedEventArgs args)
     {
-        var paths = await window.PickFolders("Add Project Folders");
+        var paths = await window.PickFolders(Strings.General_AddProjectFoldersTitle);
         if (paths.Count > 0)
         {
             await PerformAsync(async client =>
@@ -207,12 +185,15 @@ internal sealed partial class GeneralPane : UserControl, ISettingsPane
 
     private async void RemoveParkedClicked(object sender, RoutedEventArgs args)
     {
-        if (selectedParked is { } path && await window.Confirm($"Remove {path} from project folders?",
-                "Its folders stop being served as sites. Nothing is deleted from disk.", "Remove", true))
-        {
-            selectedParked = null;
-            await PerformAsync(client => client.UnparkAsync(path));
-        }
+        if (viewModel.SelectedParked is not { } path)
+            return;
+
+        if (!await window.Confirm(Localization.Format(Strings.General_RemoveProjectFolderQuestion, path),
+                Strings.General_RemoveProjectFolderDetails, Strings.Common_Remove, true))
+            return;
+
+        viewModel.SelectedParked = null;
+        await PerformAsync(client => client.UnparkAsync(path));
     }
 
     private async Task PerformAsync(Func<FlockClient, Task> change)

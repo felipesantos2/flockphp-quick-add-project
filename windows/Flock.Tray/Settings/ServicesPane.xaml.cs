@@ -32,8 +32,8 @@ internal sealed partial class ServicesPane : UserControl, ISettingsPane
     private SettingsWindow Window { get; }
     private RuntimeService Model { get; }
 
-    public string Title => "Services";
-    public string Subtitle => "Databases, caches, search and the tools around your sites. Everything listens on 127.0.0.1 only.";
+    public string Title => Strings.Settings_Pane_Services;
+    public string Subtitle => Strings.Services_Subtitle;
     public UIElement Root => this;
     public bool ScrollsItself => true;
 
@@ -106,7 +106,7 @@ internal sealed partial class ServicesPane : UserControl, ISettingsPane
         Filter.SelectedItem = Filter.Items[rows.ShowAll ? 1 : 0];
         if (service is null)
         {
-            DetailHost.Content = Ui.EmptyState(Ui.GlyphServer, "No services");
+            DetailHost.Content = Ui.EmptyState(Ui.GlyphServer, Strings.Services_NoServices);
             return;
         }
         DetailHost.Content = Detail(service.Value);
@@ -121,8 +121,8 @@ internal sealed partial class ServicesPane : UserControl, ISettingsPane
         card.VerticalAlignment = VerticalAlignment.Top;
         if (!service.Available)
         {
-            panel.Children.Add(Hero(Ui.GlyphServer, "Not available on Windows",
-                service.Unavailable.Length > 0 ? service.Unavailable : $"Flock can't run {service.Name} on Windows."));
+            panel.Children.Add(Hero(Ui.GlyphServer, Strings.Services_NotOnWindows,
+                service.Unavailable.Length > 0 ? service.Unavailable : Localization.Format(Strings.Services_CannotRunOnWindows, service.Name)));
             return card;
         }
         if (service.Problem.Length > 0 && !(service.Id == "dns" && !service.Running))
@@ -134,11 +134,11 @@ internal sealed partial class ServicesPane : UserControl, ISettingsPane
             var actions = Ui.Row(8);
             if (service.HasConfigurablePort)
             {
-                actions.Children.Add(Ui.Button("Port…", () => _ = EditPort(service)));
+                actions.Children.Add(Ui.Button(Strings.Services_PortEllipsis, () => _ = EditPort(service)));
             }
             if (service.Stoppable)
             {
-                actions.Children.Add(Ui.Button(service.Running ? "Stop" : "Start", () => _ = ToggleServiceAsync(service)));
+                actions.Children.Add(Ui.Button(service.Running ? Strings.Sites_Share_Stop : Strings.Services_Start, () => _ = ToggleServiceAsync(service)));
             }
             panel.Children.Add(actions);
         }
@@ -146,21 +146,21 @@ internal sealed partial class ServicesPane : UserControl, ISettingsPane
         {
             var tld = Model.Status?.Dns.Tld is { Length: > 0 } value ? value : "test";
             panel.Children.Add(Ui.Caption(service.Running
-                ? $"Caddy serves every site over HTTPS (https://app.{tld}) with certificates from Flock's local certificate authority, which `flock install` trusts."
-                : "Sites don't open while the web server is down. Its log may tell why; `flock restart` starts it again."));
+                ? Localization.Format(Strings.Services_WebRunning, tld)
+                : Strings.Services_WebDown));
         }
         if (service.Id == "dns")
         {
             var tld = Model.Status?.Dns.Tld is { Length: > 0 } value ? value : "test";
             panel.Children.Add(Ui.Caption(service.Running
-                ? $"Windows sends every name under .{tld} here, so any subdomain of a site works without adding it."
-                : "Wildcard subdomains don't resolve while the DNS server is down. Site domains still work through the hosts file."));
+                ? Localization.Format(Strings.Services_DnsRunning, tld)
+                : Strings.Services_DnsDown));
         }
         if (service.Id == "hosts")
         {
             panel.Children.Add(Ui.Caption(service.Installed
-                ? "The Flock hosts helper writes every site's domain and added domains into the hosts file."
-                : "The hosts helper is not installed, so site domains use Flock's DNS rule instead."));
+                ? Strings.Services_HostsInstalled
+                : Strings.Services_HostsMissing));
         }
         if (service.Id == "postgres")
         {
@@ -174,19 +174,19 @@ internal sealed partial class ServicesPane : UserControl, ISettingsPane
         {
             if (service.IsDatabase && TablePlus() is { } tablePlus)
             {
-                panel.Children.Add(Ui.Spread(Ui.Text("TablePlus", "BodyStrongTextBlockStyle"), Ui.Button("Open", () => Model.OpenConnection(tablePlus, service.Url))));
+                panel.Children.Add(Ui.Spread(Ui.Text("TablePlus", "BodyStrongTextBlockStyle"), Ui.Button(Strings.Common_Open, () => Model.OpenConnection(tablePlus, service.Url))));
             }
             if (service.Env.Length > 0)
             {
-                panel.Children.Add(Ui.Column(6, Ui.Text("Environment variables", "BodyStrongTextBlockStyle"), Ui.CodeBlock(service.Env)));
+                panel.Children.Add(Ui.Column(6, Ui.Text(Strings.Mail_EnvironmentVariables, "BodyStrongTextBlockStyle"), Ui.CodeBlock(service.Env)));
             }
             if (service.Log.Length > 0)
             {
-                panel.Children.Add(Ui.Spread(Ui.Text("Logs", "BodyStrongTextBlockStyle"), Ui.Button("Open", () => Model.Open(FlockPaths.LogFile(service.Log)))));
+                panel.Children.Add(Ui.Spread(Ui.Text(Strings.Menu_Logs, "BodyStrongTextBlockStyle"), Ui.Button(Strings.Common_Open, () => Model.Open(FlockPaths.LogFile(service.Log)))));
             }
             if (service.Url.Length > 0)
             {
-                panel.Children.Add(Ui.Column(6, Ui.Text("Connection", "BodyStrongTextBlockStyle"), Ui.CodeBlock(service.Url)));
+                panel.Children.Add(Ui.Column(6, Ui.Text(Strings.Services_Connection, "BodyStrongTextBlockStyle"), Ui.CodeBlock(service.Url)));
             }
         }
         return card;
@@ -194,7 +194,7 @@ internal sealed partial class ServicesPane : UserControl, ISettingsPane
 
     private async Task ToggleServiceAsync(Service service)
     {
-        if (service.Running && !await Window.Confirm($"Stop {service.Name}?", "Apps that use it can't connect until you start it again.", "Stop", true))
+        if (service.Running && !await Window.Confirm(Localization.Format(Strings.Services_StopQuestion, service.Name), Strings.Services_StopDetails, Strings.Sites_Share_Stop, true))
         {
             return;
         }
@@ -256,7 +256,7 @@ internal sealed partial class ServicesPane : UserControl, ISettingsPane
                         completion.TrySetResult();
                         return;
                     }
-                    if (token.IsCancellationRequested || !await Window.Confirm(request.Title, request.Message, "Install") || token.IsCancellationRequested)
+                    if (token.IsCancellationRequested || !await Window.Confirm(request.Title, request.Message, Strings.Common_Install) || token.IsCancellationRequested)
                     {
                         completion.TrySetResult();
                         return;
@@ -334,11 +334,11 @@ internal sealed partial class ServicesPane : UserControl, ISettingsPane
     private async Task EditPort(Service service)
     {
         var box = new NumberBox
-            { Header = "Port", Value = service.Port, Minimum = 1024, Maximum = 65535, SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Compact };
+            { Header = Strings.Mail_Port, Value = service.Port, Minimum = 1024, Maximum = 65535, SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Compact };
         var dialog = new ContentDialog
         {
-            Title = $"{service.Name} port", Content = Ui.Column(12, box, Ui.Caption("Ports 1024–65535. Update the port in your projects' .env files too.")),
-            PrimaryButtonText = "Save", CloseButtonText = "Cancel", DefaultButton = ContentDialogButton.Primary, XamlRoot = Window.XamlRoot
+            Title = Localization.Format(Strings.Services_PortTitle, service.Name), Content = Ui.Column(12, box, Ui.Caption(Strings.Services_PortDetails)),
+            PrimaryButtonText = Strings.Common_Save, CloseButtonText = Strings.Common_Cancel, DefaultButton = ContentDialogButton.Primary, XamlRoot = Window.XamlRoot
         };
         if (await dialog.ShowAsync() != ContentDialogResult.Primary || double.IsNaN(box.Value))
         {

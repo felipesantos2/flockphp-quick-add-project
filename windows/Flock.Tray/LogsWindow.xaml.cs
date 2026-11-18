@@ -12,14 +12,14 @@ internal sealed partial class LogsWindow : FlockWindow
     private readonly LogsViewModel viewModel;
     private (LogsViewModel.LogContent Data, string Query, LogLevelFilter Level)? rendered;
 
-    public LogsWindow(LogsViewModel viewModel) : base("Logs", 1000, 660)
+    public LogsWindow(LogsViewModel viewModel) : base(Strings.Menu_Logs, 1000, 660)
     {
         this.viewModel = viewModel;
         InitializeComponent();
         InitializeChrome(WindowRoot, WindowTitleBar, WindowCaption, WindowIcon);
         WindowBody.DataContext = viewModel;
         foreach (var (_, name) in LogFilter.Choices) Levels.Items.Add(name);
-        Ui.AutomationName(Levels, "Level");
+        Ui.AutomationName(Levels, Strings.Logs_Level);
         Ui.SettingsShortcut(WindowRoot);
         viewModel.PropertyChanged += ViewModelChanged;
         AppWindow.Changed += WindowChanged;
@@ -65,8 +65,8 @@ internal sealed partial class LogsWindow : FlockWindow
     {
         await ObserveClearAsync(async () =>
         {
-            if (viewModel.Selection is LogsViewModel.SiteSource site && await Confirm($"Clear the log of {site.Name}?",
-                    $"The Laravel log files in storage\\logs of {site.Name} are emptied. This can't be undone.", "Clear", true))
+            if (viewModel.Selection is LogsViewModel.SiteSource site && await Confirm(Localization.Format(Strings.Logs_ClearQuestion, site.Name),
+                    Localization.Format(Strings.Logs_ClearDetails, site.Name), Strings.Logs_Clear, true))
                 await viewModel.ClearCommand.ExecuteAsync(null);
         }, App.Log);
     }
@@ -120,7 +120,7 @@ internal sealed partial class LogsWindow : FlockWindow
         ServiceList.SelectedItem = viewModel.Selection is LogsViewModel.ServiceSource selectedService ? selectedService : null;
         if (viewModel.Selection is null)
         {
-            DetailStateHost.Content = Ui.EmptyState(Ui.GlyphDocument, "Pick a log");
+            DetailStateHost.Content = Ui.EmptyState(Ui.GlyphDocument, Strings.Logs_PickLog);
             EntryList.Visibility = Visibility.Collapsed;
             return;
         }
@@ -129,7 +129,7 @@ internal sealed partial class LogsWindow : FlockWindow
             rendered = null;
             EntryList.Visibility = Visibility.Collapsed;
             DetailStateHost.Content = viewModel.LoadError is { } failure
-                ? Ui.EmptyState(Ui.GlyphWarning, "Log could not be loaded", failure)
+                ? Ui.EmptyState(Ui.GlyphWarning, Strings.Logs_CouldNotLoad, failure)
                 : new ProgressRing { Width = 32, Height = 32 };
             return;
         }
@@ -142,12 +142,12 @@ internal sealed partial class LogsWindow : FlockWindow
                 if (site.Entries.Count == 0)
                 {
                     EntryList.Visibility = Visibility.Collapsed;
-                    DetailStateHost.Content = Ui.EmptyState(Ui.GlyphDocument, "No log entries", $"storage\\logs of {site.Site.Name} is empty.");
+                    DetailStateHost.Content = Ui.EmptyState(Ui.GlyphDocument, Strings.Logs_NoEntries, Localization.Format(Strings.Logs_NoEntriesDetails, site.Site.Name));
                 }
                 else if (viewModel.FilteredEntries.Count == 0)
                 {
                     EntryList.Visibility = Visibility.Collapsed;
-                    DetailStateHost.Content = Ui.EmptyState(Ui.GlyphSearch, "No matching log entries", "Nothing in the latest entries matches the search and level.");
+                    DetailStateHost.Content = Ui.EmptyState(Ui.GlyphSearch, Strings.Logs_NoMatching, Strings.Logs_NoMatchingDetails);
                 }
                 else
                 {
@@ -157,8 +157,8 @@ internal sealed partial class LogsWindow : FlockWindow
                 break;
             case LogsViewModel.ServiceContent service:
                 EntryList.Visibility = Visibility.Collapsed;
-                var text = MailDetailView.Monospaced(service.Text.Length == 0 ? "(empty)" :
-                    viewModel.FilteredText.Length == 0 ? "(no matching lines)" : viewModel.FilteredText);
+                var text = MailDetailView.Monospaced(service.Text.Length == 0 ? Strings.Common_EmptyParenthesized :
+                    viewModel.FilteredText.Length == 0 ? Strings.Logs_NoMatchingLines : viewModel.FilteredText);
                 DetailStateHost.Content = text;
                 text.Loaded += (_, _) => text.ChangeView(null, text.ScrollableHeight, null, true);
                 break;

@@ -150,13 +150,13 @@ public struct InstallLink: Equatable, Sendable {
 extension InstallLink.Resolution {
     public var title: String {
         switch self {
-        case .install(let install): "Install \(install.name) \(install.label)?"
-        case .installed(let name, _): "\(name) is already installed"
-        case .installing(let name): "\(name) is already being installed"
-        case .unavailable(let name, _): "\(name) isn't available on this computer"
-        case .unknown(let name): "Flock doesn't offer \(name)"
-        case .unknownVersion(let name, let line): "Flock doesn't offer \(name) \(line)"
-        case .noBuild(let name, let line): line.isEmpty ? "Flock doesn't offer \(name)" : "Flock doesn't offer \(name) \(line)"
+        case .install(let install): String(localized: "links.install.install_title \(install.name) \(install.label)")
+        case .installed(let name, _): String(localized: "links.install.already_installed_title \(name)")
+        case .installing(let name): String(localized: "links.install.installing_title \(name)")
+        case .unavailable(let name, _): String(localized: "links.install.unavailable_title \(name)")
+        case .unknown(let name): String(localized: "links.install.unknown_title \(name)")
+        case .unknownVersion(let name, let line): String(localized: "links.install.flock_doesnt_offer_name_version \(name) \(line)")
+        case .noBuild(let name, let line): line.isEmpty ? String(localized: "links.install.unknown_title \(name)") : String(localized: "links.install.flock_doesnt_offer_name_version \(name) \(line)")
         }
     }
 
@@ -165,20 +165,22 @@ extension InstallLink.Resolution {
         case .install(let install):
             let what = install.version.isEmpty ? "\(install.name) \(install.label)" : "\(install.name) \(install.version)"
             switch install.service {
-            case "php": return "A link asked Flock to install \(what). Sites that use it are served as soon as it's installed."
-            case "node": return "A link asked Flock to install \(what). Projects that use it can run it as soon as it's installed."
-            default: return "A link asked Flock to install \(what). It runs on 127.0.0.1 for your sites."
+            case "php": return String(localized: "links.install.link_asked_flock_to_install_sites \(what)")
+            case "node": return String(localized: "links.install.link_asked_flock_to_install_projects \(what)")
+            default: return String(localized: "links.install.link_asked_flock_to_install \(what)")
             }
         case .installed(_, let pane):
-            return "You'll find it in Settings → \(pane)."
+            // The Settings pane by its name in the app's language; PHP and Node read the same in all.
+            let name = pane == "Services" ? String(localized: "settings.pane.services") : pane
+            return String(localized: "links.install.already_installed_message \(name)")
         case .installing:
-            return "It's ready in a moment; there's nothing more to do."
+            return String(localized: "links.install.its_ready_in_a_moment")
         case .unavailable(_, let reason):
-            return reason.isEmpty ? "Flock can't run it on this platform." : reason
+            return reason.isEmpty ? String(localized: "links.install.unavailable_message") : reason
         case .unknown, .unknownVersion:
-            return "The link may be meant for a newer Flock. Update Flock, then try again."
+            return String(localized: "links.install.newer_flock")
         case .noBuild:
-            return "There's no build of it for this computer, or the link is meant for a newer Flock."
+            return String(localized: "links.install.no_build")
         }
     }
 

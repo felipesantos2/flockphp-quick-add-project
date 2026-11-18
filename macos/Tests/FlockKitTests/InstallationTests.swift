@@ -84,8 +84,8 @@ private final class Lines: @unchecked Sendable {
     let apps = Installation.group(response.conflicts)
     #expect(apps.map(\.app) == ["Herd", "Homebrew's mailpit", "the other program"])
     #expect(apps[0].title == "Quit Herd")
-    #expect(apps[0].detail == "Herd (nginx-arm64, pid 812) uses port 80 (HTTP) and port 443 (HTTPS), and answers for *.test (/etc/resolver/test).")
+    #expect(apps[0].detail == "App.uses_and_answers_for Herd (nginx-arm64, pid 812) common.list.and app.conflict.port 80 HTTP app.conflict.port 443 HTTPS *.test (/etc/resolver/test)")
     #expect(apps[1].title == "Run `brew services stop mailpit`")
-    #expect(apps[2].title == "Quit the other program")
-    #expect(apps[2].detail == "Another program uses port 53531 (app API).")
+    #expect(apps[2].title == "app.conflict.quit the other program")
+    #expect(apps[2].detail == "App.program_uses_ports another program app.conflict.port 53531 app API")
 }

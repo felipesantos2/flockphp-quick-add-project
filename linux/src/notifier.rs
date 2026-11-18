@@ -9,6 +9,7 @@ use std::rc::Rc;
 use adw::prelude::*;
 use gtk::gio;
 
+use crate::i18n::tr;
 use crate::model::AppModel;
 
 /// From now on, compares each status with the one before.
@@ -28,8 +29,8 @@ pub fn start(app: &adw::Application, model: &Rc<AppModel>) {
             if model.follows_worktree(&site.path) || before.get(&site.name).is_some_and(|state| state == "failed") {
                 continue;
             }
-            let notification = gio::Notification::new(&format!("Setting up {} failed", site.worktree_label()));
-            let error = if setup.error.is_empty() { "see its log" } else { setup.error.as_str() };
+            let notification = gio::Notification::new(&tr!("worktrees.setup_failed_title", worktree = site.worktree_label()));
+            let error = if setup.error.is_empty() { tr!("worktrees.see_log") } else { setup.error.as_str() };
             notification.set_body(Some(&format!("{}: {error}", site.parent)));
             notification.set_default_action_and_target_value("app.open", Some(&format!("settings/sites/{}", site.name).to_variant()));
             app.send_notification(Some(&format!("worktree-{}", site.name)), &notification);

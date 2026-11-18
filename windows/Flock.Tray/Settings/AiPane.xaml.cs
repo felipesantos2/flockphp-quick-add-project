@@ -16,9 +16,9 @@ internal sealed partial class AiPane : UserControl, ISettingsPane
         DataContext = viewModel;
     }
 
-    public string Title => "AI";
+    public string Title => Strings.Settings_Pane_Ai;
     public string Subtitle
-        => "Let AI agents like Claude Code and Cursor work with Flock: your sites' URLs and PHP versions, logs, dumps and mail, and installing versions and services.";
+        => Strings.Ai_Subtitle;
     public UIElement Root => this;
     public bool ScrollsItself => false;
     public Task ActivateAsync(CancellationToken hidden)

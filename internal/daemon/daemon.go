@@ -36,6 +36,7 @@ import (
 	"flock/internal/ports"
 	"flock/internal/postgres"
 	"flock/internal/project"
+	"flock/internal/reverb"
 	"flock/internal/share"
 	"flock/internal/supervisor"
 	"flock/internal/web"
@@ -77,9 +78,11 @@ type daemon struct {
 	php       *php.Manager
 	// binaries is the manifest of prebuilt packages for the configured channel, shared by the managers.
 	binaries *binaries.Catalog
-	// frankenphp installs FrankenPHP builds; restarts counts RestartSite calls per site (see frankenphp.Site.Restart).
-	frankenphp *frankenphp.Manager
-	restarts   map[string]int
+	// frankenphp installs FrankenPHP builds; restarts counts RestartSite calls per site (see
+	// frankenphp.Site.Restart), reverbRestarts RestartReverb calls (see reverb.Site.Restart).
+	frankenphp     *frankenphp.Manager
+	restarts       map[string]int
+	reverbRestarts map[string]int
 	// pg manages the PostgreSQL versions, catalog the other services (MySQL, Valkey, Meilisearch, ...).
 	pg      *postgres.Manager
 	catalog *catalog.Manager
@@ -284,7 +287,8 @@ func Run(ctx context.Context, cfg Config) error {
 		return err
 	}
 
-	d := &daemon{root: cfg.Root, version: cfg.Version, startedAt: time.Now(), procs: supervisor.New(), leaves: certs.NewLeaves(), restarts: map[string]int{}}
+	d := &daemon{root: cfg.Root, version: cfg.Version, startedAt: time.Now(), procs: supervisor.New(), leaves: certs.NewLeaves(), restarts: map[string]int{},
+		reverbRestarts: map[string]int{}}
 	defer d.shutdown()
 
 	d.binaries = binaries.NewCatalog(binaries.DefaultSource(cfg.Root, cfg.Version), d.channel)
@@ -420,7 +424,8 @@ var projectWatchInterval = 3 * time.Second
 
 // projectFiles fingerprints the sites, so folders added to or removed from a parked path count,
 // their project files (.flockrc, .nvmrc, .node-version, also in parent directories) by size and
-// modification time, and which of the files that decide their document root exist.
+// modification time, which of the files that decide their document root exist, and whether the
+// project has Laravel Reverb, so installing it offers Reverb without another change.
 func (d *daemon) projectFiles() string {
 	d.mu.Lock()
 	cfg := d.cfg
@@ -431,7 +436,7 @@ func (d *daemon) projectFiles() string {
 	var b strings.Builder
 	seen := map[string]bool{}
 	for _, site := range cfg.AllSites() {
-		fmt.Fprintf(&b, "site %s %s\n", site.Name, site.Path)
+		fmt.Fprintf(&b, "site %s %s reverb=%t\n", site.Name, site.Path, reverb.Installed(site.Path))
 		for _, file := range project.Files(site.Path) {
 			if seen[file] {
 				continue
@@ -675,6 +680,7 @@ func (d *daemon) reload() error {
 			NodeShadowed: nodeVersion.Shadowed, Domains: []api.SiteDomain{},
 		}
 		status.Server, status.Worker, status.OctaneAvailable = config.ServerFastCGI, site.Worker, frankenphp.HasOctane(site.Path)
+		status.ReverbAvailable = reverb.Installed(site.Path)
 		if site.FrankenPHP() {
 			status.Server = config.ServerFrankenPHP
 		}
@@ -702,7 +708,7 @@ func (d *daemon) reload() error {
 			takenPorts[port] = true
 			spec := d.nodeSpec(cfg, site, port, nodeVersion.Version)
 			nodeSpecs[site.Name], nodePorts[site.Name] = spec, port
-			status.Server, status.Worker, status.OctaneAvailable, status.PHP = "", "", false, ""
+			status.Server, status.Worker, status.OctaneAvailable, status.ReverbAvailable, status.PHP = "", "", false, false, ""
 			status.NodeServer = &api.SiteNodeServer{State: api.NodeSleeping, Port: port, Command: spec.Shell, Log: spec.Name, Problem: nodeSiteProblem(site)}
 			if d.node.isAwake(site.Name) && !runningAsRoot() {
 				d.procs.Ensure(spec)
@@ -735,6 +741,7 @@ func (d *daemon) reload() error {
 			// Its names get a page that says what's missing instead of the site (see web.Waiting).
 			w := d.waitingFor(site, phpVersion, domain, aliases)
 			status.Problem = waitingProblem(w)
+			status.Reverb = reverbBlocked(cfg, site, scheme, status.Problem)
 			waiting = append(waiting, w)
 			domains = append(append(domains, domain), served...)
 			statuses = append(statuses, status)
@@ -752,6 +759,7 @@ func (d *daemon) reload() error {
 			if root.State == project.RootMissing {
 				status.Problem = rootProblem(root)
 			}
+			status.Reverb = reverbBlocked(cfg, site, scheme, "the site has no usable document root")
 			rootless = append(rootless, r)
 			status.URL = scheme + "://" + domain + portSuffix(scheme, cfg)
 			domains = append(append(domains, domain), served...)
@@ -787,6 +795,27 @@ func (d *daemon) reload() error {
 			if ws.FPM, err = pool(version); err != nil {
 				return err
 			}
+		}
+		if site.Reverb {
+			spec, rs := d.reverbSite(cfg, site, version, scheme, extraEnv)
+			if spec != nil {
+				restarted := d.procs.Ensure(*spec)
+				keep[spec.Name] = true
+				ws.Reverb = fmt.Sprintf("127.0.0.1:%d", site.ReverbPort)
+				wait := 300 * time.Millisecond
+				if restarted {
+					wait = 10 * time.Second // Reverb boots the app first
+				}
+				if php.WaitReady([]string{ws.Reverb}, wait) {
+					rs.State = api.ReverbRunning
+				} else {
+					rs.State, rs.Problem = api.ReverbFailed, fmt.Sprintf("Reverb did not start — see `flock logs %s`", spec.Name)
+					warnings = append(warnings, fmt.Sprintf("reverb: %s did not start — see `flock logs %s`", site.Name, spec.Name))
+				}
+			} else if w := reverbPreflightWarning(site.Name, rs); w != "" {
+				warnings = append(warnings, w)
+			}
+			status.Reverb = &rs
 		}
 		if cfg.Xdebug && cfg.XdebugBreakpoints {
 			breakpoints[site.Path] = d.breakpoints.Has(site.Path)
@@ -1085,6 +1114,9 @@ func serviceName(id string) string {
 	case "postgres":
 		return "PostgreSQL"
 	}
+	if site, ok := strings.CutPrefix(id, "reverb-"); ok {
+		return site + "'s Reverb server"
+	}
 	for _, k := range catalog.Kinds(runtime.GOOS) {
 		if k.ID == id {
 			return k.Name
@@ -1149,6 +1181,7 @@ func (d *daemon) Status() api.Status {
 		Warnings:  d.warnings,
 	}
 	d.liveNodeSites(st.Sites)
+	d.liveReverb(st.Sites)
 	if d.mail != nil {
 		st.Mail = d.mail.Addr()
 	}
@@ -1213,12 +1246,19 @@ func (d *daemon) ReleasePHP(minor string) {
 	d.reloadMu.Lock()
 	defer d.reloadMu.Unlock()
 
+	d.procs.Retain(notUsingPHP(d.root, minor, d.procs.Paths()))
+}
+
+// notUsingPHP marks which of the running processes (name → executable) don't run PHP minor: the
+// dump server, the version's pools, and whatever was started with one of its binaries, such as a
+// site's Reverb server. That is the version it runs, even when the project's pin changed since.
+func notUsingPHP(root, minor string, running map[string]string) map[string]bool {
+	dir := php.Dir(root, minor) + string(filepath.Separator)
 	keep := map[string]bool{}
-	for _, name := range d.procs.Running() {
-		usesPHP := name == "dump-server" || strings.HasPrefix(name, "php"+minor)
-		keep[name] = !usesPHP
+	for name, path := range running {
+		keep[name] = !(name == "dump-server" || strings.HasPrefix(name, "php"+minor) || strings.HasPrefix(path, dir))
 	}
-	d.procs.Retain(keep)
+	return keep
 }
 
 // Services implements api.Backend.
