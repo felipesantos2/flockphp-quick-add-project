@@ -1329,9 +1329,6 @@ private extension SitesPane {
                 }
                 if !existedBefore, let created = model.status?.sites.first(where: { $0.path == targetPath }) {
                     selectionState.wrappedValue = created.name
-                    if !created.parked {
-                        model.settings.error = nil
-                    }
                 }
             case .failed:
                 break
@@ -1342,8 +1339,8 @@ private extension SitesPane {
 
 /// Hostname label matching `config.SiteName` on the daemon.
 private func appSlug(_ name: String) -> String {
-    let mapped = name.lowercased().map { c -> Character in
-        (c.isASCII && (c.isLetter || c.isNumber || c == "-")) ? c : "-"
+    let mapped = name.lowercased().unicodeScalars.map { s -> Character in
+        ((s >= "a" && s <= "z") || (s >= "0" && s <= "9") || s == "-") ? Character(s) : "-"
     }
     return String(mapped).trimmingCharacters(in: CharacterSet(charactersIn: "-"))
 }
