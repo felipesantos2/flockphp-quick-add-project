@@ -1872,6 +1872,49 @@ Details are in %LocalAppData%\Flock\tray.log.</value>
     <data name="Sites_NewApp" xml:space="preserve">
         <value>New App…</value>
     </data>
+    <data name="Sites_NewAppBrowse" xml:space="preserve">
+        <value>Browse…</value>
+    </data>
+    <data name="Sites_NewAppCreate" xml:space="preserve">
+        <value>Create</value>
+    </data>
+    <data name="Sites_NewAppDb" xml:space="preserve">
+        <value>Create MySQL or MariaDB database</value>
+    </data>
+    <data name="Sites_NewAppDbServiceAuto" xml:space="preserve">
+        <value>Auto (MySQL or MariaDB)</value>
+    </data>
+    <data name="Sites_NewAppFolder" xml:space="preserve">
+        <value>Folder</value>
+    </data>
+    <data name="Sites_NewAppHintNoDb" xml:space="preserve">
+        <value>No running MySQL or MariaDB service detected (start one in Services).</value>
+    </data>
+    <data name="Sites_NewAppHintRequiresDb" xml:space="preserve">
+        <value>This template requires MySQL or MariaDB to be running (start one in Services).</value>
+    </data>
+    <data name="Sites_NewAppHttps" xml:space="preserve">
+        <value>Serve over HTTPS</value>
+    </data>
+    <data name="Sites_NewAppLoadError" xml:space="preserve">
+        <value>Couldn't load app templates</value>
+    </data>
+    <data name="Sites_NewAppName" xml:space="preserve">
+        <value>Name</value>
+    </data>
+    <data name="Sites_NewAppPreviewHint" xml:space="preserve">
+        <value>Choose a name and folder to serve at {0}://&lt;name&gt;.{1}.</value>
+        <comment>{0}: http or https, {1}: the local TLD</comment>
+    </data>
+    <data name="Sites_NewAppTemplate" xml:space="preserve">
+        <value>Template</value>
+    </data>
+    <data name="Sites_NewAppTitle" xml:space="preserve">
+        <value>New application</value>
+    </data>
+    <data name="Sites_NewAppTooltip" xml:space="preserve">
+        <value>Create a new project from a template and link it as a site</value>
+    </data>
     <data name="Sites_NoOutputYet" xml:space="preserve">
         <value>No output yet.</value>
     </data>

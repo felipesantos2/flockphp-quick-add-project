@@ -1515,17 +1515,18 @@ private struct NewAppSheet: View {
         let scheme = securedState.wrappedValue ? "https" : "http"
 
         VStack(alignment: .leading, spacing: 12) {
-            Text("New application").font(.headline)
+            Text("sites.new_app_title").font(.headline)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Name")
-                TextField("my-app", text: nameState.projectedValue)
+                Text("sites.new_app_name")
+                TextField("sites.new_app_name", text: nameState.projectedValue, prompt: Text(verbatim: "my-app"))
+                    .labelsHidden()
                     .textFieldStyle(.roundedBorder)
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Template")
-                Picker("Template", selection: templateState.projectedValue) {
+                Text("sites.new_app_template")
+                Picker("sites.new_app_template", selection: templateState.projectedValue) {
                     ForEach(templates) { item in
                         Text(item.name).tag(item.name)
                     }
@@ -1534,13 +1535,13 @@ private struct NewAppSheet: View {
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Folder")
+                Text("sites.new_app_folder")
                 HStack(spacing: 8) {
-                    TextField("Parent folder", text: folderState.projectedValue)
+                    TextField("sites.new_app_parent_folder", text: folderState.projectedValue)
                         .textFieldStyle(.roundedBorder)
-                    Button("Browse…") {
+                    Button("sites.new_app_browse") {
                         let initial = rawFolder.isEmpty ? nil : URL(fileURLWithPath: rawFolder)
-                        if let chosen = SettingsStore.chooseDirectories(prompt: "Select", multiple: false, in: initial).first {
+                        if let chosen = SettingsStore.chooseDirectories(prompt: String(localized: "sites.server.choose"), multiple: false, in: initial).first {
                             folderState.wrappedValue = chosen.path
                         }
                     }
@@ -1548,24 +1549,24 @@ private struct NewAppSheet: View {
             }
 
             VStack(alignment: .leading, spacing: 6) {
-                Toggle("Create MySQL or MariaDB database", isOn: Binding(
+                Toggle("sites.new_app_db", isOn: Binding(
                     get: { wantsDb },
                     set: { dbState.wrappedValue = $0 }
                 ))
                 .disabled(tmpl.requiresDb)
 
                 if wantsDb {
-                    Picker("Database service", selection: dbServiceState.projectedValue) {
-                        Text("Auto (MySQL or MariaDB)").tag("")
-                        Text("MySQL").tag("mysql")
-                        Text("MariaDB").tag("mariadb")
+                    Picker("sites.new_app_db_service", selection: dbServiceState.projectedValue) {
+                        Text("sites.new_app_db_service_auto").tag("")
+                        Text(verbatim: "MySQL").tag("mysql")
+                        Text(verbatim: "MariaDB").tag("mariadb")
                     }
                     .labelsHidden()
 
                     if !hasRunningDb {
                         Text(tmpl.requiresDb
-                             ? "This template requires MySQL or MariaDB to be running (start one in Services)."
-                             : "No running MySQL or MariaDB service detected (start one in Services).")
+                             ? "sites.new_app_hint_requires_db"
+                             : "sites.new_app_hint_no_db")
                             .font(.caption)
                             .foregroundStyle(.orange)
                             .fixedSize(horizontal: false, vertical: true)
@@ -1573,20 +1574,20 @@ private struct NewAppSheet: View {
                 }
             }
 
-            Toggle("Serve over HTTPS", isOn: securedState.projectedValue)
+            Toggle("sites.new_app_https", isOn: securedState.projectedValue)
 
-            Text(valid
-                 ? "\(URL(fileURLWithPath: rawFolder).appendingPathComponent(rawName).path) → \(scheme)://\(slug).\(tld)"
-                 : "Choose a name and folder to serve at \(scheme)://<name>.\(tld).")
+            (valid
+             ? Text(verbatim: "\(URL(fileURLWithPath: rawFolder).appendingPathComponent(rawName).path) → \(scheme)://\(slug).\(tld)")
+             : Text("sites.new_app_preview_hint \(scheme) \(tld)"))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack {
                 Spacer()
-                Button("Cancel", role: .cancel) { cancel() }
+                Button("common.cancel", role: .cancel) { cancel() }
                     .keyboardShortcut(.cancelAction)
-                Button("Create") {
+                Button("sites.new_app_create") {
                     create(CreateAppRequest(
                         name: rawName,
                         parentDir: rawFolder,

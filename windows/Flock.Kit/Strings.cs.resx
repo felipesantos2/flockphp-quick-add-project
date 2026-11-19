@@ -1707,6 +1707,51 @@ Podrobnosti najdete v %LocalAppData%\Flock\tray.log.</value>
     <data name="Sites_FrankenphpRunningWorker" xml:space="preserve">
         <value>Běží FrankenPHP {0} s PHP {1} · režim workerů</value>
     </data>
+    <data name="Sites_NewApp" xml:space="preserve">
+        <value>Nová aplikace…</value>
+    </data>
+    <data name="Sites_NewAppBrowse" xml:space="preserve">
+        <value>Procházet…</value>
+    </data>
+    <data name="Sites_NewAppCreate" xml:space="preserve">
+        <value>Vytvořit</value>
+    </data>
+    <data name="Sites_NewAppDb" xml:space="preserve">
+        <value>Vytvořit databázi MySQL nebo MariaDB</value>
+    </data>
+    <data name="Sites_NewAppDbServiceAuto" xml:space="preserve">
+        <value>Automaticky (MySQL nebo MariaDB)</value>
+    </data>
+    <data name="Sites_NewAppFolder" xml:space="preserve">
+        <value>Složka</value>
+    </data>
+    <data name="Sites_NewAppHintNoDb" xml:space="preserve">
+        <value>Nebyla zjištěna žádná běžící služba MySQL nebo MariaDB (spusťte ji ve Službách).</value>
+    </data>
+    <data name="Sites_NewAppHintRequiresDb" xml:space="preserve">
+        <value>Tato šablona vyžaduje běžící MySQL nebo MariaDB (spusťte ji ve Službách).</value>
+    </data>
+    <data name="Sites_NewAppHttps" xml:space="preserve">
+        <value>Poskytovat přes HTTPS</value>
+    </data>
+    <data name="Sites_NewAppLoadError" xml:space="preserve">
+        <value>Nepodařilo se načíst šablony aplikací</value>
+    </data>
+    <data name="Sites_NewAppName" xml:space="preserve">
+        <value>Název</value>
+    </data>
+    <data name="Sites_NewAppPreviewHint" xml:space="preserve">
+        <value>Zvolte název a složku pro spuštění na {0}://&lt;name&gt;.{1}.</value>
+    </data>
+    <data name="Sites_NewAppTemplate" xml:space="preserve">
+        <value>Šablona</value>
+    </data>
+    <data name="Sites_NewAppTitle" xml:space="preserve">
+        <value>Nová aplikace</value>
+    </data>
+    <data name="Sites_NewAppTooltip" xml:space="preserve">
+        <value>Vytvořit nový projekt ze šablony a propojit jej jako web</value>
+    </data>
     <data name="Sites_NoOutputYet" xml:space="preserve">
         <value>Zatím žádný výstup.</value>
     </data>

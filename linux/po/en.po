@@ -1535,6 +1535,49 @@ msgstr[1] "{n} worktrees"
 msgid "sites.new_app"
 msgstr "New App…"
 
+msgid "sites.new_app_browse"
+msgstr "Browse…"
+
+msgid "sites.new_app_create"
+msgstr "Create"
+
+msgid "sites.new_app_db"
+msgstr "Create MySQL or MariaDB database"
+
+msgid "sites.new_app_db_service"
+msgstr "Database service"
+
+msgid "sites.new_app_db_service_auto"
+msgstr "Auto (MySQL or MariaDB)"
+
+msgid "sites.new_app_folder"
+msgstr "Folder"
+
+msgid "sites.new_app_hint_no_db"
+msgstr "No running MySQL or MariaDB service detected (start one in Services)."
+
+msgid "sites.new_app_hint_requires_db"
+msgstr "This template requires MySQL or MariaDB to be running (start one in Services)."
+
+msgid "sites.new_app_https"
+msgstr "Serve over HTTPS"
+
+msgid "sites.new_app_name"
+msgstr "Name"
+
+msgid "sites.new_app_parent_folder"
+msgstr "Parent folder"
+
+#. {scheme}: http or https, {tld}: the local TLD
+msgid "sites.new_app_preview_hint"
+msgstr "Choose a name and folder to serve at {scheme}://<name>.{tld}."
+
+msgid "sites.new_app_template"
+msgstr "Template"
+
+msgid "sites.new_app_title"
+msgstr "New application"
+
 msgid "sites.new_app_tooltip"
 msgstr "Create a new project from a template and link it as a site"
 

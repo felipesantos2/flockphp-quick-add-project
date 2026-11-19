@@ -12950,7 +12950,7 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New App…"
+            "value" : "Nová aplikace…"
           }
         },
         "en" : {
@@ -12962,7 +12962,316 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "New App…"
+            "value" : "Nueva app…"
+          }
+        }
+      }
+    },
+    "sites.new_app_browse" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procházet…"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Browse…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Examinar…"
+          }
+        }
+      }
+    },
+    "sites.new_app_create" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vytvořit"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear"
+          }
+        }
+      }
+    },
+    "sites.new_app_db" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vytvořit databázi MySQL nebo MariaDB"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Create MySQL or MariaDB database"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crear base de datos MySQL o MariaDB"
+          }
+        }
+      }
+    },
+    "sites.new_app_db_service" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Databázová služba"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Database service"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Servicio de base de datos"
+          }
+        }
+      }
+    },
+    "sites.new_app_db_service_auto" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automaticky (MySQL nebo MariaDB)"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auto (MySQL or MariaDB)"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automático (MySQL o MariaDB)"
+          }
+        }
+      }
+    },
+    "sites.new_app_folder" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Složka"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Folder"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carpeta"
+          }
+        }
+      }
+    },
+    "sites.new_app_hint_no_db" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nebyla zjištěna žádná běžící služba MySQL nebo MariaDB (spusťte ji ve Službách)."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No running MySQL or MariaDB service detected (start one in Services)."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se detectó ningún servicio MySQL o MariaDB en ejecución (inicia uno en Servicios)."
+          }
+        }
+      }
+    },
+    "sites.new_app_hint_requires_db" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tato šablona vyžaduje běžící MySQL nebo MariaDB (spusťte ji ve Službách)."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "This template requires MySQL or MariaDB to be running (start one in Services)."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta plantilla requiere que MySQL o MariaDB esté en ejecución (inicia uno en Servicios)."
+          }
+        }
+      }
+    },
+    "sites.new_app_https" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poskytovat přes HTTPS"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Serve over HTTPS"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Servir mediante HTTPS"
+          }
+        }
+      }
+    },
+    "sites.new_app_name" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Název"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre"
+          }
+        }
+      }
+    },
+    "sites.new_app_parent_folder" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nadřazená složka"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parent folder"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carpeta principal"
+          }
+        }
+      }
+    },
+    "sites.new_app_preview_hint %@ %@" : {
+      "comment" : "{scheme}: http or https, {tld}: the local TLD",
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zvolte název a složku pro spuštění na %1$@://<name>.%2$@."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a name and folder to serve at %1$@://<name>.%2$@."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elige un nombre y una carpeta para servir en %1$@://<name>.%2$@."
+          }
+        }
+      }
+    },
+    "sites.new_app_template" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Šablona"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Template"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plantilla"
+          }
+        }
+      }
+    },
+    "sites.new_app_title" : {
+      "localizations" : {
+        "cs" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nová aplikace"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "New application"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nueva aplicación"
           }
         }
       }
@@ -12972,7 +13281,7 @@
         "cs" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create a new project from a template and link it as a site"
+            "value" : "Vytvořit nový projekt ze šablony a propojit jej jako web"
           }
         },
         "en" : {
@@ -12984,7 +13293,7 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Create a new project from a template and link it as a site"
+            "value" : "Crea un nuevo proyecto desde una plantilla y vincúlalo como un sitio"
           }
         }
       }

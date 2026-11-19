@@ -323,9 +323,9 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane, ISiteDetai
             App.Log(error);
             await new ContentDialog
             {
-                Title = "Couldn't load app templates",
+                Title = Strings.Sites_NewAppLoadError,
                 Content = error.Message,
-                CloseButtonText = "OK",
+                CloseButtonText = Strings.Common_Ok,
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = Window.XamlRoot
             }.ShowAsync();
@@ -334,10 +334,10 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane, ISiteDetai
         var tld = Model.Status?.Dns.Tld is { Length: > 0 } t ? t : "test";
         var hasRunningDb = Model.Status?.Extras.Any(s => s.Id is "mysql" or "mariadb" && s.Up) ?? false;
 
-        var nameBox = new TextBox { Header = "Name", PlaceholderText = "my-app" };
+        var nameBox = new TextBox { Header = Strings.Sites_NewAppName, PlaceholderText = "my-app" };
         var templateBox = new ComboBox
         {
-            Header = "Template",
+            Header = Strings.Sites_NewAppTemplate,
             HorizontalAlignment = HorizontalAlignment.Stretch,
             ItemsSource = templates.Select(tmpl => new ComboBoxItem { Content = tmpl.Name, Tag = tmpl }).ToList()
         };
@@ -346,17 +346,17 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane, ISiteDetai
         var defaultFolder = Model.Configuration.Current?.Parked.FirstOrDefault()
             ?? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
         var folderBox = new TextBox { Text = defaultFolder, Width = 280 };
-        var browseButton = new Button { Content = "Browse…" };
-        var folderGroup = Ui.Column(4, Ui.Text("Folder"), Ui.Row(8, folderBox, browseButton));
+        var browseButton = new Button { Content = Strings.Sites_NewAppBrowse };
+        var folderGroup = Ui.Column(4, Ui.Text(Strings.Sites_NewAppFolder), Ui.Row(8, folderBox, browseButton));
 
-        var dbCheck = new CheckBox { Content = "Create MySQL or MariaDB database" };
+        var dbCheck = new CheckBox { Content = Strings.Sites_NewAppDb };
         var dbServiceBox = new ComboBox
         {
             HorizontalAlignment = HorizontalAlignment.Stretch,
             Visibility = Visibility.Collapsed,
             ItemsSource = new[]
             {
-                new ComboBoxItem { Content = "Auto (MySQL or MariaDB)", Tag = "" },
+                new ComboBoxItem { Content = Strings.Sites_NewAppDbServiceAuto, Tag = "" },
                 new ComboBoxItem { Content = "MySQL", Tag = "mysql" },
                 new ComboBoxItem { Content = "MariaDB", Tag = "mariadb" }
             },
@@ -365,7 +365,7 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane, ISiteDetai
         var dbHint = Ui.Caption("", Ui.Caution);
         dbHint.Visibility = Visibility.Collapsed;
 
-        var securedCheck = new CheckBox { Content = "Serve over HTTPS" };
+        var securedCheck = new CheckBox { Content = Strings.Sites_NewAppHttps };
         var preview = Ui.Caption("");
 
         var form = Ui.Column(12, nameBox, templateBox, folderGroup, dbCheck, dbServiceBox, dbHint, securedCheck, preview);
@@ -379,10 +379,10 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane, ISiteDetai
 
         var dialog = new ContentDialog
         {
-            Title = "New application",
+            Title = Strings.Sites_NewAppTitle,
             Content = scroller,
-            PrimaryButtonText = "Create",
-            CloseButtonText = "Cancel",
+            PrimaryButtonText = Strings.Sites_NewAppCreate,
+            CloseButtonText = Strings.Common_Cancel,
             DefaultButton = ContentDialogButton.Primary,
             IsPrimaryButtonEnabled = false,
             XamlRoot = Window.XamlRoot
@@ -403,8 +403,8 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane, ISiteDetai
             var wantsDb = dbCheck.IsChecked == true;
             dbServiceBox.Visibility = wantsDb ? Visibility.Visible : Visibility.Collapsed;
             dbHint.Text = tmpl.RequiresDb
-                ? "This template requires MySQL or MariaDB to be running (start one in Services)."
-                : "No running MySQL or MariaDB service detected (start one in Services).";
+                ? Strings.Sites_NewAppHintRequiresDb
+                : Strings.Sites_NewAppHintNoDb;
             dbHint.Visibility = wantsDb && !hasRunningDb ? Visibility.Visible : Visibility.Collapsed;
 
             var rawName = nameBox.Text.Trim();
@@ -415,7 +415,7 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane, ISiteDetai
             var scheme = securedCheck.IsChecked == true ? "https" : "http";
             preview.Text = dialog.IsPrimaryButtonEnabled
                 ? $"{Path.Combine(rawFolder, rawName)} → {scheme}://{slug}.{tld}"
-                : $"Choose a name and folder to serve at {scheme}://<name>.{tld}.";
+                : Localization.Format(Strings.Sites_NewAppPreviewHint, scheme, tld);
         }
 
         nameBox.TextChanged += (_, _) => SyncState();

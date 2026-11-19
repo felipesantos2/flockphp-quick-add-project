@@ -1683,6 +1683,51 @@ Encontrarás los detalles en %LocalAppData%\Flock\tray.log.</value>
     <data name="Sites_FrankenphpRunningWorker" xml:space="preserve">
         <value>Ejecutando FrankenPHP {0} con PHP {1} · modo worker</value>
     </data>
+    <data name="Sites_NewApp" xml:space="preserve">
+        <value>Nueva app…</value>
+    </data>
+    <data name="Sites_NewAppBrowse" xml:space="preserve">
+        <value>Examinar…</value>
+    </data>
+    <data name="Sites_NewAppCreate" xml:space="preserve">
+        <value>Crear</value>
+    </data>
+    <data name="Sites_NewAppDb" xml:space="preserve">
+        <value>Crear base de datos MySQL o MariaDB</value>
+    </data>
+    <data name="Sites_NewAppDbServiceAuto" xml:space="preserve">
+        <value>Automático (MySQL o MariaDB)</value>
+    </data>
+    <data name="Sites_NewAppFolder" xml:space="preserve">
+        <value>Carpeta</value>
+    </data>
+    <data name="Sites_NewAppHintNoDb" xml:space="preserve">
+        <value>No se detectó ningún servicio MySQL o MariaDB en ejecución (inicia uno en Servicios).</value>
+    </data>
+    <data name="Sites_NewAppHintRequiresDb" xml:space="preserve">
+        <value>Esta plantilla requiere que MySQL o MariaDB esté en ejecución (inicia uno en Servicios).</value>
+    </data>
+    <data name="Sites_NewAppHttps" xml:space="preserve">
+        <value>Servir mediante HTTPS</value>
+    </data>
+    <data name="Sites_NewAppLoadError" xml:space="preserve">
+        <value>No se pudieron cargar las plantillas</value>
+    </data>
+    <data name="Sites_NewAppName" xml:space="preserve">
+        <value>Nombre</value>
+    </data>
+    <data name="Sites_NewAppPreviewHint" xml:space="preserve">
+        <value>Elige un nombre y una carpeta para servir en {0}://&lt;name&gt;.{1}.</value>
+    </data>
+    <data name="Sites_NewAppTemplate" xml:space="preserve">
+        <value>Plantilla</value>
+    </data>
+    <data name="Sites_NewAppTitle" xml:space="preserve">
+        <value>Nueva aplicación</value>
+    </data>
+    <data name="Sites_NewAppTooltip" xml:space="preserve">
+        <value>Crea un nuevo proyecto desde una plantilla y vincúlalo como un sitio</value>
+    </data>
     <data name="Sites_NoOutputYet" xml:space="preserve">
         <value>Todavía no hay salida.</value>
     </data>

@@ -441,25 +441,29 @@ impl Inner {
         let labels: Vec<&str> = templates.iter().map(|t| t.name.as_str()).collect();
         let default_idx = templates.iter().position(|t| t.name.eq_ignore_ascii_case("php")).unwrap_or(0) as u32;
 
-        let name = adw::EntryRow::builder().title("Name, e.g. my-app").activates_default(true).build();
-        let template_row = adw::ComboRow::builder().title("Template").model(&gtk::StringList::new(&labels)).selected(default_idx).build();
-        let folder = adw::EntryRow::builder().title("Folder").activates_default(true).build();
+        let name = adw::EntryRow::builder().title(tr!("sites.new_app_name")).activates_default(true).build();
+        let template_row = adw::ComboRow::builder()
+            .title(tr!("sites.new_app_template"))
+            .model(&gtk::StringList::new(&labels))
+            .selected(default_idx)
+            .build();
+        let folder = adw::EntryRow::builder().title(tr!("sites.new_app_folder")).activates_default(true).build();
         folder.set_text(&default_folder);
         let browse = gtk::Button::builder()
             .icon_name("folder-open-symbolic")
-            .tooltip_text("Browse…")
+            .tooltip_text(tr!("sites.new_app_browse"))
             .valign(gtk::Align::Center)
             .css_classes(["flat"])
             .build();
         folder.add_suffix(&browse);
 
-        let db_row = adw::SwitchRow::builder().title("Create MySQL or MariaDB database").build();
+        let db_row = adw::SwitchRow::builder().title(tr!("sites.new_app_db")).build();
         let db_service_row = adw::ComboRow::builder()
-            .title("Database service")
-            .model(&gtk::StringList::new(&["Auto (MySQL or MariaDB)", "MySQL", "MariaDB"]))
+            .title(tr!("sites.new_app_db_service"))
+            .model(&gtk::StringList::new(&[tr!("sites.new_app_db_service_auto"), "MySQL", "MariaDB"]))
             .visible(false)
             .build();
-        let secured_row = adw::SwitchRow::builder().title("Serve over HTTPS").build();
+        let secured_row = adw::SwitchRow::builder().title(tr!("sites.new_app_https")).build();
 
         let list = gtk::ListBox::builder().css_classes(["boxed-list"]).selection_mode(gtk::SelectionMode::None).build();
         list.append(&name);
@@ -469,9 +473,9 @@ impl Inner {
         list.append(&db_service_row);
         list.append(&secured_row);
 
-        let dialog = adw::AlertDialog::new(Some("New application"), None);
+        let dialog = adw::AlertDialog::new(Some(tr!("sites.new_app_title")), None);
         dialog.set_extra_child(Some(&list));
-        dialog.add_responses(&[("cancel", "Cancel"), ("create", "Create")]);
+        dialog.add_responses(&[("cancel", tr!("common.cancel")), ("create", tr!("sites.new_app_create"))]);
         dialog.set_response_appearance("create", adw::ResponseAppearance::Suggested);
         dialog.set_default_response(Some("create"));
         dialog.set_response_enabled("create", false);
@@ -497,13 +501,14 @@ impl Inner {
 
                 let wants_db = db_row.is_active();
                 db_service_row.set_visible(wants_db);
-                db_row.set_subtitle(if !wants_db || has_running_db {
+                let subtitle = if !wants_db || has_running_db {
                     ""
                 } else if tmpl.requires_db {
-                    "This template requires MySQL or MariaDB to be running (start one in Services)."
+                    tr!("sites.new_app_hint_requires_db")
                 } else {
-                    "No running MySQL or MariaDB service detected (start one in Services)."
-                });
+                    tr!("sites.new_app_hint_no_db")
+                };
+                db_row.set_subtitle(subtitle);
 
                 let raw_name = name.text();
                 let raw_name = raw_name.trim();
@@ -517,7 +522,7 @@ impl Inner {
                 let preview = if valid {
                     format!("{} → {scheme}://{slug}.{tld}", std::path::Path::new(raw_folder).join(raw_name).display())
                 } else {
-                    format!("Choose a name and folder to serve at {scheme}://<name>.{tld}.")
+                    tr!("sites.new_app_preview_hint", scheme = scheme, tld = tld)
                 };
                 dialog.set_body(&preview);
             }
@@ -539,7 +544,9 @@ impl Inner {
             let (stack, folder_weak) = (self.stack.clone(), folder.downgrade());
             browse.connect_clicked(move |_| {
                 let window = stack.root().and_downcast::<gtk::Window>();
-                let mut builder = gtk::FileDialog::builder().title("Select Parent Folder").accept_label("Select");
+                let mut builder = gtk::FileDialog::builder()
+                    .title(tr!("sites.new_app_parent_folder"))
+                    .accept_label(tr!("sites.server.choose"));
                 if let Some(current) = folder_weak.upgrade() {
                     let current = current.text();
                     let current = current.trim();

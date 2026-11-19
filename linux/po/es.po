@@ -1461,10 +1461,52 @@ msgstr[0] "{n} worktree"
 msgstr[1] "{n} worktrees"
 
 msgid "sites.new_app"
-msgstr "New App…"
+msgstr "Nueva app…"
+
+msgid "sites.new_app_browse"
+msgstr "Examinar…"
+
+msgid "sites.new_app_create"
+msgstr "Crear"
+
+msgid "sites.new_app_db"
+msgstr "Crear base de datos MySQL o MariaDB"
+
+msgid "sites.new_app_db_service"
+msgstr "Servicio de base de datos"
+
+msgid "sites.new_app_db_service_auto"
+msgstr "Automático (MySQL o MariaDB)"
+
+msgid "sites.new_app_folder"
+msgstr "Carpeta"
+
+msgid "sites.new_app_hint_no_db"
+msgstr "No se detectó ningún servicio MySQL o MariaDB en ejecución (inicia uno en Servicios)."
+
+msgid "sites.new_app_hint_requires_db"
+msgstr "Esta plantilla requiere que MySQL o MariaDB esté en ejecución (inicia uno en Servicios)."
+
+msgid "sites.new_app_https"
+msgstr "Servir mediante HTTPS"
+
+msgid "sites.new_app_name"
+msgstr "Nombre"
+
+msgid "sites.new_app_parent_folder"
+msgstr "Carpeta principal"
+
+msgid "sites.new_app_preview_hint"
+msgstr "Elige un nombre y una carpeta para servir en {scheme}://<name>.{tld}."
+
+msgid "sites.new_app_template"
+msgstr "Plantilla"
+
+msgid "sites.new_app_title"
+msgstr "Nueva aplicación"
 
 msgid "sites.new_app_tooltip"
-msgstr "Create a new project from a template and link it as a site"
+msgstr "Crea un nuevo proyecto desde una plantilla y vincúlalo como un sitio"
 
 msgid "sites.no_public_www_web_or"
 msgstr "No se encontró public/, www/, web/ ni webroot/ con un index.php, así que Flock muestra una página en lugar del sitio. Elige la carpeta con el index.php de la app."
