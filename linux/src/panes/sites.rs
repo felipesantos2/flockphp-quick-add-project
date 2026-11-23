@@ -601,23 +601,28 @@ impl Inner {
         let target_path = std::path::Path::new(&req.parent_dir).join(&req.name).to_string_lossy().into_owned();
         let fallback_name = app_slug(&req.name);
         let (this, banner) = (self.clone(), self.banner.clone());
-        self.model.perform(
-            move |c| c.create_app(&req),
-            move |err| {
-                this.creating_app.set(false);
-                if err.is_none() {
-                    let created_name = this
-                        .model
-                        .status()
-                        .and_then(|s| s.sites.into_iter().find(|site| site.path == target_path).map(|site| site.name))
-                        .unwrap_or_else(|| fallback_name.clone());
-                    this.open(&created_name);
-                } else {
-                    this.render();
+        glib::spawn_future_local(async move {
+            let (status, err) = gio::spawn_blocking(move || match Client.create_app(&req) {
+                Ok(status) => (Some(status), None),
+                Err(Error::OutcomeUnknown) => (Client.status().ok(), Some(Error::OutcomeUnknown.to_string())),
+                Err(e) => (None, Some(e.to_string())),
+            })
+            .await
+            .expect("create app request");
+            this.creating_app.set(false);
+            if let Some(status) = status {
+                let created_name = status.sites.iter().find(|site| site.path == target_path).map(|site| site.name.clone());
+                this.model.apply_status(status);
+                if let Some(name) = created_name {
+                    this.open(&name);
+                } else if err.is_none() {
+                    this.open(&fallback_name);
                 }
-                report(&banner, err);
-            },
-        );
+            } else {
+                this.render();
+            }
+            report(&banner, err);
+        });
     }
 
     /// A site's row, or a worktree's (by its branch), which opens its detail.

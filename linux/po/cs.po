@@ -121,6 +121,9 @@ msgstr "Vyžaduje pozornost · {version}"
 msgid "app.not_running"
 msgstr "Flock neběží"
 
+msgid "app.outcome_unknown"
+msgstr "Spojení selhalo. Změna se možná provedla; před dalším pokusem obnovte její stav."
+
 msgid "app.program_uses_ports"
 msgstr "{program} používá {ports}."
 

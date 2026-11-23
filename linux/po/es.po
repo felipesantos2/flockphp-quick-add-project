@@ -120,6 +120,9 @@ msgstr "Requiere atención · {version}"
 msgid "app.not_running"
 msgstr "Flock no está en ejecución"
 
+msgid "app.outcome_unknown"
+msgstr "La conexión falló. Es posible que el cambio se haya completado; actualiza su estado antes de volver a intentarlo."
+
 msgid "app.program_uses_ports"
 msgstr "{program} usa {ports}."
 

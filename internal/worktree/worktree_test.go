@@ -192,17 +192,12 @@ func TestAFailingHookFailsTheSetup(t *testing.T) {
 
 func TestManagerRunsOneSetupPerWorktreeAndJoinsIt(t *testing.T) {
 	m := NewManager(t.TempDir())
-	t.Cleanup(m.StopAll)
 	release := make(chan struct{})
 	runs := 0
 	setup := func(ctx context.Context, log io.Writer, step func(string)) error {
 		runs++
 		step(StepCopy)
-		select {
-		case <-release:
-		case <-ctx.Done():
-			return ctx.Err()
-		}
+		<-release
 		return nil
 	}
 	done := make(chan error, 1)

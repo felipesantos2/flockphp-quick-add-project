@@ -13,6 +13,7 @@ use crate::paths;
 #[derive(Debug, Clone, PartialEq)]
 pub enum Error {
     NotRunning,
+    OutcomeUnknown,
     Server { status: u16, message: String },
 }
 
@@ -20,6 +21,7 @@ impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Error::NotRunning => f.write_str(tr!("app.not_running")),
+            Error::OutcomeUnknown => f.write_str(tr!("app.outcome_unknown")),
             Error::Server { status, message } if message.is_empty() => f.write_str(&tr!("app.http_status", status = status)),
             Error::Server { message, .. } => write!(f, "{message}"),
         }
@@ -260,7 +262,11 @@ impl Client {
 
     /// Creates a new project directory from an apps.conf template and links it as a site.
     pub fn create_app(&self, req: &CreateAppRequest) -> Result<Status, Error> {
-        self.request("POST", "/v1/apps", Some(req), APP_CREATE_TIMEOUT)
+        let had_config = paths::api_json().is_file();
+        match self.request("POST", "/v1/apps", Some(req), APP_CREATE_TIMEOUT) {
+            Err(Error::NotRunning) if had_config => Err(Error::OutcomeUnknown),
+            other => other,
+        }
     }
 
     pub fn update_site(&self, name: &str, change: &SiteChange) -> Result<Status, Error> {

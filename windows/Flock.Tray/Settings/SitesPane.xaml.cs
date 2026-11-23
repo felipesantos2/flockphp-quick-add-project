@@ -313,13 +313,22 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane, ISiteDetai
     /// <summary>Asks for a name, template and parent folder, then creates and links the project.</summary>
     private async Task NewAppAsync()
     {
+        var token = activeLifetime?.Token ?? CancellationToken.None;
         List<AppTemplate> templates;
         try
         {
-            templates = await Model.Sites.AppTemplatesAsync();
+            templates = await Model.Sites.AppTemplatesAsync(token);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            return;
         }
         catch (Exception error)
         {
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
             App.Log(error);
             await new ContentDialog
             {
@@ -329,6 +338,10 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane, ISiteDetai
                 DefaultButton = ContentDialogButton.Close,
                 XamlRoot = Window.XamlRoot
             }.ShowAsync();
+            return;
+        }
+        if (token.IsCancellationRequested)
+        {
             return;
         }
         var tld = Model.Status?.Dns.Tld is { Length: > 0 } t ? t : "test";

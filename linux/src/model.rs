@@ -136,6 +136,11 @@ impl AppModel {
         self.error.replace(None);
     }
 
+    pub fn apply_status(&self, status: Status) {
+        self.apply(status);
+        self.changed();
+    }
+
     /// Changes settings; on failure, report gets the error (the banner of the window that asked).
     pub fn change_settings(self: &Rc<Self>, change: SettingsChange, report: impl Fn(Option<String>) + 'static) {
         self.perform(move |client| client.update_settings(&change), report);

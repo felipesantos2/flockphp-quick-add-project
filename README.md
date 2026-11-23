@@ -141,15 +141,7 @@ make lint
 make app        # the macOS app, into build/macos/Flock.app
 ```
 
-The Windows app is described in [windows/README.md](windows/README.md). On Linux, the app needs Rust and the GTK 4, libadwaita and WebKitGTK 6 development packages. To build, test and open it from the repository root:
-
-```sh
-cargo build --locked --manifest-path linux/Cargo.toml
-cargo test --locked --manifest-path linux/Cargo.toml
-cargo run --locked --manifest-path linux/Cargo.toml
-```
-
-The app can open without the daemon, but needs Flock set up to use its services. `linux/build-packages.sh` builds the CLI and the app into `.deb` and `.rpm` packages.
+The Windows app is described in [windows/README.md](windows/README.md). On Linux, `linux/build-packages.sh` builds the CLI and the app into `.deb` and `.rpm` packages (it needs Rust and the GTK 4, libadwaita and WebKitGTK 6 development packages).
 
 ## Contributing
 
