@@ -38,7 +38,7 @@ jobs:
             version: ${{ steps.release.outputs.version }}
         steps:
             # Anyone with write access can start a workflow; only admins may release.
-            -   name: Check who started it
+            -   name: Validate Authorized Actor
                 if: github.event_name == 'workflow_dispatch'
                 env:
                     GH_TOKEN: ${{ github.token }}
@@ -50,7 +50,7 @@ jobs:
                       echo "::error::only admins can run this, not $ACTOR ($permission)" && exit 1
                     fi
 
-            -   uses: googleapis/release-please-action@v5
+            -   uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7
                 id: release
                 with:
                     # RELEASE_PLEASE_TOKEN (a fine-grained PAT) is needed: the release PR must start ci-build.yml's
@@ -96,6 +96,7 @@ jobs:
         if: needs.find-builds.outputs.run_id == ''
         permissions:
             contents: read
+            pull-requests: read
             # Windows signing's Azure login.
             id-token: write
         uses: ./.github/workflows/ci-build.yml
@@ -106,7 +107,7 @@ jobs:
         secrets: inherit
 
     publish:
-        name: Attach builds to the release
+        name: Attach Release Artifacts
         needs: [ release-please, find-builds, build ]
         if: always() && needs.find-builds.result == 'success' && needs.build.result != 'failure' && needs.build.result != 'cancelled'
         runs-on: ubuntu-latest
@@ -120,15 +121,15 @@ jobs:
             group: update-feed
             cancel-in-progress: false
         steps:
-            -   uses: actions/checkout@v7
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
                 with:
                     ref: ${{ needs.release-please.outputs.tag_name }}
 
-            -   uses: actions/setup-go@v7
+            -   uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5
                 with:
                     go-version-file: go.mod
 
-            -   uses: actions/download-artifact@v8
+            -   uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
                 with:
                     path: dist
                     merge-multiple: true
@@ -183,7 +184,7 @@ jobs:
         permissions:
             contents: read
         steps:
-            -   uses: actions/checkout@v7
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
                 with:
                     ref: ${{ needs.release-please.outputs.tag_name }}
 

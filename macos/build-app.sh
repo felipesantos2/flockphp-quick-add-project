@@ -32,7 +32,7 @@ if [[ "$BUILD" != 0 && -n "${SPARKLE_PUBLIC_KEY:-}" ]]; then
 	<key>SUEnableAutomaticChecks</key><true/>"
 fi
 
-# Apple silicon only: Flock doesn't support Intel Macs, and an arm64-only app won't open on one.
+# Apple Silicon only: Flock doesn't support Intel Macs, and an arm64-only app won't open on one.
 ARCHS=(--arch arm64)
 swift build -c release --product FlockBar "${ARCHS[@]}"
 

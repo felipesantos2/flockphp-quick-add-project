@@ -24,7 +24,7 @@ flock php list
 
 Every version is a download: Flock checks the checksum and the signature of the list it comes from before installing it. Nothing is compiled on your machine.
 
-- **macOS:** builds for Apple silicon made by Flock, with PHP-FPM.
+- **macOS:** builds for Apple Silicon made by Flock, with PHP-FPM.
 - **Linux:** builds for x64 and arm64 made by Flock, with PHP-FPM. They don't use or change the PHP your distribution installs.
 - **Windows:** the official thread-safe x64 builds from windows.php.net, plus Flock's pack of extensions the official builds don't include. Each version runs a small pool of `php-cgi` workers, and requests go to the least busy one.
 

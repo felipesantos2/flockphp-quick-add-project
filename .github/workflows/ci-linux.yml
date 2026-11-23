@@ -15,17 +15,40 @@ on:
 
 jobs:
     linux-app:
-        name: Linux app
+        name: Linux App
+        if: inputs.code == 'true'
         runs-on: ubuntu-24.04
         env:
             CODE: ${{ inputs.code }}
         steps:
-            -   uses: actions/checkout@v7
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
                 if: env.CODE == 'true'
                 with:
                     ref: ${{ inputs.ref }}
 
-            -   name: GTK, libadwaita and WebKitGTK
+            -   name: Cache Cargo Dependencies
+                id: cargo-deps
+                uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25
+                with:
+                    path: |
+                        ~/.cargo/registry
+                        ~/.cargo/git
+                    key: cargo-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('linux/Cargo.lock') }}
+
+            -   name: Identify Rust Toolchain
+                id: rust-toolchain
+                run: echo "key=$(rustc -vV | sha256sum | cut -d ' ' -f 1)-${ImageVersion}" >> "$GITHUB_OUTPUT"
+
+            -   name: Cache Cargo Build Artifacts
+                id: cargo-build
+                uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25
+                with:
+                    path: linux/target
+                    key: cargo-target-${{ runner.os }}-${{ runner.arch }}-${{ steps.rust-toolchain.outputs.key }}-${{ hashFiles('linux/Cargo.lock') }}-${{ github.run_id }}-${{ github.run_attempt }}
+                    restore-keys: |
+                        cargo-target-${{ runner.os }}-${{ runner.arch }}-${{ steps.rust-toolchain.outputs.key }}-${{ hashFiles('linux/Cargo.lock') }}-
+
+            -   name: GTK, libadwaita, and WebKitGTK
                 if: env.CODE == 'true'
                 run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends libgtk-4-dev libadwaita-1-dev libwebkitgtk-6.0-dev
 
@@ -41,8 +64,25 @@ jobs:
                 if: env.CODE == 'true'
                 run: cargo test --manifest-path linux/Cargo.toml --all-features --locked
 
+            -   name: Save Cargo Dependencies
+                if: ${{ !cancelled() && steps.cargo-deps.outcome == 'success' && steps.cargo-deps.outputs.cache-hit != 'true' }}
+                uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25
+                with:
+                    path: |
+                        ~/.cargo/registry
+                        ~/.cargo/git
+                    key: ${{ steps.cargo-deps.outputs.cache-primary-key }}
+
+            -   name: Save Cargo Build Artifacts
+                if: ${{ !cancelled() && steps.cargo-build.outcome == 'success' && steps.cargo-build.outputs.cache-hit != 'true' }}
+                uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25
+                with:
+                    path: linux/target
+                    key: ${{ steps.cargo-build.outputs.cache-primary-key }}
+
     linux:
         name: Linux (${{ matrix.arch }})
+        if: inputs.code == 'true'
         strategy:
             fail-fast: false
             matrix:
@@ -55,21 +95,30 @@ jobs:
         env:
             VERSION: ${{ inputs.version }}
         steps:
-            -   uses: actions/checkout@v7
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
                 with:
                     ref: ${{ inputs.ref }}
 
-            -   uses: actions/setup-go@v7
+            -   uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5
                 with:
                     go-version-file: go.mod
 
-            -   name: GTK, libadwaita and WebKitGTK
+            -   name: Cache Cargo Dependencies
+                id: cargo-deps
+                uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25
+                with:
+                    path: |
+                        ~/.cargo/registry
+                        ~/.cargo/git
+                    key: cargo-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('linux/Cargo.lock') }}
+
+            -   name: GTK, libadwaita, and WebKitGTK
                 run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends libgtk-4-dev libadwaita-1-dev libwebkitgtk-6.0-dev
 
-            -   name: Build packages
+            -   name: Build Packages
                 run: linux/build-packages.sh "${{ matrix.arch }}"
 
-            -   uses: actions/upload-artifact@v7
+            -   uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
                 with:
                     name: flock-linux-${{ matrix.arch }}
                     path: |
@@ -77,8 +126,17 @@ jobs:
                         build/linux/flockphp*.rpm
                     if-no-files-found: error
 
+            -   name: Save Cargo Dependencies
+                if: ${{ !cancelled() && steps.cargo-deps.outcome == 'success' && steps.cargo-deps.outputs.cache-hit != 'true' }}
+                uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25
+                with:
+                    path: |
+                        ~/.cargo/registry
+                        ~/.cargo/git
+                    key: ${{ steps.cargo-deps.outputs.cache-primary-key }}
+
     linux-package-validation:
-        name: Linux package validation (${{ matrix.name }})
+        name: Linux Package Validation (${{ matrix.name }})
         needs: linux
         strategy:
             fail-fast: false
@@ -116,33 +174,33 @@ jobs:
                         package: rpm
         runs-on: ${{ matrix.runner }}
         steps:
-            -   uses: actions/checkout@v7
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
                 with:
                     ref: ${{ inputs.ref }}
 
-            -   uses: actions/download-artifact@v8
+            -   uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
                 with:
                     name: flock-linux-${{ matrix.arch }}
                     path: build/linux
 
-            -   name: Install, run and remove
+            -   name: Install, Run, and Remove
                 run: bash linux/validate-package.sh "${{ matrix.package }}" "${{ matrix.image }}" build/linux
 
     linux-aur-validation:
-        name: Linux AUR validation
+        name: Linux AUR Validation
         needs: linux
         runs-on: ubuntu-24.04
         env:
             VERSION: ${{ inputs.version }}
         steps:
-            -   uses: actions/checkout@v7
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
                 with:
                     ref: ${{ inputs.ref }}
 
-            -   uses: actions/download-artifact@v8
+            -   uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
                 with:
                     name: flock-linux-amd64
                     path: build/linux
 
-            -   name: Build, install, run and remove
+            -   name: Build, Install, Run, and Remove
                 run: bash linux/validate-package.sh aur archlinux:latest build/linux

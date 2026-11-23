@@ -29,7 +29,7 @@ jobs:
             sha: ${{ steps.version.outputs.sha }}
         steps:
             # Anyone with write access can start a workflow; only admins may release.
-            -   name: Check who started it
+            -   name: Validate Authorized Actor
                 env:
                     GH_TOKEN: ${{ github.token }}
                     ACTOR: ${{ github.triggering_actor }}
@@ -40,7 +40,7 @@ jobs:
                       echo "::error::only admins can run this, not $ACTOR ($permission)" && exit 1
                     fi
 
-            -   name: Check the branch
+            -   name: Check Branch
                 env:
                     BRANCH: ${{ github.ref_name }}
                 #language=bash
@@ -49,12 +49,12 @@ jobs:
                       echo "::error::betas are released from main or a maintenance branch like 1.x, not \"$BRANCH\"" && exit 1
                     fi
 
-            -   uses: actions/checkout@v7
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
                 with:
                     # The tags, to count from the last release and the betas since.
                     fetch-depth: 0
 
-            -   uses: actions/setup-go@v7
+            -   uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5
                 with:
                     go-version-file: go.mod
 
@@ -71,6 +71,7 @@ jobs:
         needs: prepare
         permissions:
             contents: read
+            pull-requests: read
             # Windows signing's Azure login.
             id-token: write
         uses: ./.github/workflows/ci-build.yml
@@ -96,16 +97,16 @@ jobs:
             SHA: ${{ needs.prepare.outputs.sha }}
             GH_TOKEN: ${{ github.token }}
         steps:
-            -   uses: actions/checkout@v7
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
                 with:
                     ref: ${{ needs.prepare.outputs.sha }}
                     fetch-depth: 0
 
-            -   uses: actions/setup-go@v7
+            -   uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5
                 with:
                     go-version-file: go.mod
 
-            -   uses: actions/download-artifact@v8
+            -   uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
                 with:
                     path: dist
                     merge-multiple: true
@@ -155,7 +156,7 @@ jobs:
         env:
             VERSION: ${{ needs.prepare.outputs.version }}
         steps:
-            -   uses: actions/checkout@v7
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
                 with:
                     ref: ${{ needs.prepare.outputs.sha }}
 

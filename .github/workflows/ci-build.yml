@@ -29,7 +29,7 @@ jobs:
         outputs:
             version: ${{ steps.version.outputs.version }}
         steps:
-            -   uses: actions/checkout@v7
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
                 with:
                     ref: ${{ inputs.ref || github.event.pull_request.head.sha }}
 
@@ -55,41 +55,65 @@ jobs:
 
     changes:
         runs-on: ubuntu-latest
+        permissions:
+            pull-requests: read
         outputs:
-            code: ${{ steps.changes.outputs.code }}
-            docs: ${{ steps.changes.outputs.docs }}
-            tooling: ${{ steps.changes.outputs.tooling }}
+            go: ${{ steps.filter.outputs.go }}
+            macos: ${{ steps.filter.outputs.macos }}
+            windows: ${{ steps.filter.outputs.windows }}
+            linux: ${{ steps.filter.outputs.linux }}
+            translations: ${{ steps.filter.outputs.translations }}
+            notices: ${{ steps.filter.outputs.notices }}
+            tooling: ${{ steps.filter.outputs.tooling }}
+            docs: ${{ steps.filter.outputs.docs }}
         steps:
-            -   uses: actions/checkout@v7
+            -   uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d
                 if: github.event_name == 'pull_request'
+                id: filter
                 with:
-                    ref: ${{ github.event.pull_request.head.sha }}
-                    fetch-depth: 0
-
-            -   name: Changed files
-                id: changes
-                env:
-                    EVENT: ${{ github.event_name }}
-                    BASE: ${{ github.event.pull_request.base.ref }}
-                    BASE_SHA: ${{ github.event.pull_request.base.sha }}
-                    HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-                #language=bash
-                run: |
-                    if [ "$EVENT" != pull_request ]; then
-                      echo "code=true" >> "$GITHUB_OUTPUT"
-                      echo "tooling=true" >> "$GITHUB_OUTPUT"
-                      exit 0
-                    fi
-                    files=$(git diff --name-only --no-renames "$BASE_SHA...$HEAD_SHA")
-                    code=false
-                    if [ "$BASE" = main ] || grep -v '^docs/' <<< "$files" | grep -q .; then code=true; fi
-                    docs=false
-                    if grep -q '^docs/' <<< "$files"; then docs=true; fi
-                    tooling=false
-                    if grep -q '^tools/' <<< "$files" || grep -qxE 'go\.(mod|sum)' <<< "$files"; then tooling=true; fi
-                    echo "code=$code" >> "$GITHUB_OUTPUT"
-                    echo "docs=$docs" >> "$GITHUB_OUTPUT"
-                    echo "tooling=$tooling" >> "$GITHUB_OUTPUT"
+                    filters: |
+                        go: &go
+                          - 'cmd/**'
+                          - 'internal/**'
+                          - 'go.mod'
+                          - 'go.sum'
+                          - 'Makefile'
+                          - '.github/workflows/ci-build.yml'
+                        macos:
+                          - *go
+                          - 'macos/**'
+                          - 'lang/**'
+                          - '.github/workflows/ci-macos.yml'
+                        windows:
+                          - *go
+                          - 'windows/**'
+                          - 'lang/**'
+                          - '.github/workflows/ci-windows.yml'
+                        linux:
+                          - *go
+                          - 'linux/**'
+                          - 'lang/**'
+                          - '.github/workflows/ci-linux.yml'
+                        translations:
+                          - 'macos/**'
+                          - 'windows/**'
+                          - 'linux/**'
+                          - 'lang/**'
+                          - 'tools/i18n/**'
+                          - '.github/workflows/ci-build.yml'
+                        notices:
+                          - *go
+                          - 'macos/**'
+                          - 'windows/**'
+                          - 'THIRD_PARTY_NOTICES'
+                          - 'tools/notices/**'
+                        tooling:
+                          - 'tools/**'
+                          - 'go.mod'
+                          - 'go.sum'
+                          - '.github/workflows/**'
+                        docs:
+                          - 'docs/**'
 
     docs:
         name: Docs
@@ -97,23 +121,24 @@ jobs:
         if: needs.changes.outputs.docs == 'true'
         runs-on: ubuntu-latest
         steps:
-            -   uses: actions/checkout@v7
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
                 with:
                     ref: ${{ github.event.pull_request.head.sha }}
-            -   uses: actions/setup-go@v7
+            -   uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5
                 with:
                     go-version-file: go.mod
-
             -   name: Check
                 run: go run ./tools/docslint
 
     go-test:
-        name: Go tests (${{ matrix.name }})
-        needs: [ version, changes ]
+        name: Go ${{ matrix.check }} (${{ matrix.platform.name }})
+        needs: changes
+        if: github.event_name != 'pull_request' || needs.changes.outputs.go == 'true'
         strategy:
             fail-fast: false
             matrix:
-                include:
+                check: [ vet, test ]
+                platform:
                     -   name: macOS
                         os: macos-26
                         flags: -race
@@ -126,44 +151,74 @@ jobs:
                     -   name: Linux arm64
                         os: ubuntu-24.04-arm
                         flags: -race
-        runs-on: ${{ matrix.os }}
-        env:
-            CODE: ${{ needs.changes.outputs.code }}
+        runs-on: ${{ matrix.platform.os }}
         steps:
-            -   uses: actions/checkout@v7
-                if: env.CODE == 'true'
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
                 with:
                     ref: ${{ inputs.ref || github.event.pull_request.head.sha }}
 
-            -   uses: actions/setup-go@v7
-                if: env.CODE == 'true'
+            -   uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5
+                id: go
                 with:
                     go-version-file: go.mod
+                    cache: false
+
+            -   name: Restore Go Cache
+                id: go-cache
+                uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25
+                with:
+                    path: |
+                        ${{ steps.go.outputs.GOCACHE }}
+                        ${{ steps.go.outputs.GOMODCACHE }}
+                    key: go-ci-${{ runner.os }}-${{ runner.arch }}-${{ steps.go.outputs.go-version }}-${{ hashFiles('go.mod', 'go.sum') }}-${{ matrix.check }}-${{ github.run_id }}-${{ github.run_attempt }}
+                    restore-keys: |
+                        go-ci-${{ runner.os }}-${{ runner.arch }}-${{ steps.go.outputs.go-version }}-${{ hashFiles('go.mod', 'go.sum') }}-${{ matrix.check }}-
 
             -   name: Vet
-                if: env.CODE == 'true'
+                if: matrix.check == 'vet'
                 shell: bash
                 run: go vet $(go list ./... | grep -v '^flock/tools/')
 
             -   name: Test
-                if: env.CODE == 'true'
+                if: matrix.check == 'test'
                 shell: bash
-                run: go test ${{ matrix.flags }} $(go list ./... | grep -v '^flock/tools/')
+                run: go test ${{ matrix.platform.flags }} $(go list ./... | grep -v '^flock/tools/')
 
+            -   name: Save Go Cache
+                if: ${{ !cancelled() && steps.go-cache.outcome == 'success' && steps.go-cache.outputs.cache-hit != 'true' }}
+                uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25
+                with:
+                    path: |
+                        ${{ steps.go.outputs.GOCACHE }}
+                        ${{ steps.go.outputs.GOMODCACHE }}
+                    key: ${{ steps.go-cache.outputs.cache-primary-key }}
+
+    generated:
+        name: Generated Files
+        needs: changes
+        if: github.event_name != 'pull_request' || needs.changes.outputs.notices == 'true' || needs.changes.outputs.translations == 'true'
+        runs-on: ubuntu-24.04
+        steps:
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+                with:
+                    ref: ${{ inputs.ref || github.event.pull_request.head.sha }}
+            -   uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5
+                with:
+                    go-version-file: go.mod
             -   name: Third-party notices
-                if: env.CODE == 'true' && matrix.name == 'macOS'
+                if: github.event_name != 'pull_request' || needs.changes.outputs.notices == 'true'
                 run: go run ./tools/notices -check
 
             # The apps' translation files are what lang/ and the apps' keys generate; run `make i18n`
             # after changing either.
             -   name: Translations
-                if: env.CODE == 'true' && matrix.name == 'macOS'
+                if: github.event_name != 'pull_request' || needs.changes.outputs.translations == 'true'
                 run: go run ./tools/i18n -check
 
             # How much of each language is translated, in the job's summary. A pull request that changes
             # the English of an existing key gets a reminder: a new meaning needs a new key (lang/README.md).
-            -   name: Translation status
-                if: env.CODE == 'true' && matrix.name == 'macOS'
+            -   name: Translation Status
+                if: github.event_name != 'pull_request' || needs.changes.outputs.translations == 'true'
                 env:
                     BASE_SHA: ${{ github.event.pull_request.base.sha }}
                 #language=bash
@@ -184,18 +239,31 @@ jobs:
                     } >> "$GITHUB_STEP_SUMMARY"
 
     tool-test:
-        name: Tool tests
+        name: Tool Tests
         needs: changes
-        if: needs.changes.outputs.tooling == 'true'
+        if: github.event_name != 'pull_request' || needs.changes.outputs.tooling == 'true'
         runs-on: ubuntu-24.04
         steps:
-            -   uses: actions/checkout@v7
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
                 with:
                     ref: ${{ inputs.ref || github.event.pull_request.head.sha }}
 
-            -   uses: actions/setup-go@v7
+            -   uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5
+                id: go
                 with:
                     go-version-file: go.mod
+                    cache: false
+
+            -   name: Restore Go Cache
+                id: go-cache
+                uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25
+                with:
+                    path: |
+                        ${{ steps.go.outputs.GOCACHE }}
+                        ${{ steps.go.outputs.GOMODCACHE }}
+                    key: go-tools-${{ runner.os }}-${{ runner.arch }}-${{ steps.go.outputs.go-version }}-${{ hashFiles('go.mod', 'go.sum') }}-${{ github.run_id }}-${{ github.run_attempt }}
+                    restore-keys: |
+                        go-tools-${{ runner.os }}-${{ runner.arch }}-${{ steps.go.outputs.go-version }}-${{ hashFiles('go.mod', 'go.sum') }}-
 
             -   name: Vet
                 run: go vet ./tools/...
@@ -203,16 +271,27 @@ jobs:
             -   name: Test
                 run: go test ./tools/...
 
+            -   name: Save Go Cache
+                if: ${{ !cancelled() && steps.go-cache.outcome == 'success' && steps.go-cache.outputs.cache-hit != 'true' }}
+                uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25
+                with:
+                    path: |
+                        ${{ steps.go.outputs.GOCACHE }}
+                        ${{ steps.go.outputs.GOMODCACHE }}
+                    key: ${{ steps.go-cache.outputs.cache-primary-key }}
+
     macos:
+        if: github.event_name != 'pull_request' || needs.changes.outputs.macos == 'true'
         needs: [ version, changes ]
         uses: ./.github/workflows/ci-macos.yml
         with:
             ref: ${{ inputs.ref || github.event.pull_request.head.sha }}
             version: ${{ needs.version.outputs.version }}
-            code: ${{ needs.changes.outputs.code }}
+            code: ${{ 'true' }}
         secrets: inherit
 
     windows:
+        if: github.event_name != 'pull_request' || needs.changes.outputs.windows == 'true'
         needs: [ version, changes ]
         permissions:
             contents: read
@@ -221,13 +300,14 @@ jobs:
         with:
             ref: ${{ inputs.ref || github.event.pull_request.head.sha }}
             version: ${{ needs.version.outputs.version }}
-            code: ${{ needs.changes.outputs.code }}
+            code: ${{ 'true' }}
         secrets: inherit
 
     linux:
+        if: github.event_name != 'pull_request' || needs.changes.outputs.linux == 'true'
         needs: [ version, changes ]
         uses: ./.github/workflows/ci-linux.yml
         with:
             ref: ${{ inputs.ref || github.event.pull_request.head.sha }}
             version: ${{ needs.version.outputs.version }}
-            code: ${{ needs.changes.outputs.code }}
+            code: ${{ 'true' }}

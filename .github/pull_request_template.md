@@ -1,8 +1,8 @@
 <!--
 Pull requests from outside contributors must reference an open issue that a maintainer has
-labelled "help wanted" or assigned to you; others are closed automatically. A pull request that
-changes only files in docs/, or only translations (lang/), needs no issue: delete the "Fixes #"
-line. See CONTRIBUTING.md.
+labeled "help wanted" or assigned to you; others are closed automatically. A pull request that
+changes only files in docs/ needs no issue: delete the "Fixes #" line. Translation changes need
+an approved issue. See CONTRIBUTING.md.
 -->
 
 Fixes #

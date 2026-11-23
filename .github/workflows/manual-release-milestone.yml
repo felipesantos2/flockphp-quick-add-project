@@ -1,0 +1,39 @@
+name: Sync release milestone
+
+on:
+    workflow_dispatch:
+        inputs:
+            pull_request:
+                description: Release PR number
+                required: true
+                type: string
+            milestone:
+                description: Target milestone number
+                required: true
+                type: string
+
+permissions:
+    contents: read
+    pull-requests: write
+    issues: write
+
+concurrency:
+    group: release-milestone-${{ github.repository }}
+    queue: max
+
+jobs:
+    sync:
+        runs-on: ubuntu-latest
+        steps:
+            -   uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+                with:
+                    ref: ${{ github.event.repository.default_branch }}
+            -   uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5
+                with:
+                    go-version-file: go.mod
+            -   name: Sync Milestone
+                env:
+                    GITHUB_TOKEN: ${{ github.token }}
+                    RELEASE_PR: ${{ inputs.pull_request }}
+                    MILESTONE: ${{ inputs.milestone }}
+                run: go run ./tools/github release-sync "$RELEASE_PR" "$MILESTONE"

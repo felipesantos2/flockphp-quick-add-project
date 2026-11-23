@@ -14,9 +14,13 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: merge-gate-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   gate:
-    name: Maintainer merge
+    name: Maintainer Merge
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -27,10 +31,10 @@ jobs:
         if: github.event_name == 'pull_request'
         run: echo "Checked when the pull request enters the merge queue."
 
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         if: github.event_name == 'merge_group'
 
-      - uses: actions/setup-go@v7
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5
         if: github.event_name == 'merge_group'
         with:
           go-version-file: go.mod

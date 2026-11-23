@@ -19,7 +19,7 @@ The setup:
 
 ## macOS
 
-**Requirements:** macOS 15 Sequoia or newer, on Apple silicon (Intel Macs are not supported).
+**Requirements:** macOS 15 Sequoia or newer, on Apple Silicon (Intel Macs are not supported).
 
 1. Open `Flock-<version>-macOS.dmg` and drag **Flock** to Applications.
 2. Start Flock. A bird appears in your menu bar and the first-run setup opens.

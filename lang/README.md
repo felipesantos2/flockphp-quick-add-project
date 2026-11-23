@@ -8,11 +8,12 @@ Nothing else is needed to translate Flock.
 
 ## Translating
 
-1. Fork the repository and edit `lang/<code>/app.json`. For a new language, start a new folder
+1. Find or open an issue and wait for approval, as described in [CONTRIBUTING.md](../CONTRIBUTING.md).
+2. Fork the repository and edit `lang/<code>/app.json`. For a new language, start a new folder
    with an `app.json` that holds only `{}` (`lang/de/app.json` for German) and add its texts.
-2. Run `make i18n` (or `go run ./tools/i18n`). It checks your file, puts it in order and writes the
+3. Run `make i18n` (or `go run ./tools/i18n`). It checks your file, puts it in order and writes the
    apps' own files from it.
-3. Open a pull request. A pull request that changes only translations needs no issue first.
+4. Open a pull request linked to the approved issue.
 
 `make i18n-missing lang=de` lists the texts a language lacks, with their English and notes.
 

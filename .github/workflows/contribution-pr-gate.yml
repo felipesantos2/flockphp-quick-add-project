@@ -1,21 +1,24 @@
 # Outside contributors open an issue first; a PR from them stays open only when it targets main
-# and references an open issue, here or in flock-php/binaries, that a maintainer has approved for it:
-#   - labelled "help wanted": anyone may send a PR for it, or
-#   - assigned to the PR's author: only they may (only maintainers can assign issues).
-# A PR that changes only docs/ or translations (lang/ and the files generated from it) needs no
-# issue; it's checked again on every push, so it can't pick up other changes later.
+# and links an open issue in this repository with a closing keyword or the Development sidebar that a maintainer has approved for it.
+# An assigned issue accepts only its assignees. An unassigned `help wanted` issue accepts the
+# first processed referenced PR, which receives durable `claimed` before milestone transfer.
+# A PR that changes only files in docs/ and lang/ needs no issue; it's checked again on every push,
+# so it can't pick up other changes later.
 # Every other PR from a non-collaborator is closed with a comment pointing at CONTRIBUTING.md.
 # Keep Settings > General > Pull requests at "All users"; this workflow does the gating.
 name: PR gate
+
+concurrency:
+    group: contribution-pr-gate-${{ github.repository }}
+    queue: max
 
 on:
   # pull_request_target, so the token can comment on and close PRs from forks. It never checks
   # out or runs the PR's code.
   pull_request_target:
     # "edited": a PR's base can change after it opens, and a gate-closed PR can add an approved
-    # issue to its description. "synchronize": a docs-only or translation PR can get other changes
-    # pushed to it.
-    types: [ opened, reopened, edited, synchronize ]
+    # issue to its description. "synchronize": an exempt PR can get other changes pushed to it.
+    types: [ opened, reopened, edited, synchronize, closed ]
 
 permissions:
   contents: read
@@ -24,20 +27,20 @@ permissions:
 
 jobs:
   gate:
-    name: Approved issue
+    name: Approved Issue
     runs-on: ubuntu-latest
     steps:
       # pull_request_target runs from the default branch. Check out the same trusted ref; never
       # check out or run pull request code here.
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           ref: ${{ github.event.repository.default_branch }}
 
-      - uses: actions/setup-go@v7
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5
         with:
           go-version-file: go.mod
 
-      - name: Evaluate
+      - name: Pull Request
         run: go run ./tools/github pr
         env:
           GITHUB_TOKEN: ${{ github.token }}

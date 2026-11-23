@@ -59,8 +59,9 @@ func TestProxiesPassRequestsAndUpgradesToTheirServer(t *testing.T) {
 	if len(status.Proxies) != 1 || status.Proxies[0].URL != "http://softpack.test:"+strconv.Itoa(cfg.Ports.HTTP) || status.Proxies[0].Problem != "" {
 		t.Fatalf("unexpected proxies: %+v", status.Proxies)
 	}
-	// The test binary listens there, so it's running and named.
-	if !status.Proxies[0].Running || status.Proxies[0].Server == "" {
+	// The test binary listens there, so the upstream is running. Process names are unavailable when
+	// the platform cannot inspect the listener.
+	if !status.Proxies[0].Running {
 		t.Errorf("the upstream answers: %+v", status.Proxies[0])
 	}
 

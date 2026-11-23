@@ -83,7 +83,7 @@ Download the installer for your system from [flockphp.com/download](https://floc
 
 | | macOS | Windows | Linux |
 | --- | --- | --- | --- |
-| System | macOS 15 Sequoia or newer, Apple silicon | Windows 10 (2004) or 11, x64 | Ubuntu 24.04 or newer or current Fedora, x64 or arm64; Arch Linux, x64 |
+| System | macOS 15 Sequoia or newer, Apple Silicon | Windows 10 (2004) or 11, x64 | Ubuntu 24.04 or newer or current Fedora, x64 or arm64; Arch Linux, x64 |
 | Installer | `Flock-<version>-macOS.dmg` | `Flock-Setup-<version>-x64.exe` | `.deb` or `.rpm` package, or `flockphp-bin` from the AUR |
 | App | Menu bar | Notification area (tray) | Window and top bar icon |
 
