@@ -277,22 +277,14 @@ internal sealed partial class ServicesPane
             ? Localization.Format(Strings.Services_Postgres_DatabasesStay, major.Major)
             : Strings.Services_Postgres_NoDatabases;
 
-        CheckBox? delete = null;
-        UIElement? extra = null;
-        if (major.HasData)
+        var dialog = new ServiceUninstallDialog(
+            Localization.Format(Strings.Services_UninstallQuestion, $"PostgreSQL {major.Major}"),
+            details,
+            major.HasData ? Localization.Format(Strings.Services_Postgres_AlsoDeleteDatabases, Ui.Bytes(major.DataSize)) : null,
+            major.HasData ? Strings.Services_Postgres_DeletedDatabasesGone : null);
+        if (await dialog.ShowAsync(Window.XamlRoot))
         {
-            delete = new CheckBox { Content = Localization.Format(Strings.Services_Postgres_AlsoDeleteDatabases, Ui.Bytes(major.DataSize)) };
-            var warning = Ui.Caption(Strings.Services_Postgres_DeletedDatabasesGone, Ui.Caution);
-            warning.Visibility = Visibility.Collapsed;
-            warning.Margin = new Thickness(28, -4, 0, 0);
-            delete.Checked += (_, _) => warning.Visibility = Visibility.Visible;
-            delete.Unchecked += (_, _) => warning.Visibility = Visibility.Collapsed;
-            extra = Ui.Column(4, delete, warning);
-        }
-        if (await Window.Confirm(Localization.Format(Strings.Services_UninstallQuestion, $"PostgreSQL {major.Major}"), details, Strings.Common_Uninstall, true, extra))
-        {
-            var deleteData = delete?.IsChecked == true;
-            await RunAsync(() => rows.ReleaseActions.RunAsync(target, ServiceRowCommandKind.Uninstall, deleteData));
+            await RunAsync(() => rows.ReleaseActions.RunAsync(target, ServiceRowCommandKind.Uninstall, dialog.DeleteData));
         }
     }
 

@@ -6,7 +6,7 @@ import (
 	"github.com/google/go-github/v93/github"
 )
 
-var claimRecordMarker = regexp.MustCompile(`^<!-- pr-gate:claim issue=([A-Za-z0-9_.-]+)#([0-9]+) author=([A-Za-z0-9-]+) -->$`)
+var claimRecordMarker = regexp.MustCompile(`^<!-- pr-gate:claim issue=([A-Za-z0-9_.-]+)#([0-9]+) author=([A-Za-z0-9-]+) -->(?:\r?\n|$)`)
 var issueClaimMarker = regexp.MustCompile(`^<!-- pr-gate:claim pr=([0-9]+) author=([A-Za-z0-9-]+) -->(?:\r?\n|$)`)
 
 func ParseClaimRecord(body string) (IssueReference, string, bool) {

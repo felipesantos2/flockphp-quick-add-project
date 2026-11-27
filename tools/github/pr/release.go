@@ -31,8 +31,8 @@ func (s *state) planRelease() {
 		return
 	}
 	if pullRequest.State == "open" && pullRequest.BaseRef == "main" && containsReference(s.observed.links, s.owner, record.Issue) {
-		if !s.decision.made || s.decision.approved == nil ||
-			(s.decision.approved.Repository == record.Issue.Repository && s.decision.approved.Number == record.Issue.Number) {
+		if !s.decision.made ||
+			(s.decision.approved != nil && s.decision.approved.Repository == record.Issue.Repository && s.decision.approved.Number == record.Issue.Number) {
 			return
 		}
 	}

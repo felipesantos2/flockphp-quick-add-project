@@ -56,7 +56,7 @@ public sealed partial class ServicesPaneViewModel : ObservableObject, IDisposabl
         : Services.Where(service => !service.IsOnRequest || service.Installed);
     public IEnumerable<ServiceGroupViewModel> VisibleServiceGroups => VisibleServices
         .GroupBy(service => service.Category)
-        .Select(group => new ServiceGroupViewModel(group.Key, [.. group]));
+        .Select(group => new ServiceGroupViewModel(group.Key, group.ToArray()));
     public ServiceViewModel? SelectedService => VisibleServices.FirstOrDefault(service => service.Id == SelectedId);
     public event Action<ServiceViewModel?>? SelectedServiceChanged;
     public string? PostgresDraftMajor

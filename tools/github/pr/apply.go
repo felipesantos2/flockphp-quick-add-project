@@ -43,6 +43,7 @@ func (s *state) apply(ctx context.Context) error {
 		if err := s.applyChange(ctx, change); err != nil {
 			return err
 		}
+		s.status("PR #%d: %s.", s.event.number, change.description())
 	}
 	return nil
 }
@@ -123,4 +124,31 @@ func (s *state) removeMilestone(ctx context.Context, change change) error {
 		}
 	}
 	return fmt.Errorf("remove milestone from issue %s: %w", change.issue, removeErr)
+}
+
+func (change change) description() string {
+	switch change.kind {
+	case changeComment:
+		return fmt.Sprintf("added a comment to %s#%d", change.repository, change.number)
+	case changePullState:
+		return fmt.Sprintf("set pull request state to %s", change.pullState)
+	case changeDeleteComment:
+		return fmt.Sprintf("deleted a comment from %s", change.repository)
+	case changeAddLabel:
+		return fmt.Sprintf("added %q to %s#%d", change.label, change.repository, change.number)
+	case changeRemoveLabel:
+		return fmt.Sprintf("removed %q from %s#%d", change.label, change.repository, change.number)
+	case changeAddAssignee:
+		return fmt.Sprintf("assigned @%s to %s#%d", change.user, change.repository, change.number)
+	case changeRemoveAssignee:
+		return fmt.Sprintf("unassigned @%s from %s#%d", change.user, change.repository, change.number)
+	case changeCreateLabel:
+		return fmt.Sprintf("created the %q label", contribution.ClaimedLabel)
+	case changeSetMilestone:
+		return fmt.Sprintf("set pull request milestone to #%d", change.milestone)
+	case changeRemoveMilestone:
+		return fmt.Sprintf("removed milestone from %s", change.issue)
+	default:
+		return fmt.Sprintf("applied %q", change.kind)
+	}
 }

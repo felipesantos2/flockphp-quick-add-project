@@ -408,7 +408,7 @@ public sealed class UpdateService(HttpClient http,
             File.Delete(resultPath);
             var result = await processLauncher.RunAsync(files.Installer,
                 // In the app's language, setup's messages (the result file among them) match the app's.
-                ["/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/RELAUNCH", $"/RESULT={resultPath}", $"/LANG={AppLanguage.Current}"]);
+                new[] { "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/RELAUNCH", $"/RESULT={resultPath}", $"/LANG={AppLanguage.Current}" });
             if (!result.Succeeded)
             {
                 var message = File.Exists(resultPath) ? (await File.ReadAllTextAsync(resultPath)).Trim() : result.Output;

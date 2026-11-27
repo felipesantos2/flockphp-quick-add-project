@@ -1,7 +1,8 @@
 # Outside contributors open an issue first; a PR from them stays open only when it targets main
 # and links an open issue in this repository with a closing keyword or the Development sidebar that a maintainer has approved for it.
 # An assigned issue accepts only its assignees. An unassigned `help wanted` issue accepts the
-# first processed referenced PR, which receives durable `claimed` before milestone transfer.
+# first processed referenced PR, regardless of its author's role, which receives durable `claimed`
+# before milestone transfer.
 # A PR that changes only files in docs/ and lang/ needs no issue; it's checked again on every push,
 # so it can't pick up other changes later.
 # Every other PR from a non-collaborator is closed with a comment pointing at CONTRIBUTING.md.

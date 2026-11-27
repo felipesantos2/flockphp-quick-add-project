@@ -417,18 +417,26 @@ internal static class Ui
         };
         if (destructive)
         {
-            // The accent button style, recolored through the resources its template looks up (the
-            // same red in both themes, so white text stays readable).
-            dialog.PrimaryButtonStyle = Resource<Style>("AccentButtonStyle");
-            var white = new SolidColorBrush(Colors.White);
-            foreach (var (state, red) in new[] { ("", Rgb(196, 43, 28)), ("PointerOver", Rgb(178, 38, 25)), ("Pressed", Rgb(160, 34, 22)) })
-            {
-                dialog.Resources["AccentButtonBackground" + state] = new SolidColorBrush(red);
-                dialog.Resources["AccentButtonBorderBrush" + state] = new SolidColorBrush(red);
-                dialog.Resources["AccentButtonForeground" + state] = white;
-            }
+            Destructive(dialog);
         }
         return await dialog.ShowAsync() == ContentDialogResult.Primary;
+    }
+
+    /// <summary>Makes a dialog's primary button red, for an action that removes something.</summary>
+    public static void Destructive(ContentDialog dialog)
+    {
+        // The accent button style, recolored through the resources its template looks up (the
+        // same red in both themes, so white text stays readable). A default button takes the
+        // accent style too and would turn red with it, so the dialog has none.
+        dialog.DefaultButton = ContentDialogButton.None;
+        dialog.PrimaryButtonStyle = Resource<Style>("AccentButtonStyle");
+        var white = new SolidColorBrush(Colors.White);
+        foreach (var (state, red) in new[] { ("", Rgb(196, 43, 28)), ("PointerOver", Rgb(178, 38, 25)), ("Pressed", Rgb(160, 34, 22)) })
+        {
+            dialog.Resources["AccentButtonBackground" + state] = new SolidColorBrush(red);
+            dialog.Resources["AccentButtonBorderBrush" + state] = new SolidColorBrush(red);
+            dialog.Resources["AccentButtonForeground" + state] = white;
+        }
     }
 
     /// <summary>Tells the user something that needs no decision: a title, a sentence and OK.</summary>

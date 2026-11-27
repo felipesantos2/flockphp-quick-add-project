@@ -215,22 +215,14 @@ internal sealed partial class ServicesPane
             ? Localization.Format(Strings.Services_DataStays, line.Label)
             : Strings.Services_NoData;
 
-        CheckBox? delete = null;
-        UIElement? extra = null;
-        if (line.HasData)
+        var dialog = new ServiceUninstallDialog(
+            Localization.Format(Strings.Services_UninstallQuestion, $"{entry.Name} {line.Label}"),
+            details,
+            line.HasData ? Strings.Services_AlsoDeleteData : null,
+            line.HasData ? Strings.Services_DeletedDataGone : null);
+        if (await dialog.ShowAsync(Window.XamlRoot))
         {
-            delete = new CheckBox { Content = Strings.Services_AlsoDeleteData };
-            var warning = Ui.Caption(Strings.Services_DeletedDataGone, Ui.Caution);
-            warning.Visibility = Visibility.Collapsed;
-            warning.Margin = new Thickness(28, -4, 0, 0);
-            delete.Checked += (_, _) => warning.Visibility = Visibility.Visible;
-            delete.Unchecked += (_, _) => warning.Visibility = Visibility.Collapsed;
-            extra = Ui.Column(4, delete, warning);
-        }
-        if (await Window.Confirm(Localization.Format(Strings.Services_UninstallQuestion, $"{entry.Name} {line.Label}"), details, Strings.Common_Uninstall, true, extra))
-        {
-            var deleteData = delete?.IsChecked == true;
-            await RunCatalogAsync(entry.Id, () => Model.ReleaseActions.RunAsync(releaseTarget, ServiceRowCommandKind.Uninstall, deleteData));
+            await RunCatalogAsync(entry.Id, () => Model.ReleaseActions.RunAsync(releaseTarget, ServiceRowCommandKind.Uninstall, dialog.DeleteData));
         }
     }
 

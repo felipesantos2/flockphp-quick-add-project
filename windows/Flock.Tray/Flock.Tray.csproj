@@ -51,10 +51,6 @@
     <ItemGroup>
         <Content Include="Assets\*.ico;Assets\*.png" CopyToOutputDirectory="PreserveNewest"/>
     </ItemGroup>
-    <ItemGroup>
-        <!-- The texts are Flock.Kit's Strings, generated from lang/; XAML reads them with {l:Loc}. -->
-        <Using Include="Flock.Kit.Strings" Alias="Strings"/>
-    </ItemGroup>
     <!-- Hide SDK payload links in the IDE while keeping their output-copy metadata. -->
     <Target Name="HideWindowsAppSDKPayloadLinks" AfterTargets="AddMicrosoftWindowsAppSDKPayloadFilesFromComponents">
         <ItemGroup>

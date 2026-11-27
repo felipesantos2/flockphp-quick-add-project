@@ -64,7 +64,7 @@ public static class Installation
         {
             return [];
         }
-        var result = await runner.RunAsync(bundled, ["conflicts", "--json"], TimeSpan.FromSeconds(30));
+        var result = await runner.RunAsync(bundled, new[] { "conflicts", "--json" }, TimeSpan.FromSeconds(30));
         try
         {
             return result.Succeeded ? FlockJson.Decode<ConflictList>(result.Output).Conflicts : [];

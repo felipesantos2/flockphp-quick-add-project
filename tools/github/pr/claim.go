@@ -26,14 +26,16 @@ func Claim(ctx context.Context, client *github.Client, owner, repository string,
 
 func (s *state) planClaim() {
 	pullRequest := s.observed.pullRequest
-	if pullRequest == nil || pullRequest.State == "closed" || pullRequest.Merged || pullRequest.BaseRef != "main" || bypassesGate(pullRequest) {
+	if pullRequest == nil || pullRequest.State == "closed" || pullRequest.Merged || pullRequest.BaseRef != "main" {
 		return
 	}
 	s.resolve()
 	target := s.claimTarget()
 	if target == nil {
+		s.status("PR #%d has no eligible issue claim.", s.event.number)
 		return
 	}
+	s.status("PR #%d will claim issue %s.", s.event.number, target)
 	snapshot := s.issue(*target)
 	hasPullRequestClaim := false
 	if snapshot != nil {
@@ -49,8 +51,11 @@ func (s *state) planClaim() {
 			kind:       changeComment,
 			repository: s.repository,
 			number:     s.event.number,
-			body:       fmt.Sprintf("<!-- pr-gate:claim issue=%s author=%s -->", *target, pullRequest.Author.Login),
-			issue:      *target,
+			body: fmt.Sprintf(
+				"<!-- pr-gate:claim issue=%s author=%s -->\n\nThis pull request claims issue #%d.",
+				*target, pullRequest.Author.Login, target.Number,
+			),
+			issue: *target,
 		})
 		s.observed.record = &contribution.ClaimRecord{Issue: *target, Author: pullRequest.Author.Login}
 	}

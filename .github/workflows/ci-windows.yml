@@ -23,6 +23,9 @@ jobs:
                 include:
                     -   name: Kit Tests
                         command: 'dotnet test windows/Flock.Kit.Tests'
+                    # The installer build runs these too, but only in the merge queue and on a release.
+                    -   name: Tray Tests
+                        command: 'dotnet test windows/Flock.Tray.Tests -p:Platform=x64'
                     -   name: Tray Build
                         command: 'dotnet build windows/Flock.Tray -c Release -p:Platform=x64'
                     # FlockScreenshots compiles the app's sources with SCREENSHOTS defined, so a change can break

@@ -3,7 +3,7 @@ package contribution
 import "testing"
 
 func TestParseClaimMarkers(t *testing.T) {
-	issue, author, ok := ParseClaimRecord("<!-- pr-gate:claim issue=flock#73 author=contributor -->")
+	issue, author, ok := ParseClaimRecord("<!-- pr-gate:claim issue=flock#73 author=contributor -->\n\nThis pull request claims issue #73.")
 	if !ok || issue != (IssueReference{Repository: "flock", Number: 73}) || author != "contributor" {
 		t.Fatalf("ParseClaimRecord() = %v, %q, %v", issue, author, ok)
 	}

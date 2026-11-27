@@ -51,7 +51,7 @@ func main() {
 	}
 	switch os.Args[1] {
 	case "pr":
-		err = pr.Run(ctx, client, owner, repo, event)
+		err = pr.Run(ctx, client, owner, repo, event, os.Stdout)
 	case "issue":
 		if os.Args[2] == "triage" {
 			err = issue.Triage(ctx, client, owner, repo, event)

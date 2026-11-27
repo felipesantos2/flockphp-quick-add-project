@@ -3,6 +3,7 @@ package pr
 import (
 	"context"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/google/go-github/v93/github"
@@ -19,6 +20,7 @@ type state struct {
 	owner      string
 	repository string
 	event      pullRequestEvent
+	out        io.Writer
 
 	observed observed
 	decision decision
@@ -63,10 +65,13 @@ type loaded struct {
 	pullRequestMilestone bool
 }
 
-func Run(ctx context.Context, client *github.Client, owner, repository string, eventData []byte) error {
+func Run(ctx context.Context, client *github.Client, owner, repository string, eventData []byte, out io.Writer) error {
 	current, err := newState(client, owner, repository, eventData)
 	if err != nil {
 		return err
+	}
+	if out != nil {
+		current.out = out
 	}
 	return current.run(ctx)
 }
@@ -81,6 +86,7 @@ func newState(client *github.Client, owner, repository string, eventData []byte)
 		owner:      owner,
 		repository: repository,
 		event:      event,
+		out:        io.Discard,
 		observed:   observed{issues: map[string]*issueSnapshot{}},
 	}, nil
 }
@@ -89,10 +95,20 @@ func (s *state) run(ctx context.Context) error {
 	if s.event.number == 0 {
 		return nil
 	}
+	s.status("Checking PR #%d for %s.", s.event.number, s.event.action)
 	if err := s.collect(ctx); err != nil {
 		return err
 	}
+	if s.observed.pullRequest == nil {
+		s.status("PR #%d no longer exists.", s.event.number)
+		return nil
+	}
+	s.status("PR #%d is %s, targets %s, and was opened by @%s.", s.event.number, s.observed.pullRequest.State,
+		s.observed.pullRequest.BaseRef, s.observed.pullRequest.Author.Login)
 	s.plan()
+	if len(s.changes) == 0 {
+		s.status("PR #%d needs no changes.", s.event.number)
+	}
 	return s.apply(ctx)
 }
 
@@ -100,12 +116,15 @@ func (s *state) plan() {
 	if s.observed.pullRequest == nil || s.observed.pullRequest.Merged {
 		return
 	}
-	s.planRelease()
 	if bypassesGate(s.observed.pullRequest) {
-		return
+		s.status("PR #%d bypasses contributor gate enforcement.", s.event.number)
+		s.resolve()
 	}
-	s.planGate()
 	s.planRelease()
+	if !bypassesGate(s.observed.pullRequest) {
+		s.planGate()
+		s.planRelease()
+	}
 	s.planClaim()
 	s.planMilestone()
 }
@@ -123,6 +142,16 @@ func (s *state) resolve() {
 	}
 	s.decision.approved, s.decision.denied = s.approval()
 	s.decision.made = true
+	if s.decision.approved != nil {
+		s.status("PR #%d is approved through issue %s.", s.event.number, s.decision.approved)
+		return
+	}
+	if s.decision.denied != nil {
+		s.status("PR #%d cannot use issue %s because it is assigned to %s.", s.event.number, s.decision.denied.Issue,
+			s.decision.denied.Names)
+		return
+	}
+	s.status("PR #%d has no approved linked issue.", s.event.number)
 }
 
 func (s *state) approval() (*contribution.IssueReference, *closeReason) {
@@ -173,4 +202,11 @@ func (s *state) approval() (*contribution.IssueReference, *closeReason) {
 
 func joinNames(names []string) string {
 	return strings.Join(names, " and ")
+}
+
+func (s *state) status(format string, arguments ...any) {
+	if s.out == nil {
+		return
+	}
+	_, _ = fmt.Fprintf(s.out, format+"\n", arguments...)
 }

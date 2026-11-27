@@ -350,11 +350,11 @@ public sealed class ServiceReleaseActions(PostgresService postgres, CatalogServi
         if (entry.Job?.IsRunning == true)
         {
             return catalog.CanCancelJob(entry.Id)
-                ? [ServiceRowCommandKind.ShowLog, ServiceRowCommandKind.Cancel]
-                : [ServiceRowCommandKind.ShowLog];
+                ? new[] { ServiceRowCommandKind.ShowLog, ServiceRowCommandKind.Cancel }
+                : new[] { ServiceRowCommandKind.ShowLog };
         }
         return entry.Job?.IsFailed == true
-            ? [ServiceRowCommandKind.Retry, ServiceRowCommandKind.Dismiss, ServiceRowCommandKind.ShowLog]
+            ? new[] { ServiceRowCommandKind.Retry, ServiceRowCommandKind.Dismiss, ServiceRowCommandKind.ShowLog }
             : [];
     }
 

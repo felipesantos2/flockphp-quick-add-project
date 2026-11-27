@@ -100,7 +100,7 @@ internal sealed partial class ShareSection : UserControl
         {
             var path = Path.Combine(Path.GetTempPath(), SitesPane.QrFileName(share.SiteName));
             await File.WriteAllBytesAsync(path, Convert.FromBase64String(share.Qr));
-            e.Data.SetStorageItems([await StorageFile.GetFileFromPathAsync(path)]);
+            e.Data.SetStorageItems(new IStorageItem[] { await StorageFile.GetFileFromPathAsync(path) });
             e.Data.RequestedOperation = DataPackageOperation.Copy;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or FormatException)

@@ -299,7 +299,7 @@ public sealed partial class App : Application
         {
             items.Insert(1, update);
         }
-        var choice = tray.ShowMenu([.. items], 0);
+        var choice = tray.ShowMenu(items, 0);
         if (update is not null && choice >= 1)
         {
             if (choice == 1)

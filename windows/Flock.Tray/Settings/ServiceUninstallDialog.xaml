@@ -1,0 +1,24 @@
+<ContentDialog
+    x:Class="Flock.Tray.Settings.ServiceUninstallDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:l="using:Flock.Tray"
+    xmlns:settings="using:Flock.Tray.Settings"
+    PrimaryButtonText="{l:Loc Key=Common_Uninstall}"
+    CloseButtonText="{l:Loc Key=Common_Cancel}">
+    <ContentDialog.Resources>
+        <settings:BooleanVisibilityConverter x:Key="BooleanVisibilityConverter" />
+    </ContentDialog.Resources>
+    <StackPanel Spacing="16">
+        <TextBlock Text="{x:Bind Details}" TextWrapping="Wrap" />
+        <StackPanel Spacing="4" Visibility="{x:Bind HasData, Converter={StaticResource BooleanVisibilityConverter}}">
+            <CheckBox Content="{x:Bind DeleteDataLabel}" IsChecked="{x:Bind DeleteData, Mode=TwoWay}" />
+            <TextBlock Text="{x:Bind DeletionWarning}"
+                       Margin="28,-4,0,0"
+                       TextWrapping="Wrap"
+                       Style="{StaticResource CaptionTextBlockStyle}"
+                       Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                       Visibility="{x:Bind DeleteData, Mode=OneWay, Converter={StaticResource BooleanVisibilityConverter}}" />
+        </StackPanel>
+    </StackPanel>
+</ContentDialog>
