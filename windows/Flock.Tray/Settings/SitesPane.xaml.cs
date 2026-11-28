@@ -32,6 +32,7 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane, ISiteDetai
     private bool active;
     private CancellationTokenSource? activeLifetime;
     private Task pendingSecure = Task.CompletedTask;
+    private (string Path, string FallbackName)? pendingNewApp;
 
     public SitesPane(SettingsWindow window, RuntimeService model, DeepLinkCoordinator deepLinks)
     {
@@ -76,6 +77,7 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane, ISiteDetai
     public Task ReleaseAsync()
     {
         active = false;
+        pendingNewApp = null;
         output.Stop();
         activeLifetime?.Cancel();
         Model.Changed -= StateChanged;
@@ -237,7 +239,18 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane, ISiteDetai
     {
         var selectedBefore = viewModel.Selected;
         var proxyBefore = viewModel.SelectedProxy;
-        if (viewModel.Apply(Model.Status) && ReferenceEquals(selectedBefore, viewModel.Selected) && ReferenceEquals(proxyBefore, viewModel.SelectedProxy))
+        var changed = viewModel.Apply(Model.Status);
+        if (pendingNewApp is { } pending && FindCreatedSite(Model.Status, pending.Path, pending.FallbackName) is { } created)
+        {
+            pendingNewApp = null;
+            viewModel.Select(created.Name);
+            if (!ReferenceEquals(selectedBefore, viewModel.Selected) || !ReferenceEquals(proxyBefore, viewModel.SelectedProxy))
+            {
+                DetailScroller.ChangeView(null, 0, null, true);
+                return;
+            }
+        }
+        if (changed && ReferenceEquals(selectedBefore, viewModel.Selected) && ReferenceEquals(proxyBefore, viewModel.SelectedProxy))
         {
             RefreshDetail();
         }
@@ -461,8 +474,16 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane, ISiteDetai
             if (outcome == OperationOutcome.Succeeded)
             {
                 var targetPath = Path.Combine(parentDir, appName);
-                var created = Model.Status?.Sites.FirstOrDefault(site => string.Equals(site.Path, targetPath, StringComparison.OrdinalIgnoreCase));
-                Select(created?.Name ?? AppSlug(appName));
+                var fallbackName = AppSlug(appName);
+                if (FindCreatedSite(Model.Status, targetPath, fallbackName) is { } created)
+                {
+                    pendingNewApp = null;
+                    Select(created.Name);
+                }
+                else
+                {
+                    pendingNewApp = (targetPath, fallbackName);
+                }
             }
         }
         finally
@@ -470,6 +491,10 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane, ISiteDetai
             SetNewAppBusy(false);
         }
     }
+
+    private static Status.Site? FindCreatedSite(Status? status, string path, string fallbackName) =>
+        status?.Sites.FirstOrDefault(site => string.Equals(site.Path, path, StringComparison.OrdinalIgnoreCase))
+        ?? status?.Sites.FirstOrDefault(site => string.Equals(site.Name, fallbackName, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>Hostname label matching <c>config.SiteName</c> on the daemon.</summary>
     internal static string AppSlug(string name)
@@ -512,6 +537,10 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane, ISiteDetai
     {
         if (SiteList.SelectedItem is SiteRowViewModel row)
         {
+            if (!ReferenceEquals(viewModel.Selected, row))
+            {
+                pendingNewApp = null;
+            }
             Select(row.Name);
         }
     }
@@ -520,6 +549,10 @@ internal sealed partial class SitesPane : UserControl, ISettingsPane, ISiteDetai
     {
         if (ProxyList.SelectedItem is ProxyRowViewModel row)
         {
+            if (!ReferenceEquals(viewModel.SelectedProxy, row))
+            {
+                pendingNewApp = null;
+            }
             Select(row.Name);
         }
     }

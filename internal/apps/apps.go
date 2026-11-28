@@ -151,8 +151,11 @@ func Create(ctx context.Context, req CreateRequest) (CreateResult, error) {
 
 	var wpConfigured bool
 	if dbSvc.ID != "" {
-		wpConfigured, err = SetupDatabase(ctx, req.Root, dbSvc.ID, dbSvc.Version, dbSvc.Port, path, name)
+		dbCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
+		defer cancel()
+		wpConfigured, err = SetupDatabase(dbCtx, req.Root, dbSvc.ID, dbSvc.Version, dbSvc.Port, path, name)
 		if err != nil {
+			_ = os.RemoveAll(path)
 			return CreateResult{}, err
 		}
 	}
@@ -370,11 +373,11 @@ func CreateDir(ctx context.Context, client *http.Client, path string, tmpl Templ
 // wp-config.php when wp-config-sample.php is present.
 func SetupDatabase(ctx context.Context, root, dbID, dbVersion string, dbPort int, path, name string) (bool, error) {
 	if err := catalog.CreateDatabase(ctx, root, dbID, dbVersion, dbPort, name); err != nil {
-		return false, fmt.Errorf("project created at %s, but creating database %s failed: %w", path, name, err)
+		return false, fmt.Errorf("creating database %s failed: %w", name, err)
 	}
 	configured, err := ConfigureWPConfig(path, name, dbPort)
 	if err != nil {
-		return false, fmt.Errorf("project created at %s, but configuring wp-config.php failed: %w", path, err)
+		return false, fmt.Errorf("configuring wp-config.php failed: %w", err)
 	}
 	return configured, nil
 }

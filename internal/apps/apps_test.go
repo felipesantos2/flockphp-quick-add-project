@@ -220,3 +220,25 @@ func TestCreateSaveSiteErrorIncludesProjectPath(t *testing.T) {
 		t.Fatalf("expected created project directory to remain on disk: %v", statErr)
 	}
 }
+
+func TestCreateCleansUpPublishedDirWhenDatabaseSetupFails(t *testing.T) {
+	root, parent := t.TempDir(), t.TempDir()
+	target := filepath.Join(parent, "my-blog")
+
+	_, err := Create(context.Background(), CreateRequest{
+		Root:      root,
+		Name:      "my-blog",
+		ParentDir: parent,
+		Type:      "php",
+		DB:        true,
+		Services: func(context.Context) ([]Database, error) {
+			return []Database{{ID: "mysql", Name: "MySQL", Version: "8.4.11", Port: 3307, Installed: true, Running: true}}, nil
+		},
+	})
+	if err == nil || !strings.Contains(err.Error(), "creating database my-blog failed") {
+		t.Fatalf("expected database setup error, got %v", err)
+	}
+	if _, statErr := os.Stat(target); !os.IsNotExist(statErr) {
+		t.Fatalf("expected published directory to be removed on database failure, got %v", statErr)
+	}
+}

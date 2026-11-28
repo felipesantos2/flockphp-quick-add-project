@@ -544,9 +544,8 @@ impl Inner {
             let (stack, folder_weak) = (self.stack.clone(), folder.downgrade());
             browse.connect_clicked(move |_| {
                 let window = stack.root().and_downcast::<gtk::Window>();
-                let mut builder = gtk::FileDialog::builder()
-                    .title(tr!("sites.new_app_parent_folder"))
-                    .accept_label(tr!("sites.server.choose"));
+                let mut builder =
+                    gtk::FileDialog::builder().title(tr!("sites.new_app_parent_folder")).accept_label(tr!("sites.server.choose"));
                 if let Some(current) = folder_weak.upgrade() {
                     let current = current.text();
                     let current = current.trim();

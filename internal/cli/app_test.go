@@ -420,6 +420,9 @@ func TestAppCreateWithDatabase(t *testing.T) {
 				if reloads.Load() != 0 {
 					t.Fatalf("expected no daemon reload on DB error, got %d", reloads.Load())
 				}
+				if _, statErr := os.Stat(filepath.Join(dir, "My Blog")); !os.IsNotExist(statErr) {
+					t.Fatalf("DB failure should remove published project directory: %v", statErr)
+				}
 			case "php-skips-db-even-when-running", "blank-skips-db-even-when-running":
 				if err != nil || reloads.Load() != 1 || strings.Contains(out, "database my-blog ready") {
 					t.Fatalf("expected no database creation (%v, %d): %s", err, reloads.Load(), out)
